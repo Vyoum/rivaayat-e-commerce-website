@@ -20,11 +20,7 @@ export const metadata: Metadata = {
   title: "RIVAAYAT — Stories Crafted by Heart",
   description:
     "Discover handcrafted treasures from Indian NGOs. Every purchase nurtures a life, preserves a tradition, and weaves a story of hope.",
-  generator: "v0.app",
-  icons: {
-    icon: "/favicon.svg",
-    apple: "/favicon.svg",
-  },
+    generator: 'v0.app'
 }
 
 export default function RootLayout({
