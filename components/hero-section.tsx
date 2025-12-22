@@ -9,16 +9,19 @@ const heroSlides = [
     image: "/indian-artisan-hands-creating-traditional-craft-wi.jpg",
     taglineTop: "Traditions Woven",
     taglineBottom: "with Love",
+    subtitle: "Every thread carries the warmth of generations. Every weave holds a story of resilience.",
   },
   {
     image: "/realistic-indian-woman-crafting-jewelry.jpg",
     taglineTop: "Heritage Shaped",
     taglineBottom: "by Her Hands",
+    subtitle: "Behind every piece is a grandmother's blessing. Behind every bead is a daughter's dream.",
   },
   {
     image: "/indian-grandmother-making-protein-ladoo.jpg",
     taglineTop: "Nourishment Made",
     taglineBottom: "with Blessings",
+    subtitle: "Recipes passed through generations. Strength rolled with love in every ladoo.",
   },
 ]
 
@@ -96,7 +99,7 @@ export function HeroSection() {
             className="text-lg md:text-xl lg:text-2xl font-sans text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed animate-fade-in-up font-bold"
             style={{ animationDelay: "0.4s" }}
           >
-            Behind every jewelry piece is a grandmother&apos;s blessing. Behind every bead is a daughter&apos;s dream.
+            <span className="transition-opacity duration-700">{heroSlides[currentSlide].subtitle}</span>
             <span className="text-foreground font-medium"> Welcome to Rivaayat — where craft meets compassion.</span>
           </p>
 
