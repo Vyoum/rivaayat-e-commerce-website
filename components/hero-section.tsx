@@ -1,27 +1,55 @@
 "use client"
 
-import { useEffect, useRef } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { ArrowDown, Play } from "lucide-react"
 
+const heroSlides = [
+  {
+    image: "/indian-artisan-hands-creating-traditional-craft-wi.jpg",
+    taglineTop: "Traditions Woven",
+    taglineBottom: "with Love",
+  },
+  {
+    image: "/realistic-indian-woman-crafting-jewelry.jpg",
+    taglineTop: "Heritage Shaped",
+    taglineBottom: "by Her Hands",
+  },
+  {
+    image: "/indian-grandmother-making-protein-ladoo.jpg",
+    taglineTop: "Nourishment Made",
+    taglineBottom: "with Blessings",
+  },
+]
+
 export function HeroSection() {
-  const videoRef = useRef<HTMLVideoElement>(null)
+  const [currentSlide, setCurrentSlide] = useState(0)
 
   useEffect(() => {
-    if (videoRef.current) {
-      videoRef.current.playbackRate = 0.75
-    }
+    const interval = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % heroSlides.length)
+    }, 6000) // Change every 6 seconds
+
+    return () => clearInterval(interval)
   }, [])
 
   return (
     <section className="relative min-h-screen flex items-center justify-center overflow-hidden pt-24">
-      {/* Background Image */}
       <div className="absolute inset-0">
-        <img
-          src="/indian-artisan-hands-creating-traditional-craft-wi.jpg"
-          alt="Artisan hands creating traditional craft"
-          className="w-full h-full object-cover"
-        />
+        {heroSlides.map((slide, index) => (
+          <div
+            key={index}
+            className={`absolute inset-0 transition-opacity duration-1500 ease-in-out ${
+              index === currentSlide ? "opacity-100" : "opacity-0"
+            }`}
+          >
+            <img
+              src={slide.image || "/placeholder.svg"}
+              alt="Artisan hands creating traditional craft"
+              className="w-full h-full object-cover"
+            />
+          </div>
+        ))}
         <div className="absolute inset-0 bg-gradient-to-b from-background/40 via-background/20 to-background" />
         <div className="absolute inset-0 bg-gradient-to-r from-background/60 via-transparent to-background/40" />
       </div>
@@ -53,13 +81,14 @@ export function HeroSection() {
             Where Every Purchase Tells a Story
           </p>
 
-          {/* Main Headline */}
           <h1
             className="text-5xl md:text-7xl lg:text-8xl font-serif font-light leading-tight mb-8 animate-fade-in-up"
             style={{ animationDelay: "0.2s" }}
           >
-            <span className="block">Traditions Woven</span>
-            <span className="block text-primary italic">with Love</span>
+            <span className="block transition-opacity duration-700">{heroSlides[currentSlide].taglineTop}</span>
+            <span className="block text-primary italic transition-opacity duration-700">
+              {heroSlides[currentSlide].taglineBottom}
+            </span>
           </h1>
 
           {/* Subheadline */}
@@ -67,7 +96,7 @@ export function HeroSection() {
             className="text-lg md:text-xl lg:text-2xl font-sans text-muted-foreground max-w-2xl mx-auto mb-12 leading-relaxed animate-fade-in-up font-bold"
             style={{ animationDelay: "0.4s" }}
           >
-            Behind every ladoo is a grandmother&apos;s blessing. Behind every bead is a daughter&apos;s dream.
+            Behind every jewelry piece is a grandmother&apos;s blessing. Behind every bead is a daughter&apos;s dream.
             <span className="text-foreground font-medium"> Welcome to Rivaayat — where craft meets compassion.</span>
           </p>
 
@@ -92,9 +121,22 @@ export function HeroSection() {
             </Button>
           </div>
 
+          <div className="flex justify-center gap-3 mt-8">
+            {heroSlides.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => setCurrentSlide(index)}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  index === currentSlide ? "bg-primary w-8" : "bg-foreground/30 hover:bg-foreground/50"
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
+
           {/* Stats */}
           <div
-            className="grid grid-cols-3 gap-8 mt-20 pt-12 border-t border-border/30 animate-fade-in-up"
+            className="grid grid-cols-3 gap-8 mt-16 pt-12 border-t border-border/30 animate-fade-in-up"
             style={{ animationDelay: "0.8s" }}
           >
             <div className="text-center">
