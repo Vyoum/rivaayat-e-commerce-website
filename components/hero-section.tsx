@@ -89,7 +89,7 @@ export function HeroSection() {
             style={{ animationDelay: "0.2s" }}
           >
             <span className="block transition-opacity duration-700">{heroSlides[currentSlide].taglineTop}</span>
-            <span className="block text-primary italic transition-opacity duration-700">
+            <span className="block italic transition-opacity duration-700 text-red-500">
               {heroSlides[currentSlide].taglineBottom}
             </span>
           </h1>
@@ -137,6 +137,24 @@ export function HeroSection() {
             ))}
           </div>
 
+          {/* Stats */}
+          <div
+            className="grid grid-cols-3 gap-8 mt-16 pt-12 border-t border-border/30 animate-fade-in-up"
+            style={{ animationDelay: "0.8s" }}
+          >
+            <div className="text-center">
+              <span className="block text-4xl md:text-5xl font-serif text-primary">500+</span>
+              <span className="block text-sm font-sans text-muted-foreground mt-2 tracking-wide">Artisan Families</span>
+            </div>
+            <div className="text-center">
+              <span className="block text-4xl md:text-5xl font-serif text-primary">12</span>
+              <span className="block text-sm font-sans text-muted-foreground mt-2 tracking-wide">Partner NGOs</span>
+            </div>
+            <div className="text-center">
+              <span className="block text-4xl md:text-5xl font-serif text-primary">₹2Cr+</span>
+              <span className="block text-sm font-sans text-muted-foreground mt-2 tracking-wide">Lives Touched</span>
+            </div>
+          </div>
         </div>
       </div>
 
