@@ -1,5 +1,6 @@
 import Link from "next/link"
-import { Instagram, Facebook, Twitter, Youtube, Mail, Phone, MapPin } from "lucide-react"
+import { Instagram, Facebook, Twitter, Youtube } from "lucide-react"
+import { MessageCircle } from "lucide-react"
 
 export function Footer() {
   return (
@@ -30,11 +31,11 @@ export function Footer() {
             </div>
           </div>
 
-          {/* Quick Links */}
+          {/* About Rivaayat */}
           <div>
-            <h4 className="text-lg font-serif mb-6">Explore</h4>
+            <h4 className="text-lg font-serif mb-6">About Rivaayat</h4>
             <ul className="space-y-3">
-              {["Our Story", "Products", "Artisans", "Impact Report", "Blog", "FAQs"].map((link) => (
+              {["Our Story", "The Artisans", "Impact Report", "Blog", "Careers"].map((link) => (
                 <li key={link}>
                   <Link href="#" className="text-background/70 font-sans hover:text-background transition-colors">
                     {link}
@@ -44,18 +45,11 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Categories */}
+          {/* Shop */}
           <div>
-            <h4 className="text-lg font-serif mb-6">Collections</h4>
+            <h4 className="text-lg font-serif mb-6">Shop</h4>
             <ul className="space-y-3">
-              {[
-                "Wellness Foods",
-                "Seed Calendars",
-                "Handcrafted Jewelry",
-                "Home Décor",
-                "Gift Boxes",
-                "Corporate Gifting",
-              ].map((link) => (
+              {["Clothing", "Décor", "Jewellery", "Custom Food"].map((link) => (
                 <li key={link}>
                   <Link href="#" className="text-background/70 font-sans hover:text-background transition-colors">
                     {link}
@@ -65,51 +59,46 @@ export function Footer() {
             </ul>
           </div>
 
-          {/* Contact */}
+          {/* Help */}
           <div>
-            <h4 className="text-lg font-serif mb-6">Connect With Us</h4>
-            <ul className="space-y-4">
-              <li className="flex items-start gap-3">
-                <MapPin className="w-5 h-5 text-primary shrink-0 mt-0.5" />
-                <span className="text-background/70 font-sans">
-                  42, Artisan Lane, Jaipur,
-                  <br />
-                  Rajasthan 302001
-                </span>
-              </li>
-              <li className="flex items-center gap-3">
-                <Mail className="w-5 h-5 text-primary shrink-0" />
-                <a
-                  href="mailto:namaste@rivaayat.in"
-                  className="text-background/70 font-sans hover:text-background transition-colors"
-                >
-                  namaste@rivaayat.in
-                </a>
-              </li>
-              <li className="flex items-center gap-3">
-                <Phone className="w-5 h-5 text-primary shrink-0" />
-                <a
-                  href="tel:+919876543210"
-                  className="text-background/70 font-sans hover:text-background transition-colors"
-                >
-                  +91 98765 43210
-                </a>
-              </li>
+            <h4 className="text-lg font-serif mb-6">Help</h4>
+            <ul className="space-y-3">
+              {["FAQs", "Shipping & Returns", "Contact"].map((link) => (
+                <li key={link}>
+                  <Link href="#" className="text-background/70 font-sans hover:text-background transition-colors">
+                    {link}
+                  </Link>
+                </li>
+              ))}
             </ul>
 
-            {/* NGO Partners Logo Strip */}
+            {/* Follow Us */}
             <div className="mt-8">
-              <p className="text-xs font-sans text-background/50 mb-3 tracking-wider uppercase">Proud Partners</p>
-              <div className="flex items-center gap-4 opacity-50">
-                <div className="w-16 h-8 bg-background/20 rounded flex items-center justify-center text-xs font-sans">
-                  NGO 1
-                </div>
-                <div className="w-16 h-8 bg-background/20 rounded flex items-center justify-center text-xs font-sans">
-                  NGO 2
-                </div>
-                <div className="w-16 h-8 bg-background/20 rounded flex items-center justify-center text-xs font-sans">
-                  NGO 3
-                </div>
+              <h4 className="text-lg font-serif mb-6">Follow Us</h4>
+              <div className="flex items-center gap-4">
+                <Link
+                  href="#"
+                  className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-background/20 transition-colors"
+                  aria-label="Instagram"
+                >
+                  <Instagram className="w-5 h-5" />
+                </Link>
+                <Link
+                  href="#"
+                  className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-background/20 transition-colors"
+                  aria-label="Pinterest"
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M12 0C5.373 0 0 5.373 0 12c0 5.084 3.163 9.426 7.627 11.174-.105-.949-.2-2.405.042-3.441.218-.937 1.407-5.965 1.407-5.965s-.359-.719-.359-1.782c0-1.668.967-2.914 2.171-2.914 1.023 0 1.518.769 1.518 1.69 0 1.029-.655 2.568-.994 3.995-.283 1.194.599 2.169 1.777 2.169 2.133 0 3.772-2.249 3.772-5.495 0-2.873-2.064-4.882-5.012-4.882-3.414 0-5.418 2.561-5.418 5.207 0 1.031.397 2.138.893 2.738.098.119.112.224.083.345l-.333 1.36c-.053.22-.174.267-.402.161-1.499-.698-2.436-2.889-2.436-4.649 0-3.785 2.75-7.262 7.929-7.262 4.163 0 7.398 2.967 7.398 6.931 0 4.136-2.607 7.464-6.227 7.464-1.216 0-2.359-.631-2.75-1.378l-.748 2.853c-.271 1.043-1.002 2.35-1.492 3.146C9.57 23.812 10.763 24 12 24c6.627 0 12-5.373 12-12 0-6.628-5.373-12-12-12z" />
+                  </svg>
+                </Link>
+                <Link
+                  href="#"
+                  className="w-10 h-10 rounded-full bg-background/10 flex items-center justify-center hover:bg-background/20 transition-colors"
+                  aria-label="WhatsApp"
+                >
+                  <MessageCircle className="w-5 h-5" />
+                </Link>
               </div>
             </div>
           </div>
