@@ -2,12 +2,9 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Menu, X, ShoppingBag, Heart, Search } from "lucide-react"
+import { Menu, X, ShoppingBag, Search, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
-import { Input } from "@/components/ui/input"
 import { cn } from "@/lib/utils"
-
-const searchPlaceholder = "Looking for something handcrafted? Search clothing, décor, jewellery, or treats…"
 
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
@@ -71,23 +68,14 @@ export function Header() {
 
         {/* Actions */}
         <div className="flex items-center gap-4">
-          <div
-            className={cn(
-              "hidden md:flex items-center gap-2 rounded-full border px-4 h-10 transition-colors focus-within:border-primary/40 focus-within:ring-1 focus-within:ring-primary/30",
-              isScrolled ? "bg-background/80 border-foreground/15" : "bg-background/50 border-foreground/10",
-            )}
-          >
-            <Search className="h-4 w-4 text-muted-foreground" />
-            <Input
-              type="search"
-              placeholder={searchPlaceholder}
-              aria-label="Search handcrafted goods"
-              className="h-7 w-56 lg:w-64 xl:w-72 border-0 bg-transparent px-0 py-0 text-sm font-sans text-foreground placeholder:text-muted-foreground shadow-none focus-visible:ring-0 focus-visible:ring-offset-0"
-            />
-          </div>
           <Button variant="ghost" size="icon" className="hidden md:flex">
-            <Heart className="h-5 w-5" />
+            <Search className="h-5 w-5" />
           </Button>
+          <Link href="/login">
+            <Button variant="ghost" size="icon" className="hidden md:flex">
+              <User className="h-5 w-5" />
+            </Button>
+          </Link>
           <Button variant="ghost" size="icon" className="relative">
             <ShoppingBag className="opacity-100 shadow-xl w-7 h-3.5" />
             <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] rounded-full flex items-center justify-center">
