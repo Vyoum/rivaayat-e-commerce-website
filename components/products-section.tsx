@@ -12,7 +12,8 @@ const collections = [
     subtitle: "नीरोग",
     tagline: "Nourishment from the Heart",
     description:
-      "Ancient recipes passed down through generations, crafted by women who believe that food is medicine and love is the secret ingredient.",
+      "Customizable protein ladoos crafted with ancient recipes — choose your ingredients, set your nutrition goals. Made by women who believe food is medicine and love is the secret ingredient.",
+    highlight: "Craft Your Own Ladoo",
     image: "/indian-woman-making-traditional-ladoo-sweets-warm-.jpg",
     accent: "from-amber-900/80",
     products: 8,
@@ -25,6 +26,7 @@ const collections = [
     tagline: "Threads of Tradition",
     description:
       "Fabrics woven on ancient looms by skilled hands that have mastered the art over generations. Each garment carries the warmth of its maker's soul.",
+    highlight: null,
     image: "/indian-artisan-woman-weaving-traditional-handloom-.jpg",
     accent: "from-indigo-900/80",
     products: 12,
@@ -37,6 +39,7 @@ const collections = [
     tagline: "Stories You Can Wear",
     description:
       "Each bead holds a story of resilience. Each thread carries the dreams of artisans who transform pain into beauty, silence into song.",
+    highlight: null,
     image: "/indian-artisan-hands-crafting-traditional-jewelry-.jpg",
     accent: "from-rose-900/80",
     products: 15,
@@ -49,6 +52,7 @@ const collections = [
     tagline: "Traditions Reimagined",
     description:
       "200-year-old art forms kept alive by families who refused to let their ancestors' wisdom fade. Their hands carry the memory of temples.",
+    highlight: null,
     image: "/indian-brass-craftsman-working-traditional-temple-.jpg",
     accent: "from-orange-900/80",
     products: 10,
@@ -121,6 +125,13 @@ export function ProductsSection() {
 
                 {/* Tagline */}
                 <p className="text-white/80 font-serif italic text-lg mb-4">{collection.tagline}</p>
+
+                {/* Highlight Badge */}
+                {collection.highlight && (
+                  <span className="inline-block mb-4 px-4 py-1.5 bg-white/20 backdrop-blur-sm rounded-full text-white text-sm font-sans tracking-wide border border-white/30">
+                    ✦ {collection.highlight}
+                  </span>
+                )}
 
                 {/* Description - appears on hover */}
                 <p
