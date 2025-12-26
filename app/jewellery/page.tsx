@@ -1,8 +1,5 @@
-import Link from "next/link"
-import { ArrowRight } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function JewelleryPage() {
@@ -29,12 +26,6 @@ export default function JewelleryPage() {
             <p className="mt-6 text-lg font-sans text-muted-foreground leading-relaxed">
               Discover unique pieces from skilled artisans across Jaipur and beyond.
             </p>
-            <Button asChild size="lg" className="mt-8 font-sans text-base group">
-              <Link href="#jewellery-highlights">
-                Explore Jewellery
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </Button>
           </div>
         </div>
       </section>

@@ -6,6 +6,14 @@ import { Menu, X, ShoppingBag, Search, User } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
 
+const navItems = [
+  { label: "Our Story", href: "/outerboxdesign" },
+  { label: "Products", href: "#products" },
+  { label: "Artisans", href: "#artisans" },
+  { label: "Impact", href: "#impact" },
+  { label: "Contact", href: "#contact" },
+]
+
 export function Header() {
   const [isScrolled, setIsScrolled] = useState(false)
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false)
@@ -51,16 +59,16 @@ export function Header() {
 
         {/* Desktop Navigation */}
         <nav className="hidden lg:flex items-center gap-10">
-          {["Our Story", "Products", "Artisans", "Impact", "Contact"].map((item) => (
+          {navItems.map((item) => (
             <Link
-              key={item}
-              href={`#${item.toLowerCase().replace(" ", "-")}`}
+              key={item.label}
+              href={item.href}
               className={cn(
                 "relative font-sans tracking-wide transition-colors duration-300 group font-medium text-xl",
                 isScrolled ? "text-foreground" : "text-foreground",
               )}
             >
-              {item}
+              {item.label}
               <span className="absolute -bottom-1 left-0 w-0 h-[1px] bg-primary transition-all duration-300 group-hover:w-full" />
             </Link>
           ))}
@@ -100,15 +108,15 @@ export function Header() {
           isMobileMenuOpen ? "opacity-100 pointer-events-auto" : "opacity-0 pointer-events-none",
         )}
       >
-        {["Our Story", "Products", "Artisans", "Impact", "Contact"].map((item, index) => (
+        {navItems.map((item, index) => (
           <Link
-            key={item}
-            href={`#${item.toLowerCase().replace(" ", "-")}`}
+            key={item.label}
+            href={item.href}
             className="text-3xl font-serif text-foreground hover:text-primary transition-colors"
             style={{ animationDelay: `${index * 100}ms` }}
             onClick={() => setIsMobileMenuOpen(false)}
           >
-            {item}
+            {item.label}
           </Link>
         ))}
       </div>

@@ -1,8 +1,5 @@
-import Link from "next/link"
-import { ArrowRight } from "lucide-react"
 import { Header } from "@/components/header"
 import { Footer } from "@/components/footer"
-import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 
 export default function DecorPage() {
@@ -29,12 +26,6 @@ export default function DecorPage() {
             <p className="mt-6 text-lg font-sans text-muted-foreground leading-relaxed">
               Transform your space with mirrors, frames, and vessels that reflect India&apos;s artistic heritage.
             </p>
-            <Button asChild size="lg" className="mt-8 font-sans text-base group">
-              <Link href="#decor-highlights">
-                Explore Décor
-                <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
-              </Link>
-            </Button>
           </div>
         </div>
       </section>
