@@ -48,6 +48,7 @@ const collections = [
     products: 15,
     artisans: 38,
     cta: "Explore Jewellery",
+    href: "/jewellery",
   },
   {
     id: 4,
@@ -62,6 +63,7 @@ const collections = [
     products: 10,
     artisans: 18,
     cta: "Explore Décor",
+    href: "/decor",
   },
 ]
 
@@ -166,26 +168,6 @@ export function ProductsSection() {
                   </div>
                 </div>
 
-                {/* CTA Button */}
-                <Button
-                  className={cn(
-                    "mt-6 w-fit rounded-full bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white hover:text-foreground transition-all duration-500",
-                    hoveredCollection === collection.id ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4",
-                  )}
-                  asChild={Boolean(collection.href)}
-                >
-                  {collection.href ? (
-                    <Link href={collection.href}>
-                      {collection.cta ?? "Explore Collection"}
-                      <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
-                    </Link>
-                  ) : (
-                    <>
-                      {collection.cta ?? "Explore Collection"}
-                      <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
-                    </>
-                  )}
-                </Button>
               </div>
 
               {/* Decorative corner accent */}
