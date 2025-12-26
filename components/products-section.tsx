@@ -1,6 +1,7 @@
 "use client"
 
 import { useState } from "react"
+import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight } from "lucide-react"
 import { cn } from "@/lib/utils"
@@ -8,16 +9,18 @@ import { cn } from "@/lib/utils"
 const collections = [
   {
     id: 1,
-    title: "Wellness",
+    title: "Custom Food",
     subtitle: "नीरोग",
-    tagline: "Nourishment from the Heart",
+    tagline: "Tasteful, Thoughtful, Handmade",
     description:
-      "Customizable protein ladoos crafted with ancient recipes — choose your ingredients, set your nutrition goals. Made by women who believe food is medicine and love is the secret ingredient.",
+      "Nourish your body with custom protein bars, traditional ladoos, and artisan achaars.",
     highlight: "Craft Your Own Ladoo",
     image: "/indian-woman-making-traditional-ladoo-sweets-warm-.jpg",
     accent: "from-amber-900/80",
     products: 8,
     artisans: 24,
+    cta: "Explore Custom Food",
+    href: "/custom-laddoos",
   },
   {
     id: 2,
@@ -31,32 +34,34 @@ const collections = [
     accent: "from-indigo-900/80",
     products: 12,
     artisans: 32,
+    cta: "Explore Clothing",
   },
   {
     id: 3,
-    title: "Handcrafted Jewelry",
+    title: "Jewellery",
     subtitle: "आभूषण",
-    tagline: "Stories You Can Wear",
-    description:
-      "Each bead holds a story of resilience. Each thread carries the dreams of artisans who transform pain into beauty, silence into song.",
+    tagline: "Curated Treasures",
+    description: "Discover unique pieces from skilled artisans across Jaipur and beyond.",
     highlight: null,
     image: "/indian-artisan-hands-crafting-traditional-jewelry-.jpg",
     accent: "from-rose-900/80",
     products: 15,
     artisans: 38,
+    cta: "Explore Jewellery",
   },
   {
     id: 4,
-    title: "Heritage Crafts",
+    title: "Décor",
     subtitle: "विरासत",
-    tagline: "Traditions Reimagined",
+    tagline: "Lippan & Pichvai Art",
     description:
-      "200-year-old art forms kept alive by families who refused to let their ancestors' wisdom fade. Their hands carry the memory of temples.",
+      "Transform your space with mirrors, frames, and vessels that reflect India's artistic heritage.",
     highlight: null,
     image: "/indian-brass-craftsman-working-traditional-temple-.jpg",
     accent: "from-orange-900/80",
     products: 10,
     artisans: 18,
+    cta: "Explore Décor",
   },
 ]
 
@@ -167,9 +172,19 @@ export function ProductsSection() {
                     "mt-6 w-fit rounded-full bg-white/20 backdrop-blur-sm text-white border border-white/30 hover:bg-white hover:text-foreground transition-all duration-500",
                     hoveredCollection === collection.id ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4",
                   )}
+                  asChild={Boolean(collection.href)}
                 >
-                  Explore Collection
-                  <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                  {collection.href ? (
+                    <Link href={collection.href}>
+                      {collection.cta ?? "Explore Collection"}
+                      <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                    </Link>
+                  ) : (
+                    <>
+                      {collection.cta ?? "Explore Collection"}
+                      <ArrowRight className="w-4 h-4 ml-2 transition-transform group-hover:translate-x-1" />
+                    </>
+                  )}
                 </Button>
               </div>
 
