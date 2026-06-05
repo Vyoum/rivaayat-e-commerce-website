@@ -1,0 +1,357 @@
+"use client"
+
+import { useMemo, useState } from "react"
+import Link from "next/link"
+import { Lock, Minus, Plus, Trash2 } from "lucide-react"
+import { Checkbox } from "@/components/ui/checkbox"
+import { cn } from "@/lib/utils"
+
+type CartItem = {
+  id: string
+  name: string
+  variant: string
+  artisan: string
+  price: number
+  quantity: number
+  image: string
+  tag?: string
+}
+
+const initialItems: CartItem[] = [
+  {
+    id: "1",
+    name: "The Kashi Urn",
+    variant: "Terracotta / Large",
+    artisan: "Master Potter Ramesh, Jaipur",
+    price: 4500,
+    quantity: 1,
+    image:
+      "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=400&h=500&fit=crop",
+    tag: "HANDCRAFTED",
+  },
+  {
+    id: "2",
+    name: "Varanasi Silk Throw",
+    variant: "Sage & Gold",
+    artisan: "The Weavers Guild, Varanasi",
+    price: 8200,
+    quantity: 2,
+    image:
+      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=500&fit=crop",
+    tag: "HANDCRAFTED",
+  },
+]
+
+const tipOptions = [50, 100, 200]
+
+function formatCurrency(amount: number) {
+  return `₹${amount.toLocaleString("en-IN")}`
+}
+
+function LotusIcon() {
+  return (
+    <svg
+      width="20"
+      height="20"
+      viewBox="0 0 24 24"
+      fill="none"
+      xmlns="http://www.w3.org/2000/svg"
+      className="text-[#C4A882]"
+      aria-hidden
+    >
+      <path
+        d="M12 3C10.5 6 8 7.5 5 8c3 1.5 5 4 5 7 0-3 2-5.5 5-7-3-.5-5.5-2-7-5z"
+        fill="currentColor"
+        opacity="0.6"
+      />
+      <path
+        d="M12 15c-2 2-4.5 3-7 3 2.5 1 4.5 3 7 3 2.5 0 4.5-2 7-3-2.5 0-5-1-7-3z"
+        fill="currentColor"
+        opacity="0.4"
+      />
+      <circle cx="12" cy="10" r="2" fill="currentColor" opacity="0.8" />
+    </svg>
+  )
+}
+
+function CartItemCard({
+  item,
+  onUpdateQuantity,
+  onRemove,
+}: {
+  item: CartItem
+  onUpdateQuantity: (id: string, quantity: number) => void
+  onRemove: (id: string) => void
+}) {
+  return (
+    <article className="rounded-xl border border-[#EDE5D8] bg-[#F5F2EB] p-5 sm:p-6">
+      <div className="flex gap-5 sm:gap-6">
+        <div className="shrink-0">
+          <div className="h-[120px] w-[90px] overflow-hidden rounded-t-[45px] rounded-b-md bg-[#EDE5D8] sm:h-[130px] sm:w-[100px]">
+            <img
+              src={item.image}
+              alt={item.name}
+              className="h-full w-full object-cover"
+            />
+          </div>
+        </div>
+
+        <div className="flex min-w-0 flex-1 flex-col">
+          <div className="flex items-start justify-between gap-4">
+            <div className="min-w-0 space-y-2">
+              <div className="flex flex-wrap items-center gap-2.5">
+                <h3 className="font-serif text-[20px] font-normal leading-tight text-[#2B1B12] sm:text-[22px]">
+                  {item.name}
+                </h3>
+                {item.tag && (
+                  <span className="rounded-full bg-[#5C6B58] px-2.5 py-0.5 font-sans text-[9px] font-medium uppercase tracking-[0.1em] text-white">
+                    {item.tag}
+                  </span>
+                )}
+              </div>
+              <p className="font-sans text-[12px] text-[#9A8070]">
+                <span className="text-[#6B5344]">Variant:</span> {item.variant}
+              </p>
+              <p className="font-sans text-[12px] text-[#9A8070]">
+                <span className="text-[#6B5344]">Artisan:</span> {item.artisan}
+              </p>
+            </div>
+
+            <div className="flex shrink-0 flex-col items-end gap-3">
+              <p className="font-serif text-[18px] text-[#2B1B12] sm:text-[20px]">
+                {formatCurrency(item.price)}
+              </p>
+
+              <div className="flex items-center rounded-md border border-[#EDE5D8] bg-white">
+                <button
+                  type="button"
+                  onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                  disabled={item.quantity <= 1}
+                  className="flex h-8 w-8 items-center justify-center text-[#6B5344] transition-colors hover:text-[#2B1B12] disabled:opacity-40"
+                  aria-label="Decrease quantity"
+                >
+                  <Minus className="h-3 w-3" strokeWidth={1.5} />
+                </button>
+                <span className="flex h-8 w-8 items-center justify-center border-x border-[#EDE5D8] font-sans text-[13px] text-[#2B1B12]">
+                  {item.quantity}
+                </span>
+                <button
+                  type="button"
+                  onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                  className="flex h-8 w-8 items-center justify-center text-[#6B5344] transition-colors hover:text-[#2B1B12]"
+                  aria-label="Increase quantity"
+                >
+                  <Plus className="h-3 w-3" strokeWidth={1.5} />
+                </button>
+              </div>
+
+              <button
+                type="button"
+                onClick={() => onRemove(item.id)}
+                className="flex items-center gap-1.5 font-sans text-[11px] text-[#9A8070] underline underline-offset-2 transition-colors hover:text-[#2B1B12]"
+              >
+                <Trash2 className="h-3 w-3" strokeWidth={1.5} />
+                Remove
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </article>
+  )
+}
+
+export function CartContent() {
+  const [items, setItems] = useState<CartItem[]>(initialItems)
+  const [selectedTip, setSelectedTip] = useState<number>(100)
+  const [promoCode, setPromoCode] = useState("")
+  const [giftMessage, setGiftMessage] = useState(false)
+
+  const subtotal = useMemo(
+    () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
+    [items],
+  )
+
+  const total = subtotal + selectedTip
+
+  const updateQuantity = (id: string, quantity: number) => {
+    if (quantity < 1) return
+    setItems((prev) =>
+      prev.map((item) => (item.id === id ? { ...item, quantity } : item)),
+    )
+  }
+
+  const removeItem = (id: string) => {
+    setItems((prev) => prev.filter((item) => item.id !== id))
+  }
+
+  return (
+    <div className="mx-auto max-w-6xl px-6 py-12 sm:py-16">
+      <div className="mb-12 text-center sm:mb-14">
+        <h1 className="font-serif text-[40px] font-light italic text-[#2B1B12] sm:text-[48px]">
+          Your Cart
+        </h1>
+        <p className="mx-auto mt-3 max-w-md font-serif text-[14px] italic text-[#9A8070] sm:text-[15px]">
+          These are the pieces you have chosen to be part of your story.
+        </p>
+        <div className="mt-4 flex justify-center">
+          <LotusIcon />
+        </div>
+      </div>
+
+      <div className="grid items-start gap-8 lg:grid-cols-[1fr_340px] lg:gap-10 xl:grid-cols-[1fr_360px]">
+        <div className="space-y-5">
+          {items.length === 0 ? (
+            <div className="rounded-xl border border-[#EDE5D8] bg-[#F5F2EB] p-10 text-center">
+              <p className="font-serif text-[22px] text-[#2B1B12]">
+                Your cart is empty
+              </p>
+              <p className="mt-2 font-sans text-[14px] text-[#9A8070]">
+                Discover handcrafted treasures waiting to become part of your
+                story.
+              </p>
+              <Link
+                href="/"
+                className="mt-6 inline-block font-sans text-[12px] uppercase tracking-[0.12em] text-[#6B5344] underline underline-offset-4"
+              >
+                Continue Shopping
+              </Link>
+            </div>
+          ) : (
+            items.map((item) => (
+              <CartItemCard
+                key={item.id}
+                item={item}
+                onUpdateQuantity={updateQuantity}
+                onRemove={removeItem}
+              />
+            ))
+          )}
+
+          {items.length > 0 && (
+            <>
+              <div className="rounded-xl border border-[#EDE5D8] bg-[#F5F2EB] p-6 sm:p-7">
+                <h2 className="font-serif text-[22px] font-normal text-[#2B1B12]">
+                  Add a Little Extra Love
+                </h2>
+                <p className="mt-2 font-sans text-[13px] leading-relaxed text-[#9A8070]">
+                  Your tip goes directly to the artisan community supporting
+                  their craft.
+                </p>
+                <div className="mt-5 flex flex-wrap gap-3">
+                  {tipOptions.map((amount) => (
+                    <button
+                      key={amount}
+                      type="button"
+                      onClick={() => setSelectedTip(amount)}
+                      className={cn(
+                        "rounded-lg border px-5 py-2.5 font-sans text-[13px] transition-all",
+                        selectedTip === amount
+                          ? "border-[#2B1B12] bg-white text-[#2B1B12]"
+                          : "border-[#EDE5D8] bg-white/60 text-[#6B5344] hover:border-[#C4A882]",
+                      )}
+                    >
+                      + {formatCurrency(amount)}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              <div className="pt-2">
+                <p className="font-sans text-[12px] text-[#6B5344]">
+                  Have a promo code?
+                </p>
+                <div className="mt-2.5 flex items-center gap-4">
+                  <input
+                    type="text"
+                    value={promoCode}
+                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                    placeholder="ENTER CODE HERE"
+                    className="h-11 flex-1 rounded-lg border border-[#EDE5D8] bg-white px-4 font-sans text-[12px] uppercase tracking-[0.08em] text-[#2B1B12] placeholder:text-[#C4A882]/70 outline-none focus:border-[#C4A882] focus:ring-1 focus:ring-[#C4A882]/30"
+                  />
+                  <button
+                    type="button"
+                    className="shrink-0 font-sans text-[12px] font-medium uppercase tracking-[0.12em] text-[#6B5344] transition-colors hover:text-[#2B1B12]"
+                  >
+                    Apply
+                  </button>
+                </div>
+              </div>
+            </>
+          )}
+        </div>
+
+        <aside className="lg:sticky lg:top-8">
+          <div className="rounded-xl border border-[#D4C4B0] bg-[#E8DFD0] p-6 sm:p-7">
+            <h2 className="font-serif text-[24px] font-normal text-[#2B1B12]">
+              Order Summary
+            </h2>
+
+            <div className="mt-6 space-y-3.5">
+              <div className="flex items-center justify-between font-sans text-[13px]">
+                <span className="text-[#6B5344]">Subtotal</span>
+                <span className="text-[#2B1B12]">{formatCurrency(subtotal)}</span>
+              </div>
+              <div className="flex items-center justify-between font-sans text-[13px]">
+                <span className="text-[#6B5344]">Artisan Tip</span>
+                <span className="text-[#2B1B12]">
+                  {formatCurrency(selectedTip)}
+                </span>
+              </div>
+              <div className="flex items-center justify-between font-sans text-[13px]">
+                <span className="text-[#6B5344]">Shipping</span>
+                <span className="text-[#2B1B12]">Complimentary</span>
+              </div>
+            </div>
+
+            <div className="my-5 border-t border-[#D4C4B0]" />
+
+            <div className="flex items-end justify-between">
+              <span className="font-sans text-[14px] text-[#6B5344]">Total</span>
+              <div className="text-right">
+                <p className="font-serif text-[28px] leading-none text-[#2B1B12]">
+                  {formatCurrency(total)}
+                </p>
+                <p className="mt-1 font-sans text-[11px] text-[#9A8070]">
+                  Includes GST
+                </p>
+              </div>
+            </div>
+
+            <label className="mt-6 flex cursor-pointer items-center gap-2.5">
+              <Checkbox
+                checked={giftMessage}
+                onCheckedChange={(checked) => setGiftMessage(checked === true)}
+                className="border-[#C4A882] data-[state=checked]:border-[#2B1B12] data-[state=checked]:bg-[#2B1B12]"
+              />
+              <span className="font-sans text-[13px] text-[#6B5344]">
+                Add a gift message
+              </span>
+            </label>
+
+            <Link
+              href="/checkout"
+              className="mt-6 flex h-12 w-full items-center justify-center rounded-xl bg-[#2B1B12] font-sans text-[12px] font-medium uppercase tracking-[0.12em] text-white transition-colors hover:bg-[#3D2B21]"
+            >
+              Proceed to Checkout
+            </Link>
+
+            <Link
+              href="/"
+              className="mt-4 block text-center font-sans text-[12px] uppercase tracking-[0.12em] text-[#6B5344] underline underline-offset-4 transition-colors hover:text-[#2B1B12]"
+            >
+              Continue Shopping
+            </Link>
+
+            <div className="mt-6 flex items-center justify-center gap-1.5">
+              <Lock className="h-3.5 w-3.5 text-[#9A8070]" strokeWidth={1.5} />
+              <span className="font-sans text-[11px] text-[#9A8070]">
+                Secure Checkout
+              </span>
+            </div>
+          </div>
+        </aside>
+      </div>
+    </div>
+  )
+}
