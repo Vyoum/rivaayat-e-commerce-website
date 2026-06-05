@@ -49,12 +49,12 @@ export function RecentOrders() {
         <h3 className="font-serif text-[18px] font-semibold text-[#2D1E17]">
           Recent Orders
         </h3>
-        <button
-          type="button"
+        <a
+          href="/admin/commerce/orders"
           className="text-[12px] font-medium text-[#6B5344] transition-colors hover:text-[#2D1E17]"
         >
           View All
-        </button>
+        </a>
       </div>
 
       <div className="mt-4 overflow-x-auto">

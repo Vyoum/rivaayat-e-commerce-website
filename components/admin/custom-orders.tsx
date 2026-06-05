@@ -1,3 +1,5 @@
+import Link from "next/link"
+
 function WhatsAppIcon() {
   return (
     <svg viewBox="0 0 24 24" className="size-4" fill="#25D366">
@@ -82,12 +84,12 @@ export function CustomOrders() {
         ))}
       </div>
 
-      <button
-        type="button"
-        className="mt-4 w-full text-center text-[12px] font-medium text-[#6B5344] transition-colors hover:text-[#2D1E17]"
+      <Link
+        href="/admin/commerce/custom-orders"
+        className="mt-4 block w-full text-center text-[12px] font-medium text-[#6B5344] transition-colors hover:text-[#2D1E17]"
       >
         View all 7 requests
-      </button>
+      </Link>
     </div>
   )
 }

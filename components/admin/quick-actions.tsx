@@ -1,10 +1,11 @@
+import Link from "next/link"
 import { Plus, UserPlus, Ruler, Tag } from "lucide-react"
 
 const actions = [
-  { label: "Add Product", icon: Plus },
-  { label: "Add Artisan", icon: UserPlus },
-  { label: "Custom Orders", icon: Ruler },
-  { label: "Create Promo", icon: Tag },
+  { label: "Add Product", icon: Plus, href: "/admin/store/products/new" },
+  { label: "Add Artisan", icon: UserPlus, href: "/admin/community/artisans" },
+  { label: "Custom Orders", icon: Ruler, href: "/admin/commerce/custom-orders" },
+  { label: "Create Promo", icon: Tag, href: "/admin" },
 ]
 
 export function QuickActions() {
@@ -15,9 +16,9 @@ export function QuickActions() {
       </h3>
       <div className="mt-4 grid grid-cols-4 gap-4">
         {actions.map((action) => (
-          <button
+          <Link
             key={action.label}
-            type="button"
+            href={action.href}
             className="flex flex-col items-center justify-center gap-2.5 rounded-xl bg-[#E8D8C3] px-4 py-6 transition-colors hover:bg-[#DFD0B8]"
           >
             <action.icon
@@ -27,7 +28,7 @@ export function QuickActions() {
             <span className="text-[13px] font-medium text-[#2D1E17]">
               {action.label}
             </span>
-          </button>
+          </Link>
         ))}
       </div>
     </div>

@@ -1,25 +1,16 @@
 "use client"
 
-import {
-  LayoutGrid,
-  ShoppingCart,
-  Users,
-  FileText,
-  Store,
-} from "lucide-react"
+import Link from "next/link"
+import { usePathname } from "next/navigation"
+import { Settings, HelpCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-const navItems = [
-  { label: "Overview", icon: LayoutGrid, active: true },
-  { label: "Commerce", icon: ShoppingCart, active: false },
-  { label: "Community", icon: Users, active: false },
-  { label: "Content", icon: FileText, active: false },
-  { label: "Store", icon: Store, active: false },
-]
+import { adminNavItems, isAdminNavActive } from "./nav-config"
 
 export function AdminSidebar() {
+  const pathname = usePathname()
+
   return (
-    <aside className="fixed left-0 top-0 z-30 flex h-screen w-[220px] flex-col bg-[#2D1E17]">
+    <aside className="fixed top-0 left-0 z-30 flex h-screen w-[220px] flex-col bg-[#2D1E17]">
       <div className="px-5 pt-7 pb-6">
         <p className="text-[11px] font-medium tracking-[0.15em] text-[#6B5344] uppercase">
           House of Indika
@@ -30,31 +21,56 @@ export function AdminSidebar() {
       </div>
 
       <nav className="flex-1 space-y-1 px-3">
-        {navItems.map((item) => (
-          <button
-            key={item.label}
-            type="button"
-            className={cn(
-              "relative flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-left text-[13px] font-medium transition-colors",
-              item.active
-                ? "bg-[#3D2B21] text-white"
-                : "text-[#9A8070] hover:bg-[#3D2B21]/50 hover:text-[#C4A882]"
-            )}
-          >
-            {item.active && (
-              <span className="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[#C4A882]" />
-            )}
-            <item.icon
+        {adminNavItems.map((item) => {
+          const active = isAdminNavActive(item, pathname)
+          return (
+            <Link
+              key={item.label}
+              href={item.href}
               className={cn(
-                "size-[18px] shrink-0",
-                item.active ? "text-white" : "text-[#7A6555]"
+                "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-colors",
+                active
+                  ? "bg-[#3D2B21] text-white"
+                  : "text-[#9A8070] hover:bg-[#3D2B21]/50 hover:text-[#C4A882]"
               )}
-              strokeWidth={1.75}
-            />
-            {item.label}
-          </button>
-        ))}
+            >
+              {active && (
+                <span className="absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-r-full bg-[#C4A882]" />
+              )}
+              <item.icon
+                className={cn(
+                  "size-[18px] shrink-0",
+                  active ? "text-white" : "text-[#7A6555]"
+                )}
+                strokeWidth={1.75}
+              />
+              {item.label}
+            </Link>
+          )
+        })}
       </nav>
+
+      <div className="space-y-0.5 border-t border-[#3D2B21] px-3 py-4">
+        <Link
+          href="/admin/settings"
+          className={cn(
+            "flex items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium transition-colors",
+            pathname === "/admin/settings"
+              ? "bg-[#3D2B21] text-white"
+              : "text-[#9A8070] hover:bg-[#3D2B21]/50 hover:text-[#C4A882]"
+          )}
+        >
+          <Settings className="size-[17px]" strokeWidth={1.75} />
+          Settings
+        </Link>
+        <button
+          type="button"
+          className="flex w-full items-center gap-3 rounded-xl px-3 py-2.5 text-[13px] font-medium text-[#9A8070] transition-colors hover:bg-[#3D2B21]/50 hover:text-[#C4A882]"
+        >
+          <HelpCircle className="size-[17px]" strokeWidth={1.75} />
+          Support
+        </button>
+      </div>
 
       <div className="border-t border-[#3D2B21] px-4 py-5">
         <div className="flex items-center gap-3">
