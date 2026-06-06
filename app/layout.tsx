@@ -1,12 +1,13 @@
 import type React from "react"
 import type { Metadata } from "next"
-import { Cormorant_Garamond, DM_Sans } from "next/font/google"
+import { Cormorant_Garamond, DM_Sans, Playfair_Display } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import "./globals.css"
 
 const cormorant = Cormorant_Garamond({
   subsets: ["latin"],
   weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
   variable: "--font-serif",
 })
 
@@ -16,11 +17,17 @@ const dmSans = DM_Sans({
   variable: "--font-sans",
 })
 
+const playfair = Playfair_Display({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  variable: "--font-display",
+})
+
 export const metadata: Metadata = {
-  title: "RIVAAYAT — Stories Crafted by Heart",
+  title: "House of Indika — Stories Crafted by Hand",
   description:
-    "Discover handcrafted treasures from Indian NGOs. Every purchase nurtures a life, preserves a tradition, and weaves a story of hope.",
-    generator: 'v0.app'
+    "Discover timeless handcrafted treasures from rural artisans across India. Each purchase tells a story.",
 }
 
 export default function RootLayout({
@@ -30,7 +37,9 @@ export default function RootLayout({
 }>) {
   return (
     <html lang="en">
-      <body className={`${cormorant.variable} ${dmSans.variable} font-serif antialiased`}>
+      <body
+        className={`${cormorant.variable} ${dmSans.variable} ${playfair.variable} font-serif antialiased`}
+      >
         {children}
         <Analytics />
       </body>

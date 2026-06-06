@@ -1,23 +1,24 @@
-import { Header } from "@/components/header"
-import { HeroSection } from "@/components/hero-section"
-import { StorySection } from "@/components/story-section"
-import { ProductsSection } from "@/components/products-section"
-import { ArtisanStories } from "@/components/artisan-stories"
-import { TestimonialsSection } from "@/components/testimonials-section"
-import { NewsletterSection } from "@/components/newsletter-section"
-import { Footer } from "@/components/footer"
+import { LandingHeader } from "@/components/landing/landing-header"
+import { LandingHero } from "@/components/landing/landing-hero"
+import { LandingStory } from "@/components/landing/landing-story"
+import { LandingCategories } from "@/components/landing/landing-categories"
+import { LandingFooter } from "@/components/landing/landing-footer"
+import { LandingTextureBg } from "@/components/landing/landing-texture-bg"
+import { getActiveHeroSlides } from "@/lib/hero-slides"
 
-export default function Home() {
+export default async function Home() {
+  const heroSlides = await getActiveHeroSlides()
+
   return (
-    <main className="min-h-screen bg-background overflow-x-hidden">
-      <Header />
-      <HeroSection />
-      <StorySection />
-      <ProductsSection />
-      <ArtisanStories />
-      <TestimonialsSection />
-      <NewsletterSection />
-      <Footer />
+    <main className="landing-root min-h-screen overflow-x-hidden bg-[#ede0d0]">
+      <LandingHeader />
+      <LandingHero slides={heroSlides} />
+      <div className="landing-texture-wrap">
+        <LandingTextureBg />
+        <LandingStory />
+      </div>
+      <LandingCategories />
+      <LandingFooter />
     </main>
   )
 }
