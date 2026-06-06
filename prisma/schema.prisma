@@ -1,0 +1,152 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ─── Enums ────────────────────────────────────────────────────────────────────
+
+enum OrderStatus {
+  pending
+  confirmed
+  processing
+  shipped
+  delivered
+  cancelled
+}
+
+enum PaymentStatus {
+  pending
+  paid
+  failed
+  refunded
+}
+
+enum Category {
+  jewellery
+  clothing
+  decor
+  custom_food
+}
+
+// ─── Models ───────────────────────────────────────────────────────────────────
+
+model User {
+  id           String        @id @default(uuid())
+  name         String
+  email        String        @unique
+  phone        String?
+  avatarUrl    String?       @map("avatar_url")
+  patronSince  DateTime      @default(now()) @map("patron_since")
+  totalTips    Decimal       @default(0) @db.Decimal(10, 2) @map("total_tips")
+  createdAt    DateTime      @default(now()) @map("created_at")
+  updatedAt    DateTime      @updatedAt @map("updated_at")
+
+  orders       Order[]
+  wishlist     Wishlist[]
+  customOrders CustomOrder[]
+
+  @@map("users")
+}
+
+model Artisan {
+  id          String        @id @default(uuid())
+  name        String
+  location    String
+  bio         String?
+  specialty   String?
+  avatarUrl   String?       @map("avatar_url")
+  createdAt   DateTime      @default(now()) @map("created_at")
+
+  products     Product[]
+  customOrders CustomOrder[]
+
+  @@map("artisans")
+}
+
+model Product {
+  id          String     @id @default(uuid())
+  name        String
+  slug        String     @unique
+  description String?
+  category    Category
+  price       Decimal    @db.Decimal(10, 2)
+  artisanId   String?    @map("artisan_id")
+  imageUrls   String[]   @map("image_urls")
+  inStock     Boolean    @default(true) @map("in_stock")
+  handcrafted Boolean    @default(true)
+  createdAt   DateTime   @default(now()) @map("created_at")
+  updatedAt   DateTime   @updatedAt @map("updated_at")
+
+  artisan    Artisan?    @relation(fields: [artisanId], references: [id])
+  orderItems OrderItem[]
+  wishlist   Wishlist[]
+
+  @@map("products")
+}
+
+model Order {
+  id                String        @id @default(uuid())
+  userId            String?       @map("user_id")
+  status            OrderStatus   @default(pending)
+  paymentStatus     PaymentStatus @default(pending) @map("payment_status")
+  razorpayOrderId   String?       @map("razorpay_order_id")
+  razorpayPaymentId String?       @map("razorpay_payment_id")
+  subtotal          Decimal       @db.Decimal(10, 2)
+  artisanTip        Decimal       @default(0) @db.Decimal(10, 2) @map("artisan_tip")
+  total             Decimal       @db.Decimal(10, 2)
+  shippingAddress   String?       @map("shipping_address")
+  giftMessage       String?       @map("gift_message")
+  createdAt         DateTime      @default(now()) @map("created_at")
+  updatedAt         DateTime      @updatedAt @map("updated_at")
+
+  user       User?       @relation(fields: [userId], references: [id])
+  items      OrderItem[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String   @id @default(uuid())
+  orderId     String   @map("order_id")
+  productId   String?  @map("product_id")
+  productName String   @map("product_name")
+  variant     String?
+  quantity    Int
+  unitPrice   Decimal  @db.Decimal(10, 2) @map("unit_price")
+
+  order   Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product? @relation(fields: [productId], references: [id])
+
+  @@map("order_items")
+}
+
+model Wishlist {
+  id        String   @id @default(uuid())
+  userId    String   @map("user_id")
+  productId String   @map("product_id")
+  addedAt   DateTime @default(now()) @map("added_at")
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@map("wishlist")
+}
+
+model CustomOrder {
+  id                String      @id @default(uuid())
+  userId            String?     @map("user_id")
+  artisanId         String?     @map("artisan_id")
+  description       String
+  status            OrderStatus @default(pending)
+  estimatedDelivery String?     @map("estimated_delivery")
+  createdAt         DateTime    @default(now()) @map("created_at")
+  updatedAt         DateTime    @updatedAt @map("updated_at")
+
+  user    User?    @relation(fields: [userId], references: [id])
+  artisan Artisan? @relation(fields: [artisanId], references: [id])
+
+  @@map("custom_orders")
+}
