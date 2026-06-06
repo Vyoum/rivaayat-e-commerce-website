@@ -1,10 +1,28 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useMemo, useState, useCallback } from "react"
 import Link from "next/link"
-import { Lock, Minus, Plus, Trash2 } from "lucide-react"
+import { Lock, Minus, Plus, Trash2, CheckCircle, XCircle, Loader2 } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { cn } from "@/lib/utils"
+
+declare global {
+  interface Window {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    Razorpay: any
+  }
+}
+
+function loadRazorpayScript(): Promise<boolean> {
+  return new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true)
+    const script = document.createElement("script")
+    script.src = "https://checkout.razorpay.com/v1/checkout.js"
+    script.onload = () => resolve(true)
+    script.onerror = () => resolve(false)
+    document.body.appendChild(script)
+  })
+}
 
 type CartItem = {
   id: string
@@ -161,11 +179,15 @@ function CartItemCard({
   )
 }
 
+type PaymentState = "idle" | "loading" | "success" | "error"
+
 export function CartContent() {
   const [items, setItems] = useState<CartItem[]>(initialItems)
   const [selectedTip, setSelectedTip] = useState<number>(100)
   const [promoCode, setPromoCode] = useState("")
   const [giftMessage, setGiftMessage] = useState(false)
+  const [paymentState, setPaymentState] = useState<PaymentState>("idle")
+  const [paymentMessage, setPaymentMessage] = useState("")
 
   const subtotal = useMemo(
     () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
@@ -184,6 +206,74 @@ export function CartContent() {
   const removeItem = (id: string) => {
     setItems((prev) => prev.filter((item) => item.id !== id))
   }
+
+  const handleRazorpayCheckout = useCallback(async () => {
+    setPaymentState("loading")
+    setPaymentMessage("")
+
+    const loaded = await loadRazorpayScript()
+    if (!loaded) {
+      setPaymentState("error")
+      setPaymentMessage("Could not load payment gateway. Please try again.")
+      return
+    }
+
+    try {
+      const res = await fetch("/api/razorpay/create-order", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ amount: total, currency: "INR" }),
+      })
+      const order = await res.json()
+      if (!res.ok) throw new Error(order.error ?? "Order creation failed.")
+
+      const options = {
+        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+        amount: order.amount,
+        currency: order.currency,
+        name: "House of Indika",
+        description: "Handcrafted treasures",
+        order_id: order.id,
+        handler: async (response: {
+          razorpay_order_id: string
+          razorpay_payment_id: string
+          razorpay_signature: string
+        }) => {
+          const verify = await fetch("/api/razorpay/verify-payment", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(response),
+          })
+          const result = await verify.json()
+          if (result.verified) {
+            setPaymentState("success")
+            setPaymentMessage(`Payment confirmed! ID: ${result.paymentId}`)
+            setItems([])
+          } else {
+            setPaymentState("error")
+            setPaymentMessage("Payment verification failed. Please contact support.")
+          }
+        },
+        prefill: { name: "Rahul Sharma", email: "rahul.sharma@email.com" },
+        theme: { color: "#5C4332" },
+        modal: {
+          ondismiss: () => {
+            setPaymentState("idle")
+          },
+        },
+      }
+
+      const rzp = new window.Razorpay(options)
+      rzp.on("payment.failed", (resp: { error: { description: string } }) => {
+        setPaymentState("error")
+        setPaymentMessage(resp.error.description ?? "Payment failed.")
+      })
+      rzp.open()
+    } catch (err) {
+      setPaymentState("error")
+      setPaymentMessage(err instanceof Error ? err.message : "Something went wrong.")
+    }
+  }, [total])
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12 sm:py-16">
@@ -329,12 +419,35 @@ export function CartContent() {
               </span>
             </label>
 
-            <Link
-              href="/checkout"
-              className="mt-6 flex h-12 w-full items-center justify-center rounded-xl bg-[#2B1B12] font-sans text-[12px] font-medium uppercase tracking-[0.12em] text-white transition-colors hover:bg-[#3D2B21]"
+            {/* Payment status feedback */}
+            {paymentState === "success" && (
+              <div className="mt-5 flex items-start gap-3 rounded-xl border border-[#A8D5B5] bg-[#EAF4EC] p-4">
+                <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-[#3D7A4F]" />
+                <p className="font-sans text-[13px] text-[#3D7A4F]">{paymentMessage}</p>
+              </div>
+            )}
+            {paymentState === "error" && (
+              <div className="mt-5 flex items-start gap-3 rounded-xl border border-[#F5C6C6] bg-[#FEF2F2] p-4">
+                <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-[#B91C1C]" />
+                <p className="font-sans text-[13px] text-[#B91C1C]">{paymentMessage}</p>
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={handleRazorpayCheckout}
+              disabled={paymentState === "loading" || items.length === 0}
+              className="mt-6 flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-[#2B1B12] font-sans text-[12px] font-medium uppercase tracking-[0.12em] text-white transition-colors hover:bg-[#3D2B21] disabled:cursor-not-allowed disabled:opacity-60"
             >
-              Proceed to Checkout
-            </Link>
+              {paymentState === "loading" ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                  Processing…
+                </>
+              ) : (
+                "Pay with Razorpay"
+              )}
+            </button>
 
             <Link
               href="/"
@@ -346,7 +459,7 @@ export function CartContent() {
             <div className="mt-6 flex items-center justify-center gap-1.5">
               <Lock className="h-3.5 w-3.5 text-[#9A8070]" strokeWidth={1.5} />
               <span className="font-sans text-[11px] text-[#9A8070]">
-                Secure Checkout
+                Secured by Razorpay
               </span>
             </div>
           </div>
