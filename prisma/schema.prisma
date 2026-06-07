@@ -78,6 +78,7 @@ model Product {
   slug          String     @unique
   description   String?
   story         String?
+  storyImageUrl String?    @map("story_image_url")
   materialsCare String?    @map("materials_care")
   category      Category
   subcategory   String?

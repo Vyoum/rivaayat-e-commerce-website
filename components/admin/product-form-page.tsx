@@ -36,6 +36,7 @@ type ProductFormPageProps = {
 export function ProductFormPage({ product }: ProductFormPageProps) {
   const router = useRouter()
   const fileRef = useRef<HTMLInputElement>(null)
+  const storyImageFileRef = useRef<HTMLInputElement>(null)
   const isEditing = Boolean(product)
 
   const [name, setName] = useState(product?.name ?? "")
@@ -47,6 +48,7 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
   const [location, setLocation] = useState(product?.location ?? "")
   const [description, setDescription] = useState(product?.description ?? "")
   const [story, setStory] = useState(product?.story ?? "")
+  const [storyImageUrl, setStoryImageUrl] = useState(product?.storyImageUrl ?? "")
   const [materialsCare, setMaterialsCare] = useState(product?.materialsCare ?? "")
   const [price, setPrice] = useState(product ? String(product.price) : "")
   const [badge, setBadge] = useState(product?.badge ?? "HANDCRAFTED")
@@ -55,18 +57,21 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
   const [handcrafted, setHandcrafted] = useState(product?.handcrafted ?? true)
   const [inStock, setInStock] = useState(product?.inStock ?? true)
   const [uploading, setUploading] = useState(false)
+  const [uploadingStoryImage, setUploadingStoryImage] = useState(false)
   const [saving, setSaving] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const subcategories = categoryCatalog[categoryRoute]?.subcategories ?? []
 
-  async function handleUpload(file: File) {
-    if (imageUrls.length >= 5) {
-      toast.error("Maximum 5 images allowed")
+  async function handleUpload(file: File, target: "gallery" | "story" = "gallery") {
+    if (target === "gallery" && imageUrls.length >= 5) {
+      toast.error("Maximum 5 gallery images allowed")
       return
     }
 
-    setUploading(true)
+    if (target === "gallery") setUploading(true)
+    else setUploadingStoryImage(true)
+
     setError(null)
     try {
       const formData = new FormData()
@@ -74,13 +79,19 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
       const res = await fetch("/api/admin/products/upload", { method: "POST", body: formData })
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Upload failed")
-      setImageUrls((prev) => [...prev, data.imageUrl])
+
+      if (target === "gallery") {
+        setImageUrls((prev) => [...prev, data.imageUrl])
+      } else {
+        setStoryImageUrl(data.imageUrl)
+      }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Upload failed"
       setError(message)
       toast.error(message)
     } finally {
-      setUploading(false)
+      if (target === "gallery") setUploading(false)
+      else setUploadingStoryImage(false)
     }
   }
 
@@ -131,6 +142,7 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
       location: location.trim() || undefined,
       description: description.trim() || undefined,
       story: story.trim() || undefined,
+      storyImageUrl: storyImageUrl.trim() || null,
       materialsCare: materialsCare.trim() || undefined,
       price: parsedPrice,
       badge: badge || undefined,
@@ -351,7 +363,8 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
                       Long Description
                     </label>
                     <p className="mb-2 text-[11px] leading-relaxed text-[#9A8070]">
-                      Shown below the product on the storefront, alongside a product photo.
+                      Shown below the product on the storefront, alongside the long description
+                      photo (separate from gallery images).
                     </p>
                     <textarea
                       rows={6}
@@ -360,6 +373,53 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
                       placeholder="Tell the full story of this piece — materials, process, meaning..."
                       className="w-full rounded-lg border border-[#EDE5D8] px-3 py-2 text-[13px] leading-relaxed outline-none"
                     />
+                  </div>
+                  <div>
+                    <label className="mb-1.5 block text-[12px] font-medium text-[#6B5344]">
+                      Long Description Photo
+                    </label>
+                    <p className="mb-2 text-[11px] leading-relaxed text-[#9A8070]">
+                      Displayed next to the long description on the product page. Not part of the
+                      5-image gallery above.
+                    </p>
+                    <input
+                      ref={storyImageFileRef}
+                      type="file"
+                      accept="image/jpeg,image/png,image/webp,image/gif"
+                      className="hidden"
+                      onChange={(e) => {
+                        const file = e.target.files?.[0]
+                        if (file) void handleUpload(file, "story")
+                        e.target.value = ""
+                      }}
+                    />
+                    {storyImageUrl ? (
+                      <div className="relative max-w-xs overflow-hidden rounded-lg">
+                        <img src={storyImageUrl} alt="" className="aspect-[4/3] w-full object-cover" />
+                        <button
+                          type="button"
+                          onClick={() => setStoryImageUrl("")}
+                          className="absolute top-2 right-2 rounded bg-white/90 p-1.5 text-[#6B5344] hover:bg-white"
+                          aria-label="Remove long description photo"
+                        >
+                          <Trash2 className="size-3.5" />
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        disabled={uploadingStoryImage}
+                        onClick={() => storyImageFileRef.current?.click()}
+                        className="flex w-full max-w-xs flex-col items-center justify-center rounded-xl border-2 border-dashed border-[#D4C4A8] py-6 disabled:opacity-50"
+                      >
+                        {uploadingStoryImage ? (
+                          <Loader2 className="mb-2 size-6 animate-spin text-[#9A8070]" />
+                        ) : (
+                          <Upload className="mb-2 size-6 text-[#9A8070]" />
+                        )}
+                        <p className="text-center text-[12px] text-[#6B5344]">Upload story photo</p>
+                      </button>
+                    )}
                   </div>
                   <div>
                     <label className="mb-1.5 block text-[12px] font-medium text-[#6B5344]">
@@ -401,7 +461,12 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
             <div className="space-y-5">
               <section className="rounded-xl border border-[#EDE5D8] bg-white p-5">
                 <div className="mb-3 flex items-center justify-between">
-                  <h2 className="text-[14px] font-semibold text-[#2B1B12]">Media</h2>
+                  <div>
+                    <h2 className="text-[14px] font-semibold text-[#2B1B12]">Product Gallery</h2>
+                    <p className="mt-1 text-[11px] text-[#9A8070]">
+                      Up to 5 images for the product page carousel only.
+                    </p>
+                  </div>
                   <span className="text-[12px] text-[#9A8070]">{imageUrls.length}/5</span>
                 </div>
                 <input
@@ -411,7 +476,7 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
                   className="hidden"
                   onChange={(e) => {
                     const file = e.target.files?.[0]
-                    if (file) void handleUpload(file)
+                    if (file) void handleUpload(file, "gallery")
                     e.target.value = ""
                   }}
                 />

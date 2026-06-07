@@ -20,6 +20,7 @@ const productSelect = {
   slug: true,
   description: true,
   story: true,
+  storyImageUrl: true,
   materialsCare: true,
   category: true,
   subcategory: true,
@@ -42,6 +43,7 @@ function mapDbProductToAdmin(product: {
   slug: string
   description: string | null
   story: string | null
+  storyImageUrl: string | null
   materialsCare: string | null
   category: Category
   subcategory: string | null
@@ -63,6 +65,7 @@ function mapDbProductToAdmin(product: {
     slug: product.slug,
     description: product.description,
     story: product.story,
+    storyImageUrl: product.storyImageUrl,
     materialsCare: product.materialsCare,
     category: product.category,
     categoryLabel: CATEGORY_LABELS[product.category],
@@ -192,6 +195,7 @@ export async function createAdminProduct(input: CreateProductInput) {
       slug,
       description: input.description?.trim() || null,
       story: input.story?.trim() || null,
+      storyImageUrl: input.storyImageUrl?.trim() || null,
       materialsCare: input.materialsCare?.trim() || null,
       category: input.category,
       subcategory: input.subcategory?.trim() || null,
@@ -235,6 +239,9 @@ export async function updateAdminProduct(id: string, input: UpdateProductInput) 
       slug,
       ...(input.description !== undefined ? { description: input.description.trim() || null } : {}),
       ...(input.story !== undefined ? { story: input.story.trim() || null } : {}),
+      ...(input.storyImageUrl !== undefined
+        ? { storyImageUrl: input.storyImageUrl?.trim() || null }
+        : {}),
       ...(input.materialsCare !== undefined
         ? { materialsCare: input.materialsCare.trim() || null }
         : {}),

@@ -16,6 +16,7 @@ const productSelect = {
   slug: true,
   description: true,
   story: true,
+  storyImageUrl: true,
   materialsCare: true,
   category: true,
   subcategory: true,
@@ -48,6 +49,7 @@ function mapCatalogProductToDetail(
     price: product.price,
     description: `${product.name} — handcrafted by ${product.artisan} in ${product.location}.`,
     story: `This ${product.name.toLowerCase()} is shaped slowly by ${product.artisan} in ${product.location}, using techniques passed down through generations. Each detail is intentional — from the raw materials chosen at source to the final polish that gives the piece its quiet glow.\n\nWhen you bring it home, you are not just buying an object. You are carrying forward a lineage of skill, patience, and pride in handmade work.`,
+    storyImageUrl: product.image,
     materialsCare: null,
     category,
     categoryRoute,
@@ -73,6 +75,7 @@ function mapDbProductToDetail(product: {
   slug: string
   description: string | null
   story: string | null
+  storyImageUrl: string | null
   materialsCare: string | null
   category: Category
   subcategory: string | null
@@ -95,6 +98,7 @@ function mapDbProductToDetail(product: {
     price: Number(product.price),
     description: product.description,
     story: product.story,
+    storyImageUrl: product.storyImageUrl,
     materialsCare: product.materialsCare,
     category: product.category,
     categoryRoute,

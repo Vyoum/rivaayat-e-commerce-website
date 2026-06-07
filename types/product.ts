@@ -6,6 +6,7 @@ export type AdminProduct = {
   slug: string
   description: string | null
   story: string | null
+  storyImageUrl: string | null
   materialsCare: string | null
   category: Category
   categoryLabel: string
@@ -31,6 +32,7 @@ export type StoreProductDetail = {
   price: number
   description: string | null
   story: string | null
+  storyImageUrl: string | null
   materialsCare: string | null
   category: Category
   categoryRoute: string
@@ -50,6 +52,7 @@ export type CreateProductInput = {
   slug?: string
   description?: string
   story?: string
+  storyImageUrl?: string | null
   materialsCare?: string
   category: Category
   subcategory?: string
