@@ -372,3 +372,13 @@ export const categoryCatalog: Record<string, CategoryConfig> = {
 export function getCategoryConfig(slug: string) {
   return categoryCatalog[slug] ?? null
 }
+
+export function getProductBySlug(slug: string) {
+  for (const config of Object.values(categoryCatalog)) {
+    const product = config.products.find((entry) => entry.slug === slug)
+    if (product) {
+      return { product, category: config }
+    }
+  }
+  return null
+}

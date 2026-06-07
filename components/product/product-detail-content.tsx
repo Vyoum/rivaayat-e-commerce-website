@@ -3,32 +3,38 @@
 import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
+import { useRouter } from "next/navigation"
 import {
   ChevronDown,
   ChevronRight,
+  Eye,
   Minus,
   Plus,
-  BookOpen,
-  Leaf,
-  Truck,
+  Sparkles,
   Star,
+  Truck,
 } from "lucide-react"
-import { cn } from "@/lib/utils"
+import { toast } from "sonner"
+
+import { useCart } from "@/components/providers/cart-provider"
+import { useWishlist } from "@/components/providers/wishlist-provider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
+import { getProductBySlug } from "@/lib/category-catalog"
+import { cn } from "@/lib/utils"
 
 const productImages = [
   {
-    src: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=900&h=1100&fit=crop&q=80",
-    alt: "Mandala Crochet Earrings – front view",
+    src: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=900&h=900&fit=crop&q=80",
+    alt: "Mandala Crochet Earrings on stone surface",
   },
   {
-    src: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=900&h=1100&fit=crop&q=80",
-    alt: "Mandala Crochet Earrings – detail view",
+    src: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=900&h=900&fit=crop&q=80",
+    alt: "Mandala Crochet Earrings detail",
   },
   {
-    src: "/close-up-of-hands-stringing-colorful-beads-for-tra.jpg",
-    alt: "Mandala Crochet Earrings – craftsmanship detail",
+    src: "/realistic-indian-woman-crafting-jewelry.jpg",
+    alt: "Artisan wearing Mandala Crochet Earrings",
   },
 ]
 
@@ -42,14 +48,14 @@ const accordionItems = [
   {
     id: "story",
     title: "The Story of This Piece",
-    icon: BookOpen,
+    icon: Eye,
     content:
       "Each pair of Mandala Crochet Earrings begins as a single thread in Asha's workshop in Rajasthan. Inspired by desert mandalas and sun-bleached earth tones, she spends nearly four hours on every pair — looping, knotting, and shaping by hand. No two pieces are ever identical; each carries the quiet rhythm of her craft and the warmth of generations of thread work passed down through her family.",
   },
   {
     id: "materials",
     title: "Materials & Care",
-    icon: Leaf,
+    icon: Sparkles,
     content:
       "Crafted from premium cotton thread, hypoallergenic gold-plated hooks, and natural plant-based dyes. Store in a dry place away from direct sunlight. Gently spot-clean with a damp cloth; avoid submerging in water. With proper care, these earrings will retain their shape and colour for years.",
   },
@@ -90,6 +96,12 @@ function StarRating({ rating }: { rating: number }) {
 }
 
 export function ProductDetailContent() {
+  const router = useRouter()
+  const { addItem } = useCart()
+  const { isLoggedIn, isWishlisted, toggleItem } = useWishlist()
+  const catalogEntry = getProductBySlug("mandala-crochet-earrings")
+  const product = catalogEntry?.product
+
   const [activeImage, setActiveImage] = useState(0)
   const [selectedColor, setSelectedColor] = useState(colorSwatches[0].id)
   const [quantity, setQuantity] = useState(1)
@@ -97,15 +109,35 @@ export function ProductDetailContent() {
   const [openAccordion, setOpenAccordion] = useState<string | null>(null)
 
   const selectedColorName = colorSwatches.find((c) => c.id === selectedColor)?.name ?? ""
+  const wishlisted = product ? isWishlisted(product.id) : false
 
-  const toggleAccordion = (id: string) => {
-    setOpenAccordion((prev) => (prev === id ? null : id))
+  function handleAddToCart() {
+    if (!product) return
+
+    for (let i = 0; i < quantity; i += 1) {
+      addItem(product)
+    }
+    toast.success(`${product.name} added to cart`)
+  }
+
+  function handleToggleWishlist() {
+    if (!product) return
+
+    if (!isLoggedIn) {
+      router.push("/login?next=/products/mandala-crochet-earrings")
+      toast.info("Sign in to save items to your wishlist")
+      return
+    }
+
+    const added = toggleItem(product)
+    toast.success(
+      added ? `${product.name} added to wishlist` : `${product.name} removed from wishlist`,
+    )
   }
 
   return (
     <>
-      {/* Breadcrumbs */}
-      <nav aria-label="Breadcrumb" className="mx-auto max-w-7xl px-6 pt-8 pb-6 lg:px-10">
+      <nav aria-label="Breadcrumb" className="mx-auto max-w-6xl px-6 pt-8 pb-6 lg:px-10">
         <ol className="flex flex-wrap items-center gap-1.5 font-sans text-[12px] text-[#9A8070]">
           {breadcrumbs.map((crumb, index) => (
             <li key={crumb.label} className="flex items-center gap-1.5">
@@ -122,33 +154,31 @@ export function ProductDetailContent() {
         </ol>
       </nav>
 
-      {/* Main Product Section */}
-      <section className="mx-auto max-w-7xl px-6 pb-20 lg:px-10">
-        <div className="grid gap-12 lg:grid-cols-2 lg:gap-16 xl:gap-20">
-          {/* Image Gallery */}
-          <div>
-            <div className="relative aspect-[4/5] overflow-hidden bg-[#EDE8DC]">
+      <section className="mx-auto max-w-6xl px-6 pb-20 lg:px-10">
+        <div className="grid gap-10 lg:grid-cols-[minmax(0,340px)_1fr] lg:gap-14 xl:gap-20">
+          <div className="mx-auto w-full max-w-[340px] lg:mx-0">
+            <div className="relative aspect-square overflow-hidden rounded-[28px] bg-[#EDE8DC] shadow-[0_10px_40px_rgba(61,46,36,0.1)] [&_img]:rounded-[28px]">
               <Image
                 src={productImages[activeImage].src}
                 alt={productImages[activeImage].alt}
                 fill
-                className="object-cover"
+                className="object-cover rounded-[28px]"
                 priority
-                sizes="(max-width: 1024px) 100vw, 50vw"
+                sizes="340px"
               />
-              <span className="absolute top-4 left-4 rounded-sm bg-[#8FA68E]/85 px-3 py-1.5 font-sans text-[10px] font-semibold tracking-[0.14em] text-white uppercase backdrop-blur-sm">
+              <span className="absolute top-4 left-4 rounded-full bg-[#8FA68E]/90 px-3 py-1 font-sans text-[10px] font-semibold tracking-[0.12em] text-white uppercase">
                 Handcrafted
               </span>
             </div>
 
-            <div className="mt-4 flex gap-3">
+            <div className="mt-4 flex justify-center gap-2.5 lg:justify-start">
               {productImages.map((image, index) => (
                 <button
                   key={image.src}
                   type="button"
                   onClick={() => setActiveImage(index)}
                   className={cn(
-                    "relative aspect-square w-[72px] overflow-hidden bg-[#EDE8DC] transition-all sm:w-[80px]",
+                    "relative aspect-square w-[64px] overflow-hidden rounded-[18px] bg-[#EDE8DC] transition-all [&_img]:rounded-[18px]",
                     activeImage === index
                       ? "ring-2 ring-[#3D2E24] ring-offset-2 ring-offset-[#F5F3E9]"
                       : "opacity-70 hover:opacity-100",
@@ -160,21 +190,20 @@ export function ProductDetailContent() {
                     src={image.src}
                     alt={image.alt}
                     fill
-                    className="object-cover"
-                    sizes="80px"
+                    className="object-cover rounded-[18px]"
+                    sizes="64px"
                   />
                 </button>
               ))}
             </div>
           </div>
 
-          {/* Product Info */}
-          <div className="flex flex-col pt-2 lg:pt-4">
-            <p className="font-sans text-[11px] font-medium tracking-[0.2em] text-[#9A8070] uppercase">
+          <div className="flex flex-col lg:pt-2">
+            <p className="font-sans text-[11px] font-medium tracking-[0.22em] text-[#9A8070] uppercase">
               Crochet Jewellery
             </p>
 
-            <h1 className="mt-3 font-serif text-[36px] leading-tight font-normal text-[#3D2E24] md:text-[42px]">
+            <h1 className="mt-3 font-serif text-[34px] leading-[1.15] font-normal text-[#3D2E24] md:text-[40px]">
               Mandala Crochet Earrings
             </h1>
 
@@ -183,36 +212,36 @@ export function ProductDetailContent() {
               <span className="font-sans text-[13px] text-[#9A8070]">4.8 (24 Reviews)</span>
             </div>
 
-            <p className="mt-5 font-serif text-[28px] text-[#3D2E24]">₹650</p>
+            <p className="mt-5 font-serif text-[30px] font-normal text-[#3D2E24]">₹650</p>
 
-            {/* Artisan Card */}
-            <div className="mt-7 flex items-center gap-4 rounded-lg bg-[#EDE8DC]/70 px-5 py-4">
-              <div className="relative size-12 shrink-0 overflow-hidden rounded-full">
-                <Image
-                  src="/elderly-indian-woman-in-traditional-orange-sari-sm.jpg"
-                  alt="Asha, artisan from Rajasthan"
-                  fill
-                  className="object-cover"
-                  sizes="48px"
-                />
+            <div className="mt-7 rounded-2xl bg-[#EDE8DC]/60 px-5 py-4">
+              <div className="flex items-center gap-4">
+                <div className="relative size-12 shrink-0 overflow-hidden rounded-full ring-2 ring-white/80">
+                  <Image
+                    src="/elderly-indian-woman-in-traditional-orange-sari-sm.jpg"
+                    alt="Asha, artisan from Rajasthan"
+                    fill
+                    className="object-cover"
+                    sizes="48px"
+                  />
+                </div>
+                <div className="min-w-0 flex-1">
+                  <p className="font-sans text-[14px] font-semibold text-[#3D2E24]">
+                    By Asha from Rajasthan
+                  </p>
+                  <p className="font-sans text-[13px] text-[#9A8070] italic">
+                    Master of Ombre &amp; Thread Craft
+                  </p>
+                </div>
               </div>
-              <div className="min-w-0 flex-1">
-                <p className="font-sans text-[14px] font-semibold text-[#3D2E24]">
-                  By Asha from Rajasthan
-                </p>
-                <p className="font-sans text-[13px] text-[#9A8070] italic">
-                  Master of Crochet &amp; Thread Craft
-                </p>
-              </div>
+              <Link
+                href="/artisans/devendra-khatri"
+                className="mt-3 inline-block font-sans text-[10px] font-semibold tracking-[0.18em] text-[#846246] uppercase underline underline-offset-4 transition-colors hover:text-[#5C4332]"
+              >
+                View Artisan Profile
+              </Link>
             </div>
-            <Link
-              href="#"
-              className="mt-2 inline-block font-sans text-[10px] font-semibold tracking-[0.16em] text-[#846246] uppercase underline underline-offset-4 transition-colors hover:text-[#5C4332]"
-            >
-              View Artisan Profile
-            </Link>
 
-            {/* Color Selection */}
             <div className="mt-8">
               <p className="font-sans text-[13px] text-[#6B5344]">
                 Colour: <span className="font-medium text-[#3D2E24]">{selectedColorName}</span>
@@ -237,9 +266,8 @@ export function ProductDetailContent() {
               </div>
             </div>
 
-            {/* Quantity & Gift */}
             <div className="mt-8 flex flex-wrap items-center gap-6">
-              <div className="flex items-center border border-[#D9CFC0]">
+              <div className="flex items-center rounded-sm border border-[#D9CFC0] bg-white">
                 <button
                   type="button"
                   onClick={() => setQuantity((q) => Math.max(1, q - 1))}
@@ -268,30 +296,30 @@ export function ProductDetailContent() {
                   onCheckedChange={(checked) => setIsGift(checked === true)}
                   className="border-[#D9CFC0] data-[state=checked]:border-[#846246] data-[state=checked]:bg-[#846246]"
                 />
-                <Label
-                  htmlFor="gift"
-                  className="cursor-pointer font-sans text-[13px] text-[#6B5344]"
-                >
+                <Label htmlFor="gift" className="cursor-pointer font-sans text-[13px] text-[#6B5344]">
                   Gift this piece?
                 </Label>
               </div>
             </div>
 
-            {/* CTA Buttons */}
             <button
               type="button"
-              className="mt-8 w-full bg-[#846246] py-4 font-sans text-[12px] font-semibold tracking-[0.18em] text-white uppercase transition-colors hover:bg-[#6B5344]"
+              onClick={handleAddToCart}
+              className="mt-8 w-full rounded-xl bg-[#5C4332] py-4 font-sans text-[12px] font-semibold tracking-[0.2em] text-white uppercase transition-colors hover:bg-[#4A3528]"
             >
               Add to Cart
             </button>
             <button
               type="button"
-              className="mt-4 w-full py-2 font-sans text-[11px] font-semibold tracking-[0.18em] text-[#846246] uppercase transition-colors hover:text-[#5C4332]"
+              onClick={handleToggleWishlist}
+              className={cn(
+                "mt-4 w-full py-2 font-sans text-[11px] font-semibold tracking-[0.18em] uppercase transition-colors",
+                wishlisted ? "text-[#5C4332]" : "text-[#846246] hover:text-[#5C4332]",
+              )}
             >
-              Add to Wishlist
+              {wishlisted ? "Saved to Wishlist" : "Add to Wishlist"}
             </button>
 
-            {/* Accordions */}
             <div className="mt-10 border-t border-[#E8E0D4]">
               {accordionItems.map((item) => {
                 const Icon = item.icon
@@ -301,7 +329,7 @@ export function ProductDetailContent() {
                   <div key={item.id} className="border-b border-[#E8E0D4]">
                     <button
                       type="button"
-                      onClick={() => toggleAccordion(item.id)}
+                      onClick={() => setOpenAccordion(isOpen ? null : item.id)}
                       className="flex w-full items-center justify-between py-5 text-left"
                       aria-expanded={isOpen}
                     >
@@ -338,23 +366,20 @@ export function ProductDetailContent() {
         </div>
       </section>
 
-      {/* Storytelling Section */}
-      <section className="bg-[#EDE8DC]/50">
-        <div className="mx-auto grid max-w-7xl gap-10 px-6 py-20 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-10 lg:py-24">
+      <section className="bg-[#EDE8DC]/45">
+        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-10 lg:py-24">
           <blockquote className="font-serif text-[22px] leading-[1.65] font-normal text-[#3D2E24] italic md:text-[26px] lg:text-[28px]">
             &ldquo;In every loop of thread, there is a quiet rhythm, a prayer whispered into
-            existence. These earrings are not merely accessories; they are small, woven tapestries
-            of heritage, carrying the warmth of the desert sun and the steady grace of artisan
-            hands.&rdquo;
+            existence.&rdquo;
           </blockquote>
 
-          <div className="relative aspect-[4/3] overflow-hidden bg-[#EDE8DC]">
+          <div className="relative mx-auto aspect-[4/3] w-full max-w-[420px] overflow-hidden rounded-[28px] bg-[#EDE8DC] shadow-[0_10px_40px_rgba(61,46,36,0.1)] lg:mx-0 lg:max-w-none [&_img]:rounded-[28px]">
             <Image
               src="/close-up-of-hands-stringing-colorful-beads-for-tra.jpg"
               alt="Colorful thread spools on a wooden surface"
               fill
-              className="object-cover"
-              sizes="(max-width: 1024px) 100vw, 50vw"
+              className="object-cover rounded-[28px]"
+              sizes="(max-width: 1024px) 420px, 50vw"
             />
           </div>
         </div>

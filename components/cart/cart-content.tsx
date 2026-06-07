@@ -5,9 +5,11 @@ import Link from "next/link"
 import { Lock, Minus, Plus, Trash2, CheckCircle, XCircle, Loader2 } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { useCart } from "@/components/providers/cart-provider"
+import { useAuth } from "@/hooks/use-auth"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
-import { cn } from "@/lib/utils"
 import type { CartItem } from "@/lib/cart"
+import { buildOrderFromCheckout, saveStoredOrder } from "@/lib/orders-storage"
+import { cn } from "@/lib/utils"
 
 declare global {
   interface Window {
@@ -150,6 +152,7 @@ type PaymentState = "idle" | "loading" | "success" | "error"
 
 export function CartContent() {
   const { items, updateQuantity, removeItem, clearCart } = useCart()
+  const { userId } = useAuth()
   const [selectedTip, setSelectedTip] = useState<number>(100)
   const [promoCode, setPromoCode] = useState("")
   const [giftMessage, setGiftMessage] = useState(false)
@@ -198,10 +201,25 @@ export function CartContent() {
           const verify = await fetch("/api/razorpay/verify-payment", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(response),
+            credentials: "include",
+            body: JSON.stringify({
+              ...response,
+              items,
+              subtotal,
+              artisanTip: selectedTip,
+              total,
+            }),
           })
           const result = await verify.json()
           if (result.verified) {
+            const order =
+              result.order ??
+              buildOrderFromCheckout(response.razorpay_order_id, items, total, selectedTip)
+
+            if (userId) {
+              saveStoredOrder(userId, order)
+            }
+
             setPaymentState("success")
             setPaymentMessage(`Payment confirmed! ID: ${result.paymentId}`)
             clearCart()
@@ -229,7 +247,7 @@ export function CartContent() {
       setPaymentState("error")
       setPaymentMessage(err instanceof Error ? err.message : "Something went wrong.")
     }
-  }, [total, clearCart])
+  }, [total, subtotal, selectedTip, items, userId, clearCart])
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12 sm:py-16">

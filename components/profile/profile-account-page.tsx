@@ -1,6 +1,6 @@
 "use client"
 
-import { useCallback, useMemo, useState, type ReactNode } from "react"
+import { useCallback, useEffect, useMemo, useState, type ReactNode } from "react"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
 import Image from "next/image"
@@ -23,9 +23,13 @@ import {
   Sparkles,
 } from "lucide-react"
 import { ProductDetailHeader } from "@/components/product/product-detail-header"
+import { useWishlist } from "@/components/providers/wishlist-provider"
+import { useAuth } from "@/hooks/use-auth"
 import { cn } from "@/lib/utils"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
+import { getStoredOrders, mergeProfileOrders } from "@/lib/orders-storage"
 import { getSupabaseBrowser } from "@/lib/supabase/browser"
+import type { WishlistItem } from "@/lib/wishlist"
 import {
   formatCurrency,
   formatOrderDate,
@@ -51,6 +55,18 @@ type SectionId =
   | "notifications"
   | "help"
   | "our-story"
+
+function mapWishlistToProfile(items: WishlistItem[]): ProfileWishlistItem[] {
+  return items.map((item) => ({
+    id: item.id,
+    productId: item.id,
+    name: item.name,
+    price: item.price,
+    slug: item.slug,
+    image: item.image,
+    addedAt: item.addedAt,
+  }))
+}
 
 function EmptyState({ message }: { message: string }) {
   return (
@@ -358,7 +374,20 @@ function OurStoryPanel() {
 
 export function ProfileAccountPage({ profile }: { profile: ProfileData }) {
   const router = useRouter()
+  const { userId } = useAuth()
+  const { items: wishlistItems } = useWishlist()
+  const [localOrders, setLocalOrders] = useState<ProfileOrder[]>([])
   const [activeSection, setActiveSection] = useState<SectionId>("all-orders")
+
+  useEffect(() => {
+    setLocalOrders(getStoredOrders(userId))
+  }, [userId])
+
+  const wishlist = useMemo(() => mapWishlistToProfile(wishlistItems), [wishlistItems])
+  const orders = useMemo(
+    () => mergeProfileOrders(profile.orders, localOrders),
+    [profile.orders, localOrders],
+  )
 
   const signOut = useCallback(async () => {
     const supabase = getSupabaseBrowser()
@@ -386,7 +415,7 @@ export function ProfileAccountPage({ profile }: { profile: ProfileData }) {
       {
         label: "My Collection",
         items: [
-          { id: "wishlist" as SectionId, label: "Wishlist", icon: Heart, badge: null },
+          { id: "wishlist" as SectionId, label: "Wishlist", icon: Heart, badge: wishlist.length ? String(wishlist.length) : null },
           { id: "recently-viewed" as SectionId, label: "Recently Viewed", icon: Eye, badge: null },
           { id: "browse-history" as SectionId, label: "Browse History", icon: History, badge: null },
         ],
@@ -398,18 +427,18 @@ export function ProfileAccountPage({ profile }: { profile: ProfileData }) {
           { id: "payment" as SectionId, label: "Payment", icon: CreditCard, badge: null },
           { id: "notifications" as SectionId, label: "Notifications", icon: Bell, badge: null },
           { id: "help" as SectionId, label: "Help", icon: HelpCircle, badge: null },
-          { id: "our-story" as SectionId, label: "Our Story", icon: BookOpen, badge: null },
+          { id: "our-story" as SectionId, label: "Artisans", icon: BookOpen, badge: null },
         ],
       },
     ],
-    [profile.stats.customOrders],
+    [profile.stats.customOrders, wishlist.length],
   )
 
   const panels: Record<SectionId, ReactNode> = {
-    "all-orders": <AllOrdersPanel orders={profile.orders} />,
+    "all-orders": <AllOrdersPanel orders={orders} />,
     "custom-orders": <CustomOrdersPanel orders={profile.customOrders} />,
-    "track-shipment": <TrackShipmentPanel orders={profile.orders} />,
-    wishlist: <WishlistPanel items={profile.wishlist} />,
+    "track-shipment": <TrackShipmentPanel orders={orders} />,
+    wishlist: <WishlistPanel items={wishlist} />,
     "recently-viewed": <RecentlyViewedPanel />,
     "browse-history": <BrowseHistoryPanel />,
     addresses: <AddressesPanel phone={profile.user.phone} />,
@@ -461,8 +490,8 @@ export function ProfileAccountPage({ profile }: { profile: ProfileData }) {
 
           <div className="mt-7 grid grid-cols-3 divide-x divide-[#F5F0E8]/15 rounded-xl border border-[#F5F0E8]/15 bg-[#F5F0E8]/08">
             {[
-              { value: String(profile.stats.orders), label: "Orders" },
-              { value: String(profile.stats.wishlist), label: "Wishlist" },
+              { value: String(orders.length), label: "Orders" },
+              { value: String(wishlist.length), label: "Wishlist" },
               { value: String(profile.stats.customOrders), label: "Custom" },
             ].map((stat) => (
               <div key={stat.label} className="flex flex-col items-center py-4">
