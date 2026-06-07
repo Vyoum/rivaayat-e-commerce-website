@@ -348,14 +348,17 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
                   </div>
                   <div>
                     <label className="mb-1.5 block text-[12px] font-medium text-[#6B5344]">
-                      Product Story
+                      Long Description
                     </label>
+                    <p className="mb-2 text-[11px] leading-relaxed text-[#9A8070]">
+                      Shown below the product on the storefront, alongside a product photo.
+                    </p>
                     <textarea
-                      rows={4}
+                      rows={6}
                       value={story}
                       onChange={(e) => setStory(e.target.value)}
-                      placeholder="Tell the story of this piece..."
-                      className="w-full rounded-lg border border-[#EDE5D8] px-3 py-2 text-[13px] outline-none"
+                      placeholder="Tell the full story of this piece — materials, process, meaning..."
+                      className="w-full rounded-lg border border-[#EDE5D8] px-3 py-2 text-[13px] leading-relaxed outline-none"
                     />
                   </div>
                   <div>

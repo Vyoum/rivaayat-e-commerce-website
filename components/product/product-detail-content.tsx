@@ -7,7 +7,6 @@ import { useRouter } from "next/navigation"
 import {
   ChevronDown,
   ChevronRight,
-  Eye,
   Minus,
   Plus,
   Sparkles,
@@ -80,16 +79,6 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
   ]
 
   const accordionItems = [
-    ...(product.story
-      ? [
-          {
-            id: "story",
-            title: "The Story of This Piece",
-            icon: Eye,
-            content: product.story,
-          },
-        ]
-      : []),
     ...(product.materialsCare
       ? [
           {
@@ -107,6 +96,11 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
       content: defaultShipping,
     },
   ]
+
+  const storyImageSrc = productImages[1]?.src ?? productImages[0].src
+  const storyParagraphs = product.story
+    ? product.story.split(/\n+/).map((line) => line.trim()).filter(Boolean)
+    : []
 
   const wishlisted = isWishlisted(product.id)
 
@@ -352,18 +346,24 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
         </div>
       </section>
 
-      {product.story && (
+      {product.story && storyParagraphs.length > 0 && (
         <section className="bg-[#EDE8DC]/45">
           <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-10 lg:py-24">
-            <blockquote className="font-serif text-[22px] leading-[1.65] font-normal text-[#3D2E24] italic md:text-[26px] lg:text-[28px]">
-              &ldquo;{product.story.slice(0, 120)}
-              {product.story.length > 120 ? "…" : ""}&rdquo;
-            </blockquote>
+            <div>
+              <p className="font-sans text-[11px] font-medium tracking-[0.22em] text-[#9A8070] uppercase">
+                The Story of This Piece
+              </p>
+              <div className="mt-6 space-y-5 font-serif text-[17px] leading-[1.75] text-[#3D2E24] md:text-[18px]">
+                {storyParagraphs.map((paragraph) => (
+                  <p key={paragraph.slice(0, 48)}>{paragraph}</p>
+                ))}
+              </div>
+            </div>
 
             <div className="relative mx-auto aspect-[4/3] w-full max-w-[420px] overflow-hidden rounded-[28px] bg-[#EDE8DC] shadow-[0_10px_40px_rgba(61,46,36,0.1)] lg:mx-0 lg:max-w-none [&_img]:rounded-[28px]">
               <Image
-                src={productImages[0].src}
-                alt={product.name}
+                src={storyImageSrc}
+                alt={`${product.name} — craftsmanship detail`}
                 fill
                 className="rounded-[28px] object-cover"
                 sizes="(max-width: 1024px) 420px, 50vw"

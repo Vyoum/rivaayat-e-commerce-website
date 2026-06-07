@@ -47,7 +47,7 @@ function mapCatalogProductToDetail(
     slug: product.slug,
     price: product.price,
     description: `${product.name} — handcrafted by ${product.artisan} in ${product.location}.`,
-    story: null,
+    story: `This ${product.name.toLowerCase()} is shaped slowly by ${product.artisan} in ${product.location}, using techniques passed down through generations. Each detail is intentional — from the raw materials chosen at source to the final polish that gives the piece its quiet glow.\n\nWhen you bring it home, you are not just buying an object. You are carrying forward a lineage of skill, patience, and pride in handmade work.`,
     materialsCare: null,
     category,
     categoryRoute,
