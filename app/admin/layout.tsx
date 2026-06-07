@@ -28,6 +28,14 @@ export default async function AdminLayout({
     redirect("/login?next=/admin")
   }
 
+  if (!access.dbReachable) {
+    redirect("/login?next=/admin&error=database_unavailable")
+  }
+
+  if (!access.dbUserFound) {
+    redirect("/login?next=/admin&error=profile_sync_failed")
+  }
+
   if (!access.isAdmin) {
     redirect("/login?next=/admin&error=admin_required")
   }

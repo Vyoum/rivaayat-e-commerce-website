@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server"
 import type { UserRole } from "@prisma/client"
 
+import { getDbUserByEmail, isDbReachable } from "@/lib/db-user-server"
 import { getPrisma } from "@/lib/prisma"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 import { ensureDbUserForAuthUser } from "@/lib/user-sync-server"
@@ -11,21 +12,8 @@ export type AdminAccess = {
   email: string | null
   userId: string | null
   dbUserId: string | null
-}
-
-export async function getDbUserByEmail(email: string) {
-  const prisma = getPrisma()
-  if (!prisma) return null
-
-  try {
-    return await prisma.user.findUnique({
-      where: { email: email.toLowerCase() },
-      select: { id: true, email: true, name: true, role: true },
-    })
-  } catch (error) {
-    console.error("[auth] failed to load user by email:", error)
-    return null
-  }
+  dbReachable: boolean
+  dbUserFound: boolean
 }
 
 export async function isEmailAdmin(email: string) {
@@ -40,6 +28,8 @@ export async function getAdminAccess(): Promise<AdminAccess> {
     email: null,
     userId: null,
     dbUserId: null,
+    dbReachable: await isDbReachable(),
+    dbUserFound: false,
   }
 
   try {
@@ -53,7 +43,12 @@ export async function getAdminAccess(): Promise<AdminAccess> {
 
     if (authError || !user?.email) return unauthenticated
 
-    const dbUser = (await ensureDbUserForAuthUser(user)) ?? (await getDbUserByEmail(user.email))
+    let dbUser = await getDbUserByEmail(user.email)
+
+    if (!dbUser) {
+      const synced = await ensureDbUserForAuthUser(user)
+      dbUser = synced ?? (await getDbUserByEmail(user.email))
+    }
 
     return {
       authenticated: true,
@@ -61,6 +56,8 @@ export async function getAdminAccess(): Promise<AdminAccess> {
       email: user.email,
       userId: user.id,
       dbUserId: dbUser?.id ?? null,
+      dbReachable: await isDbReachable(),
+      dbUserFound: !!dbUser,
     }
   } catch (error) {
     console.error("[admin] access check failed:", error)
@@ -116,3 +113,4 @@ export async function setUserRoleByEmail(email: string, role: UserRole) {
 }
 
 export { ensureDbUserForAuthUser } from "@/lib/user-sync-server"
+export { getDbUserByEmail } from "@/lib/db-user-server"

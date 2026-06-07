@@ -58,6 +58,16 @@ export default function LoginPage() {
     const oauthError = params.get("error")
     if (oauthError === "admin_required") {
       setError("This account does not have admin access. Ask an existing admin to grant you access.")
+    } else if (oauthError === "database_unavailable") {
+      setError(
+        "Could not reach the database on the server. Check that DATABASE_URL is set in Vercel environment variables.",
+      )
+    } else if (oauthError === "profile_sync_failed") {
+      setError(
+        "Your account is signed in but the profile could not be loaded. Try signing out and back in, or contact support.",
+      )
+    } else if (oauthError === "admin_unavailable") {
+      setError("Admin is temporarily unavailable. Please try again in a moment.")
     } else if (oauthError) {
       setError(decodeURIComponent(oauthError.replace(/\+/g, " ")))
     }
