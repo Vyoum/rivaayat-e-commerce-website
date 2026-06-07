@@ -1,26 +1,45 @@
-import { PrismaClient } from "@prisma/client"
+import { Prisma, PrismaClient } from "@prisma/client"
 import { PrismaPg } from "@prisma/adapter-pg"
 import { Pool } from "pg"
+
+const SCHEMA_FINGERPRINT =
+  Prisma.dmmf.datamodel.models
+    .find((model) => model.name === "Product")
+    ?.fields.map((field) => field.name)
+    .sort()
+    .join(",") ?? ""
 
 const globalForPrisma = globalThis as unknown as {
   prisma?: PrismaClient
   pgPool?: Pool
   databaseUrl?: string
+  schemaFingerprint?: string
+}
+
+function resetPrismaCache() {
+  void globalForPrisma.pgPool?.end().catch(() => {})
+  globalForPrisma.pgPool = undefined
+  globalForPrisma.prisma = undefined
 }
 
 function createPrismaClient() {
   const connectionString = process.env.DATABASE_URL
   if (!connectionString) return null
 
-  // Dev hot-reload keeps global state — recreate pool when DATABASE_URL changes
   if (
     globalForPrisma.pgPool &&
     globalForPrisma.databaseUrl &&
     globalForPrisma.databaseUrl !== connectionString
   ) {
-    void globalForPrisma.pgPool.end().catch(() => {})
-    globalForPrisma.pgPool = undefined
-    globalForPrisma.prisma = undefined
+    resetPrismaCache()
+  }
+
+  if (
+    globalForPrisma.prisma &&
+    globalForPrisma.schemaFingerprint &&
+    globalForPrisma.schemaFingerprint !== SCHEMA_FINGERPRINT
+  ) {
+    resetPrismaCache()
   }
 
   const pool =
@@ -34,6 +53,7 @@ function createPrismaClient() {
 
   globalForPrisma.pgPool = pool
   globalForPrisma.databaseUrl = connectionString
+  globalForPrisma.schemaFingerprint = SCHEMA_FINGERPRINT
 
   return new PrismaClient({
     adapter: new PrismaPg(pool),
@@ -46,13 +66,19 @@ export function getPrisma() {
 
   if (
     globalForPrisma.prisma &&
+    globalForPrisma.schemaFingerprint &&
+    globalForPrisma.schemaFingerprint !== SCHEMA_FINGERPRINT
+  ) {
+    resetPrismaCache()
+  }
+
+  if (
+    globalForPrisma.prisma &&
     globalForPrisma.databaseUrl &&
     connectionString &&
     globalForPrisma.databaseUrl !== connectionString
   ) {
-    void globalForPrisma.pgPool?.end().catch(() => {})
-    globalForPrisma.pgPool = undefined
-    globalForPrisma.prisma = undefined
+    resetPrismaCache()
   }
 
   if (!globalForPrisma.prisma) {

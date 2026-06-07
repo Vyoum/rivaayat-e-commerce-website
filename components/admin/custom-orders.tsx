@@ -1,5 +1,7 @@
 import Link from "next/link"
 
+import type { DashboardCustomOrder } from "@/lib/dashboard-admin-server"
+
 function WhatsAppIcon() {
   return (
     <svg viewBox="0 0 24 24" className="size-4" fill="#25D366">
@@ -8,88 +10,78 @@ function WhatsAppIcon() {
   )
 }
 
-const orders = [
-  {
-    title: "Bridal Lehenga Trim",
-    time: "2 days ago",
-    description:
-      "Custom gold zari border trim for bridal lehenga, 3 meters required.",
-    showAssign: true,
-  },
-  {
-    title: "Banarasi Silk Dyeing",
-    time: "3 days ago",
-    description:
-      "Natural indigo dyeing for 2 meters of Banarasi silk fabric.",
-    showAssign: false,
-  },
-]
+type CustomOrdersProps = {
+  orders: DashboardCustomOrder[]
+  pendingCount: number
+}
 
-export function CustomOrders() {
+export function CustomOrders({ orders, pendingCount }: CustomOrdersProps) {
   return (
     <div className="rounded-xl bg-[#F0E6D6] p-5">
       <div className="flex items-center justify-between">
-        <h3 className="font-serif text-[18px] font-semibold text-[#2D1E17]">
-          Custom Orders
-        </h3>
-        <span className="rounded-full bg-[#FCE8E6] px-2.5 py-0.5 text-[11px] font-semibold text-[#C5221F]">
-          7 Pending
-        </span>
+        <h3 className="font-serif text-[18px] font-semibold text-[#2D1E17]">Custom Orders</h3>
+        {pendingCount > 0 && (
+          <span className="rounded-full bg-[#FCE8E6] px-2.5 py-0.5 text-[11px] font-semibold text-[#C5221F]">
+            {pendingCount} Pending
+          </span>
+        )}
       </div>
 
       <div className="mt-4 space-y-4">
-        {orders.map((order) => (
-          <div
-            key={order.title}
-            className="rounded-xl border border-[#E8D8C3] bg-white/60 p-4"
-          >
-            <div className="flex items-start justify-between gap-2">
-              <h4 className="text-[14px] font-semibold text-[#2D1E17]">
-                {order.title}
-              </h4>
-              <span className="shrink-0 text-[11px] text-[#9A8070]">
-                {order.time}
-              </span>
-            </div>
-            <p className="mt-1.5 text-[12px] leading-relaxed text-[#6B5344]">
-              {order.description}
-            </p>
-            <div className="mt-3 flex items-center gap-2">
-              {order.showAssign ? (
-                <>
-                  <button
-                    type="button"
-                    className="rounded-lg bg-[#2D1E17] px-3.5 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-[#3D2B21]"
+        {orders.length === 0 ? (
+          <p className="rounded-xl border border-[#E8D8C3] bg-white/60 p-4 text-[13px] text-[#6B5344]">
+            No pending custom order requests
+          </p>
+        ) : (
+          orders.map((order) => (
+            <div
+              key={order.id}
+              className="rounded-xl border border-[#E8D8C3] bg-white/60 p-4"
+            >
+              <div className="flex items-start justify-between gap-2">
+                <h4 className="text-[14px] font-semibold text-[#2D1E17]">{order.title}</h4>
+                <span className="shrink-0 text-[11px] text-[#9A8070]">{order.timeAgo}</span>
+              </div>
+              <p className="mt-1.5 text-[12px] leading-relaxed text-[#6B5344]">{order.description}</p>
+              <div className="mt-3 flex items-center gap-2">
+                {order.showAssign ? (
+                  <>
+                    <Link
+                      href="/admin/commerce/custom-orders"
+                      className="rounded-lg bg-[#2D1E17] px-3.5 py-1.5 text-[12px] font-medium text-white transition-colors hover:bg-[#3D2B21]"
+                    >
+                      Assign Artisan
+                    </Link>
+                    <button
+                      type="button"
+                      className="flex size-8 items-center justify-center rounded-lg border border-[#EDE5D8] bg-white transition-colors hover:bg-[#FAF7F2]"
+                      aria-label="Contact on WhatsApp"
+                    >
+                      <WhatsAppIcon />
+                    </button>
+                  </>
+                ) : (
+                  <Link
+                    href="/admin/commerce/custom-orders"
+                    className="rounded-lg border border-[#C4A882] bg-white px-3.5 py-1.5 text-[12px] font-medium text-[#2D1E17] transition-colors hover:bg-[#FAF7F2]"
                   >
-                    Assign Artisan
-                  </button>
-                  <button
-                    type="button"
-                    className="flex size-8 items-center justify-center rounded-lg border border-[#EDE5D8] bg-white transition-colors hover:bg-[#FAF7F2]"
-                    aria-label="Contact on WhatsApp"
-                  >
-                    <WhatsAppIcon />
-                  </button>
-                </>
-              ) : (
-                <button
-                  type="button"
-                  className="rounded-lg border border-[#C4A882] bg-white px-3.5 py-1.5 text-[12px] font-medium text-[#2D1E17] transition-colors hover:bg-[#FAF7F2]"
-                >
-                  View Details
-                </button>
-              )}
+                    View Details
+                  </Link>
+                )}
+              </div>
             </div>
-          </div>
-        ))}
+          ))
+        )}
       </div>
 
-      <Link
-        href="/admin/commerce/custom-orders"
-        className="mt-4 block w-full text-center text-[12px] font-medium text-[#6B5344] transition-colors hover:text-[#2D1E17]"
-      >
-        View all 7 requests
-      </Link>
+      {pendingCount > 0 && (
+        <Link
+          href="/admin/commerce/custom-orders"
+          className="mt-4 block w-full text-center text-[12px] font-medium text-[#6B5344] transition-colors hover:text-[#2D1E17]"
+        >
+          View all {pendingCount} request{pendingCount === 1 ? "" : "s"}
+        </Link>
+      )}
     </div>
   )
 }

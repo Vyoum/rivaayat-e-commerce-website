@@ -1,8 +1,13 @@
 import { CategoryListingPage } from "@/components/catalog/category-listing-page"
-import { getCategoryConfig } from "@/lib/category-catalog"
+import { buildCategoryConfig } from "@/lib/product-catalog"
+import { getPublishedProductsByCategoryRoute } from "@/lib/product-server"
 
-export default function ClothingPage() {
-  const category = getCategoryConfig("clothing")
+export default async function ClothingPage() {
+  const data = await getPublishedProductsByCategoryRoute("clothing")
+  if (!data) return null
+
+  const category = buildCategoryConfig("clothing", data.products)
   if (!category) return null
+
   return <CategoryListingPage category={category} />
 }

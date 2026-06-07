@@ -20,60 +20,12 @@ import { useCart } from "@/components/providers/cart-provider"
 import { useWishlist } from "@/components/providers/wishlist-provider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
-import { getProductBySlug } from "@/lib/category-catalog"
+import { storeProductDetailToCatalog } from "@/lib/product-catalog"
 import { cn } from "@/lib/utils"
+import type { StoreProductDetail } from "@/types/product"
 
-const productImages = [
-  {
-    src: "https://images.unsplash.com/photo-1535632066927-ab7c9ab60908?w=900&h=900&fit=crop&q=80",
-    alt: "Mandala Crochet Earrings on stone surface",
-  },
-  {
-    src: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=900&h=900&fit=crop&q=80",
-    alt: "Mandala Crochet Earrings detail",
-  },
-  {
-    src: "/realistic-indian-woman-crafting-jewelry.jpg",
-    alt: "Artisan wearing Mandala Crochet Earrings",
-  },
-]
-
-const colorSwatches = [
-  { id: "terracotta", name: "Earthy Terracotta", color: "#8B5E3C" },
-  { id: "cream", name: "Warm Cream", color: "#E8DFC8" },
-  { id: "sage", name: "Sage Green", color: "#8FA68E" },
-]
-
-const accordionItems = [
-  {
-    id: "story",
-    title: "The Story of This Piece",
-    icon: Eye,
-    content:
-      "Each pair of Mandala Crochet Earrings begins as a single thread in Asha's workshop in Rajasthan. Inspired by desert mandalas and sun-bleached earth tones, she spends nearly four hours on every pair — looping, knotting, and shaping by hand. No two pieces are ever identical; each carries the quiet rhythm of her craft and the warmth of generations of thread work passed down through her family.",
-  },
-  {
-    id: "materials",
-    title: "Materials & Care",
-    icon: Sparkles,
-    content:
-      "Crafted from premium cotton thread, hypoallergenic gold-plated hooks, and natural plant-based dyes. Store in a dry place away from direct sunlight. Gently spot-clean with a damp cloth; avoid submerging in water. With proper care, these earrings will retain their shape and colour for years.",
-  },
-  {
-    id: "shipping",
-    title: "Shipping & Returns",
-    icon: Truck,
-    content:
-      "Ships within 3–5 business days across India. Free shipping on orders above ₹999. Returns accepted within 7 days of delivery for unused items in original packaging. Each piece is handcrafted — minor variations in colour and pattern are a mark of authenticity, not a defect.",
-  },
-]
-
-const breadcrumbs = [
-  { label: "Home", href: "/" },
-  { label: "Jewellery", href: "/jewellery" },
-  { label: "Crochet Jewellery", href: "/jewellery" },
-  { label: "Mandala Crochet Earrings", href: null },
-]
+const defaultShipping =
+  "Ships within 3–5 business days across India. Free shipping on orders above ₹999. Returns accepted within 7 days of delivery for unused items in original packaging. Each piece is handcrafted — minor variations in colour and pattern are a mark of authenticity, not a defect."
 
 function StarRating({ rating }: { rating: number }) {
   return (
@@ -95,41 +47,89 @@ function StarRating({ rating }: { rating: number }) {
   )
 }
 
-export function ProductDetailContent() {
+type ProductDetailContentProps = {
+  product: StoreProductDetail
+}
+
+export function ProductDetailContent({ product }: ProductDetailContentProps) {
   const router = useRouter()
   const { addItem } = useCart()
   const { isLoggedIn, isWishlisted, toggleItem } = useWishlist()
-  const catalogEntry = getProductBySlug("mandala-crochet-earrings")
-  const product = catalogEntry?.product
+  const catalogProduct = storeProductDetailToCatalog(product)
 
   const [activeImage, setActiveImage] = useState(0)
-  const [selectedColor, setSelectedColor] = useState(colorSwatches[0].id)
   const [quantity, setQuantity] = useState(1)
   const [isGift, setIsGift] = useState(false)
   const [openAccordion, setOpenAccordion] = useState<string | null>(null)
 
-  const selectedColorName = colorSwatches.find((c) => c.id === selectedColor)?.name ?? ""
-  const wishlisted = product ? isWishlisted(product.id) : false
+  const productImages =
+    product.imageUrls.length > 0
+      ? product.imageUrls.map((src, index) => ({
+          src,
+          alt: `${product.name} image ${index + 1}`,
+        }))
+      : [{ src: "/placeholder.svg", alt: product.name }]
+
+  const breadcrumbs = [
+    { label: "Home", href: "/" },
+    { label: product.categoryLabel, href: `/${product.categoryRoute}` },
+    ...(product.subcategoryLabel
+      ? [{ label: product.subcategoryLabel, href: `/${product.categoryRoute}` }]
+      : []),
+    { label: product.name, href: null },
+  ]
+
+  const accordionItems = [
+    ...(product.story
+      ? [
+          {
+            id: "story",
+            title: "The Story of This Piece",
+            icon: Eye,
+            content: product.story,
+          },
+        ]
+      : []),
+    ...(product.materialsCare
+      ? [
+          {
+            id: "materials",
+            title: "Materials & Care",
+            icon: Sparkles,
+            content: product.materialsCare,
+          },
+        ]
+      : []),
+    {
+      id: "shipping",
+      title: "Shipping & Returns",
+      icon: Truck,
+      content: defaultShipping,
+    },
+  ]
+
+  const wishlisted = isWishlisted(product.id)
 
   function handleAddToCart() {
-    if (!product) return
+    if (!product.inStock) {
+      toast.error("This product is currently out of stock")
+      return
+    }
 
     for (let i = 0; i < quantity; i += 1) {
-      addItem(product)
+      addItem(catalogProduct)
     }
     toast.success(`${product.name} added to cart`)
   }
 
   function handleToggleWishlist() {
-    if (!product) return
-
     if (!isLoggedIn) {
-      router.push("/login?next=/products/mandala-crochet-earrings")
+      router.push(`/login?next=/products/${product.slug}`)
       toast.info("Sign in to save items to your wishlist")
       return
     }
 
-    const added = toggleItem(product)
+    const added = toggleItem(catalogProduct)
     toast.success(
       added ? `${product.name} added to wishlist` : `${product.name} removed from wishlist`,
     )
@@ -162,49 +162,55 @@ export function ProductDetailContent() {
                 src={productImages[activeImage].src}
                 alt={productImages[activeImage].alt}
                 fill
-                className="object-cover rounded-[28px]"
+                className="rounded-[28px] object-cover"
                 priority
                 sizes="340px"
               />
-              <span className="absolute top-4 left-4 rounded-full bg-[#8FA68E]/90 px-3 py-1 font-sans text-[10px] font-semibold tracking-[0.12em] text-white uppercase">
-                Handcrafted
-              </span>
+              {product.handcrafted && (
+                <span className="absolute top-4 left-4 rounded-full bg-[#8FA68E]/90 px-3 py-1 font-sans text-[10px] font-semibold tracking-[0.12em] text-white uppercase">
+                  Handcrafted
+                </span>
+              )}
             </div>
 
-            <div className="mt-4 flex justify-center gap-2.5 lg:justify-start">
-              {productImages.map((image, index) => (
-                <button
-                  key={image.src}
-                  type="button"
-                  onClick={() => setActiveImage(index)}
-                  className={cn(
-                    "relative aspect-square w-[64px] overflow-hidden rounded-[18px] bg-[#EDE8DC] transition-all [&_img]:rounded-[18px]",
-                    activeImage === index
-                      ? "ring-2 ring-[#3D2E24] ring-offset-2 ring-offset-[#F5F3E9]"
-                      : "opacity-70 hover:opacity-100",
-                  )}
-                  aria-label={`View image ${index + 1}`}
-                  aria-pressed={activeImage === index}
-                >
-                  <Image
-                    src={image.src}
-                    alt={image.alt}
-                    fill
-                    className="object-cover rounded-[18px]"
-                    sizes="64px"
-                  />
-                </button>
-              ))}
-            </div>
+            {productImages.length > 1 && (
+              <div className="mt-4 flex justify-center gap-2.5 lg:justify-start">
+                {productImages.map((image, index) => (
+                  <button
+                    key={image.src}
+                    type="button"
+                    onClick={() => setActiveImage(index)}
+                    className={cn(
+                      "relative aspect-square w-[64px] overflow-hidden rounded-[18px] bg-[#EDE8DC] transition-all [&_img]:rounded-[18px]",
+                      activeImage === index
+                        ? "ring-2 ring-[#3D2E24] ring-offset-2 ring-offset-[#F5F3E9]"
+                        : "opacity-70 hover:opacity-100",
+                    )}
+                    aria-label={`View image ${index + 1}`}
+                    aria-pressed={activeImage === index}
+                  >
+                    <Image
+                      src={image.src}
+                      alt={image.alt}
+                      fill
+                      className="rounded-[18px] object-cover"
+                      sizes="64px"
+                    />
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <div className="flex flex-col lg:pt-2">
-            <p className="font-sans text-[11px] font-medium tracking-[0.22em] text-[#9A8070] uppercase">
-              Crochet Jewellery
-            </p>
+            {product.subcategoryLabel && (
+              <p className="font-sans text-[11px] font-medium tracking-[0.22em] text-[#9A8070] uppercase">
+                {product.subcategoryLabel}
+              </p>
+            )}
 
             <h1 className="mt-3 font-serif text-[34px] leading-[1.15] font-normal text-[#3D2E24] md:text-[40px]">
-              Mandala Crochet Earrings
+              {product.name}
             </h1>
 
             <div className="mt-4 flex items-center gap-2.5">
@@ -212,59 +218,38 @@ export function ProductDetailContent() {
               <span className="font-sans text-[13px] text-[#9A8070]">4.8 (24 Reviews)</span>
             </div>
 
-            <p className="mt-5 font-serif text-[30px] font-normal text-[#3D2E24]">₹650</p>
+            <p className="mt-5 font-serif text-[30px] font-normal text-[#3D2E24]">
+              ₹{product.price.toLocaleString("en-IN")}
+            </p>
 
-            <div className="mt-7 rounded-2xl bg-[#EDE8DC]/60 px-5 py-4">
-              <div className="flex items-center gap-4">
-                <div className="relative size-12 shrink-0 overflow-hidden rounded-full ring-2 ring-white/80">
-                  <Image
-                    src="/elderly-indian-woman-in-traditional-orange-sari-sm.jpg"
-                    alt="Asha, artisan from Rajasthan"
-                    fill
-                    className="object-cover"
-                    sizes="48px"
-                  />
-                </div>
-                <div className="min-w-0 flex-1">
-                  <p className="font-sans text-[14px] font-semibold text-[#3D2E24]">
-                    By Asha from Rajasthan
-                  </p>
-                  <p className="font-sans text-[13px] text-[#9A8070] italic">
-                    Master of Ombre &amp; Thread Craft
-                  </p>
-                </div>
-              </div>
-              <Link
-                href="/artisans/devendra-khatri"
-                className="mt-3 inline-block font-sans text-[10px] font-semibold tracking-[0.18em] text-[#846246] uppercase underline underline-offset-4 transition-colors hover:text-[#5C4332]"
-              >
-                View Artisan Profile
-              </Link>
-            </div>
-
-            <div className="mt-8">
-              <p className="font-sans text-[13px] text-[#6B5344]">
-                Colour: <span className="font-medium text-[#3D2E24]">{selectedColorName}</span>
-              </p>
-              <div className="mt-3 flex gap-3">
-                {colorSwatches.map((swatch) => (
-                  <button
-                    key={swatch.id}
-                    type="button"
-                    onClick={() => setSelectedColor(swatch.id)}
-                    aria-label={swatch.name}
-                    aria-pressed={selectedColor === swatch.id}
-                    className={cn(
-                      "size-8 rounded-full transition-all",
-                      selectedColor === swatch.id
-                        ? "ring-2 ring-[#3D2E24] ring-offset-2 ring-offset-[#F5F3E9]"
-                        : "hover:scale-105",
+            {(product.artisanName || product.location) && (
+              <div className="mt-7 rounded-2xl bg-[#EDE8DC]/60 px-5 py-4">
+                <div className="flex items-center gap-4">
+                  <div className="relative size-12 shrink-0 overflow-hidden rounded-full bg-[#EDE8DC] ring-2 ring-white/80">
+                    {productImages[0] && (
+                      <Image
+                        src={productImages[0].src}
+                        alt={product.artisanName}
+                        fill
+                        className="object-cover"
+                        sizes="48px"
+                      />
                     )}
-                    style={{ backgroundColor: swatch.color }}
-                  />
-                ))}
+                  </div>
+                  <div className="min-w-0 flex-1">
+                    <p className="font-sans text-[14px] font-semibold text-[#3D2E24]">
+                      By {product.artisanName}
+                      {product.location ? ` from ${product.location}` : ""}
+                    </p>
+                    {product.description && (
+                      <p className="font-sans text-[13px] text-[#9A8070] italic">
+                        {product.description}
+                      </p>
+                    )}
+                  </div>
+                </div>
               </div>
-            </div>
+            )}
 
             <div className="mt-8 flex flex-wrap items-center gap-6">
               <div className="flex items-center rounded-sm border border-[#D9CFC0] bg-white">
@@ -305,9 +290,10 @@ export function ProductDetailContent() {
             <button
               type="button"
               onClick={handleAddToCart}
-              className="mt-8 w-full rounded-xl bg-[#5C4332] py-4 font-sans text-[12px] font-semibold tracking-[0.2em] text-white uppercase transition-colors hover:bg-[#4A3528]"
+              disabled={!product.inStock}
+              className="mt-8 w-full rounded-xl bg-[#5C4332] py-4 font-sans text-[12px] font-semibold tracking-[0.2em] text-white uppercase transition-colors hover:bg-[#4A3528] disabled:cursor-not-allowed disabled:opacity-50"
             >
-              Add to Cart
+              {product.inStock ? "Add to Cart" : "Out of Stock"}
             </button>
             <button
               type="button"
@@ -366,24 +352,26 @@ export function ProductDetailContent() {
         </div>
       </section>
 
-      <section className="bg-[#EDE8DC]/45">
-        <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-10 lg:py-24">
-          <blockquote className="font-serif text-[22px] leading-[1.65] font-normal text-[#3D2E24] italic md:text-[26px] lg:text-[28px]">
-            &ldquo;In every loop of thread, there is a quiet rhythm, a prayer whispered into
-            existence.&rdquo;
-          </blockquote>
+      {product.story && (
+        <section className="bg-[#EDE8DC]/45">
+          <div className="mx-auto grid max-w-6xl gap-10 px-6 py-20 lg:grid-cols-2 lg:items-center lg:gap-16 lg:px-10 lg:py-24">
+            <blockquote className="font-serif text-[22px] leading-[1.65] font-normal text-[#3D2E24] italic md:text-[26px] lg:text-[28px]">
+              &ldquo;{product.story.slice(0, 120)}
+              {product.story.length > 120 ? "…" : ""}&rdquo;
+            </blockquote>
 
-          <div className="relative mx-auto aspect-[4/3] w-full max-w-[420px] overflow-hidden rounded-[28px] bg-[#EDE8DC] shadow-[0_10px_40px_rgba(61,46,36,0.1)] lg:mx-0 lg:max-w-none [&_img]:rounded-[28px]">
-            <Image
-              src="/close-up-of-hands-stringing-colorful-beads-for-tra.jpg"
-              alt="Colorful thread spools on a wooden surface"
-              fill
-              className="object-cover rounded-[28px]"
-              sizes="(max-width: 1024px) 420px, 50vw"
-            />
+            <div className="relative mx-auto aspect-[4/3] w-full max-w-[420px] overflow-hidden rounded-[28px] bg-[#EDE8DC] shadow-[0_10px_40px_rgba(61,46,36,0.1)] lg:mx-0 lg:max-w-none [&_img]:rounded-[28px]">
+              <Image
+                src={productImages[0].src}
+                alt={product.name}
+                fill
+                className="rounded-[28px] object-cover"
+                sizes="(max-width: 1024px) 420px, 50vw"
+              />
+            </div>
           </div>
-        </div>
-      </section>
+        </section>
+      )}
     </>
   )
 }

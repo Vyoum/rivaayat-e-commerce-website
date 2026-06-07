@@ -1,6 +1,8 @@
 import { notFound } from "next/navigation"
+
 import { CategoryListingPage } from "@/components/catalog/category-listing-page"
-import { getCategoryConfig } from "@/lib/category-catalog"
+import { buildCategoryConfig } from "@/lib/product-catalog"
+import { getPublishedProductsByCategoryRoute } from "@/lib/product-server"
 
 type CategoryPageProps = {
   params: Promise<{ slug: string }>
@@ -8,8 +10,13 @@ type CategoryPageProps = {
 
 export default async function CategoryPage({ params }: CategoryPageProps) {
   const { slug } = await params
-  const category = getCategoryConfig(slug)
+  const data = await getPublishedProductsByCategoryRoute(slug)
 
+  if (!data) {
+    notFound()
+  }
+
+  const category = buildCategoryConfig(slug, data.products)
   if (!category) {
     notFound()
   }

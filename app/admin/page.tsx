@@ -7,8 +7,15 @@ import { CustomOrders } from "@/components/admin/custom-orders"
 import { RecentOrders } from "@/components/admin/recent-orders"
 import { LowStockAlerts } from "@/components/admin/low-stock-alerts"
 import { QuickActions } from "@/components/admin/quick-actions"
+import { loadDashboardOverview } from "@/lib/dashboard-admin-server"
+import { loadAdminOrders } from "@/lib/order-admin-server"
 
-export default function AdminPage() {
+export default async function AdminPage() {
+  const [overview, recentOrders] = await Promise.all([
+    loadDashboardOverview(),
+    loadAdminOrders(),
+  ])
+
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
@@ -17,17 +24,17 @@ export default function AdminPage() {
         <AdminTopbar />
 
         <main className="flex-1 space-y-5 p-6">
-          <GreetingBanner />
-          <MetricCards />
+          <GreetingBanner greeting={overview.greeting} />
+          <MetricCards metrics={overview.metrics} />
 
           <div className="grid grid-cols-[1fr_340px] gap-5">
-            <RevenueChart />
-            <CustomOrders />
+            <RevenueChart revenue={overview.revenue} />
+            <CustomOrders orders={overview.customOrders} pendingCount={overview.pendingCustomCount} />
           </div>
 
           <div className="grid grid-cols-[1fr_340px] gap-5">
-            <RecentOrders />
-            <LowStockAlerts />
+            <RecentOrders initialOrders={recentOrders.slice(0, 5)} />
+            <LowStockAlerts products={overview.lowStock} />
           </div>
 
           <QuickActions />

@@ -1,8 +1,4 @@
-"use client"
-
-import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Loader2 } from "lucide-react"
 
 import { formatCurrency } from "@/lib/profile-utils"
 import type { AdminOrder } from "@/types/admin-order"
@@ -31,31 +27,15 @@ function formatShortDate(isoDate: string) {
   }).format(new Date(isoDate))
 }
 
-export function RecentOrders() {
-  const [orders, setOrders] = useState<AdminOrder[]>([])
-  const [loading, setLoading] = useState(true)
+type RecentOrdersProps = {
+  initialOrders: AdminOrder[]
+}
 
-  useEffect(() => {
-    async function load() {
-      try {
-        const res = await fetch("/api/admin/orders?tab=All")
-        const data = await res.json()
-        if (res.ok) {
-          setOrders((data.orders ?? []).slice(0, 5))
-        }
-      } finally {
-        setLoading(false)
-      }
-    }
-    load()
-  }, [])
-
+export function RecentOrders({ initialOrders }: RecentOrdersProps) {
   return (
     <div className="rounded-xl border border-[#EDE5D8] bg-white p-5 shadow-sm">
       <div className="flex items-center justify-between">
-        <h3 className="font-serif text-[18px] font-semibold text-[#2D1E17]">
-          Recent Orders
-        </h3>
+        <h3 className="font-serif text-[18px] font-semibold text-[#2D1E17]">Recent Orders</h3>
         <Link
           href="/admin/commerce/orders"
           className="text-[12px] font-medium text-[#6B5344] transition-colors hover:text-[#2D1E17]"
@@ -68,45 +48,35 @@ export function RecentOrders() {
         <table className="w-full">
           <thead>
             <tr className="border-b border-[#EDE5D8]">
-              {["Order ID", "Customer", "Date", "Status", "Amount"].map(
-                (header) => (
-                  <th
-                    key={header}
-                    className="pr-6 pb-3 text-left text-[11px] font-semibold tracking-wide text-[#9A8070] uppercase last:pr-0"
-                  >
-                    {header}
-                  </th>
-                ),
-              )}
+              {["Order ID", "Customer", "Date", "Status", "Amount"].map((header) => (
+                <th
+                  key={header}
+                  className="pr-6 pb-3 text-left text-[11px] font-semibold tracking-wide text-[#9A8070] uppercase last:pr-0"
+                >
+                  {header}
+                </th>
+              ))}
             </tr>
           </thead>
           <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan={5} className="py-10 text-center">
-                  <Loader2 className="mx-auto size-5 animate-spin text-[#9A8070]" />
-                </td>
-              </tr>
-            ) : orders.length === 0 ? (
+            {initialOrders.length === 0 ? (
               <tr>
                 <td colSpan={5} className="py-10 text-center text-[13px] text-[#9A8070]">
                   No orders yet
                 </td>
               </tr>
             ) : (
-              orders.map((order, index) => (
+              initialOrders.map((order, index) => (
                 <tr
                   key={order.id}
                   className={
-                    index < orders.length - 1 ? "border-b border-[#F5EDE3]" : ""
+                    index < initialOrders.length - 1 ? "border-b border-[#F5EDE3]" : ""
                   }
                 >
                   <td className="py-3.5 pr-6 text-[13px] font-medium text-[#2D1E17]">
                     {order.displayId}
                   </td>
-                  <td className="py-3.5 pr-6 text-[13px] text-[#6B5344]">
-                    {order.customer.name}
-                  </td>
+                  <td className="py-3.5 pr-6 text-[13px] text-[#6B5344]">{order.customer.name}</td>
                   <td className="py-3.5 pr-6 text-[13px] text-[#9A8070]">
                     {formatShortDate(order.createdAt)}
                   </td>
