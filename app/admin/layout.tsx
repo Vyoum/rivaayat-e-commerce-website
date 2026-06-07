@@ -16,7 +16,13 @@ export default async function AdminLayout({
 }: {
   children: React.ReactNode
 }) {
-  const access = await getAdminAccess()
+  let access
+  try {
+    access = await getAdminAccess()
+  } catch (error) {
+    console.error("[admin layout] access check failed:", error)
+    redirect("/login?next=/admin&error=admin_unavailable")
+  }
 
   if (!access.authenticated) {
     redirect("/login?next=/admin")

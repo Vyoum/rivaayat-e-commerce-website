@@ -1,6 +1,7 @@
 import type { User } from "@supabase/supabase-js"
 
 import { getPrisma } from "@/lib/prisma"
+import { ensureDbUserForAuthUser } from "@/lib/user-sync-server"
 import { formatOrderStatus, shortId } from "@/lib/profile-utils"
 import type { ProfileData } from "@/types/profile"
 
@@ -29,40 +30,22 @@ export function buildFallbackProfile(authUser: User): ProfileData {
 }
 
 export async function loadProfileForUser(authUser: User): Promise<ProfileData> {
-  const authName =
-    (authUser.user_metadata?.full_name as string | undefined) ??
-    (authUser.user_metadata?.name as string | undefined) ??
-    authUser.email?.split("@")[0] ??
-    "Guest"
-
   const prisma = getPrisma()
   if (!prisma || !authUser.email) {
     return buildFallbackProfile(authUser)
   }
 
-  let dbUser = await prisma.user.findUnique({
-    where: { email: authUser.email },
+  const synced = await ensureDbUserForAuthUser(authUser)
+  if (!synced) {
+    return buildFallbackProfile(authUser)
+  }
+
+  const dbUser = await prisma.user.findUnique({
+    where: { id: synced.id },
   })
 
   if (!dbUser) {
-    dbUser = await prisma.user.create({
-      data: {
-        email: authUser.email,
-        name: authName,
-        avatarUrl: (authUser.user_metadata?.avatar_url as string | undefined) ?? null,
-        phone: authUser.phone ?? null,
-      },
-    })
-  } else if (dbUser.name !== authName || authUser.user_metadata?.avatar_url) {
-    dbUser = await prisma.user.update({
-      where: { id: dbUser.id },
-      data: {
-        name: authName,
-        avatarUrl:
-          (authUser.user_metadata?.avatar_url as string | undefined) ?? dbUser.avatarUrl,
-        phone: authUser.phone ?? dbUser.phone,
-      },
-    })
+    return buildFallbackProfile(authUser)
   }
 
   const [orders, wishlistRows, customOrders] = await Promise.all([

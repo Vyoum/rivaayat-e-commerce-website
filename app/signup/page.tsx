@@ -14,6 +14,7 @@ import Link from "next/link"
 import { Eye, EyeOff, ArrowRight } from "lucide-react"
 import { getSupabaseBrowser } from "@/lib/supabase/browser"
 import { signInWithOAuth } from "@/lib/supabase/oauth"
+import { syncUserAfterAuth } from "@/lib/sync-user-client"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
 export default function SignupPage() {
@@ -65,6 +66,7 @@ export default function SignupPage() {
       return
     }
 
+    await syncUserAfterAuth()
     router.push("/profile")
   }
 

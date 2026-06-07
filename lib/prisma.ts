@@ -17,9 +17,12 @@ const globalForPrisma = globalThis as unknown as {
 }
 
 function resetPrismaCache() {
-  void globalForPrisma.pgPool?.end().catch(() => {})
-  globalForPrisma.pgPool = undefined
+  const pool = globalForPrisma.pgPool
   globalForPrisma.prisma = undefined
+  globalForPrisma.pgPool = undefined
+  globalForPrisma.databaseUrl = undefined
+  globalForPrisma.schemaFingerprint = undefined
+  void pool?.end().catch(() => {})
 }
 
 function normalizeDatabaseUrl(connectionString: string) {
@@ -84,6 +87,7 @@ function createPrismaClient() {
 
 export function getPrisma() {
   const connectionString = process.env.DATABASE_URL
+  const normalizedUrl = connectionString ? normalizeDatabaseUrl(connectionString) : null
 
   if (
     globalForPrisma.prisma &&
@@ -96,8 +100,8 @@ export function getPrisma() {
   if (
     globalForPrisma.prisma &&
     globalForPrisma.databaseUrl &&
-    connectionString &&
-    globalForPrisma.databaseUrl !== connectionString
+    normalizedUrl &&
+    globalForPrisma.databaseUrl !== normalizedUrl
   ) {
     resetPrismaCache()
   }

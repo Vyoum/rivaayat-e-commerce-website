@@ -13,6 +13,7 @@ import { HOUSE_OF_INDIKA, INDIKA_HINDI } from "@/lib/brand"
 import { getSafeRedirectPath } from "@/lib/auth-redirect"
 import { getSupabaseBrowser } from "@/lib/supabase/browser"
 import { signInWithOAuth } from "@/lib/supabase/oauth"
+import { syncUserAfterAuth } from "@/lib/sync-user-client"
 import { cn } from "@/lib/utils"
 
 function getLoginRedirectPath() {
@@ -96,6 +97,7 @@ export default function LoginPage() {
       return
     }
 
+    await syncUserAfterAuth()
     router.push(getLoginRedirectPath())
   }
 

@@ -3,6 +3,7 @@ import type { UserRole } from "@prisma/client"
 
 import { getPrisma } from "@/lib/prisma"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
+import { ensureDbUserForAuthUser } from "@/lib/user-sync-server"
 
 export type AdminAccess = {
   authenticated: boolean
@@ -16,10 +17,15 @@ export async function getDbUserByEmail(email: string) {
   const prisma = getPrisma()
   if (!prisma) return null
 
-  return prisma.user.findUnique({
-    where: { email: email.toLowerCase() },
-    select: { id: true, email: true, name: true, role: true },
-  })
+  try {
+    return await prisma.user.findUnique({
+      where: { email: email.toLowerCase() },
+      select: { id: true, email: true, name: true, role: true },
+    })
+  } catch (error) {
+    console.error("[auth] failed to load user by email:", error)
+    return null
+  }
 }
 
 export async function isEmailAdmin(email: string) {
@@ -28,39 +34,37 @@ export async function isEmailAdmin(email: string) {
 }
 
 export async function getAdminAccess(): Promise<AdminAccess> {
-  const supabase = await createSupabaseServerClient()
-  if (!supabase) {
-    return {
-      authenticated: false,
-      isAdmin: false,
-      email: null,
-      userId: null,
-      dbUserId: null,
-    }
+  const unauthenticated: AdminAccess = {
+    authenticated: false,
+    isAdmin: false,
+    email: null,
+    userId: null,
+    dbUserId: null,
   }
 
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  try {
+    const supabase = await createSupabaseServerClient()
+    if (!supabase) return unauthenticated
 
-  if (!user?.email) {
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser()
+
+    if (authError || !user?.email) return unauthenticated
+
+    const dbUser = (await ensureDbUserForAuthUser(user)) ?? (await getDbUserByEmail(user.email))
+
     return {
-      authenticated: false,
-      isAdmin: false,
-      email: null,
-      userId: null,
-      dbUserId: null,
+      authenticated: true,
+      isAdmin: dbUser?.role === "admin",
+      email: user.email,
+      userId: user.id,
+      dbUserId: dbUser?.id ?? null,
     }
-  }
-
-  const dbUser = await getDbUserByEmail(user.email)
-
-  return {
-    authenticated: true,
-    isAdmin: dbUser?.role === "admin",
-    email: user.email,
-    userId: user.id,
-    dbUserId: dbUser?.id ?? null,
+  } catch (error) {
+    console.error("[admin] access check failed:", error)
+    return unauthenticated
   }
 }
 
@@ -110,3 +114,5 @@ export async function setUserRoleByEmail(email: string, role: UserRole) {
     select: { id: true, email: true, role: true },
   })
 }
+
+export { ensureDbUserForAuthUser } from "@/lib/user-sync-server"
