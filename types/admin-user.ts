@@ -5,6 +5,7 @@ export type AdminUserRecord = {
   email: string
   phone: string | null
   avatarUrl: string | null
+  role: "customer" | "admin"
   patronSince: string
   lastSignInAt: string | null
   createdAt: string

@@ -4,6 +4,7 @@ import {
   Users,
   FileText,
   Store,
+  BookOpen,
   type LucideIcon,
 } from "lucide-react"
 
@@ -38,6 +39,12 @@ export const adminNavItems: AdminNavItem[] = [
     icon: FileText,
     href: "/admin/content",
     match: (pathname) => pathname.startsWith("/admin/content"),
+  },
+  {
+    label: "Our Story",
+    icon: BookOpen,
+    href: "/admin/our-story",
+    match: (pathname) => pathname.startsWith("/admin/our-story"),
   },
   {
     label: "Store",

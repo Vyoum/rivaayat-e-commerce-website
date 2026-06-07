@@ -49,6 +49,7 @@ export async function loadAdminUsers(): Promise<AdminUserRecord[]> {
       email: dbUser.email,
       phone: dbUser.phone,
       avatarUrl: dbUser.avatarUrl,
+      role: dbUser.role,
       patronSince: dbUser.patronSince.toISOString(),
       lastSignInAt: null,
       createdAt: dbUser.createdAt.toISOString(),
@@ -92,6 +93,7 @@ export async function loadAdminUsers(): Promise<AdminUserRecord[]> {
             (authUser.user_metadata?.avatar_url as string | undefined) ??
             dbUser?.avatarUrl ??
             null,
+          role: dbUser?.role ?? "customer",
           patronSince: (dbUser?.patronSince ?? new Date(authUser.created_at)).toISOString(),
           lastSignInAt,
           createdAt: authUser.created_at,

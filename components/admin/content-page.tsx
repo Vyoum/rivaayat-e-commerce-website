@@ -2,6 +2,7 @@ import Link from "next/link"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { AdminSidebar } from "./admin-sidebar"
 import { AdminTopbar } from "./admin-topbar"
+import { CategoryCardsManager } from "./category-cards-manager"
 import { HeroSlideshowManager } from "./hero-slideshow-manager"
 import { FileText, PenLine } from "lucide-react"
 
@@ -42,6 +43,10 @@ export function ContentPage() {
 
           <section className="rounded-xl border border-[#EDE5D8] bg-[#FAF7F2]/50 p-5 shadow-sm">
             <HeroSlideshowManager compact />
+          </section>
+
+          <section className="rounded-xl border border-[#EDE5D8] bg-[#FAF7F2]/50 p-5 shadow-sm">
+            <CategoryCardsManager compact />
           </section>
 
           <div>

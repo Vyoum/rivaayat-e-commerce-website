@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { requireAdminApi } from "@/lib/admin-auth-server"
 import {
   createAdminProduct,
   getAdminProductCounts,
@@ -11,6 +12,9 @@ import type { Category } from "@prisma/client"
 const VALID_TABS: AdminProductTab[] = ["All", "jewellery", "clothing", "decor", "custom_food", "Draft"]
 
 export async function GET(request: Request) {
+  const auth = await requireAdminApi()
+  if (!auth.ok) return auth.response
+
   try {
     const { searchParams } = new URL(request.url)
     const tabParam = searchParams.get("tab") ?? "All"
@@ -35,6 +39,9 @@ export async function GET(request: Request) {
 }
 
 export async function POST(request: Request) {
+  const auth = await requireAdminApi()
+  if (!auth.ok) return auth.response
+
   try {
     const body = (await request.json()) as CreateProductInput
 

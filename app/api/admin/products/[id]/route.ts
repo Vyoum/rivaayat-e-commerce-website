@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server"
 
+import { requireAdminApi } from "@/lib/admin-auth-server"
 import {
   deleteAdminProduct,
   getAdminProductById,
@@ -11,6 +12,9 @@ import type { Category } from "@prisma/client"
 type RouteContext = { params: Promise<{ id: string }> }
 
 export async function GET(_request: Request, context: RouteContext) {
+  const auth = await requireAdminApi()
+  if (!auth.ok) return auth.response
+
   try {
     const { id } = await context.params
     const product = await getAdminProductById(id)
@@ -29,6 +33,9 @@ export async function GET(_request: Request, context: RouteContext) {
 }
 
 export async function PATCH(request: Request, context: RouteContext) {
+  const auth = await requireAdminApi()
+  if (!auth.ok) return auth.response
+
   try {
     const { id } = await context.params
     const body = (await request.json()) as UpdateProductInput
@@ -47,6 +54,9 @@ export async function PATCH(request: Request, context: RouteContext) {
 }
 
 export async function DELETE(_request: Request, context: RouteContext) {
+  const auth = await requireAdminApi()
+  if (!auth.ok) return auth.response
+
   try {
     const { id } = await context.params
     await deleteAdminProduct(id)

@@ -35,6 +35,7 @@ export function CommunityUsersPage() {
   const [searchQuery, setSearchQuery] = useState("")
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null)
   const [drawerOpen, setDrawerOpen] = useState(false)
+  const [roleSaving, setRoleSaving] = useState(false)
 
   const loadUsers = useCallback(async () => {
     setLoading(true)
@@ -72,6 +73,38 @@ export function CommunityUsersPage() {
   )
 
   const recentlyActiveCount = users.filter((user) => user.recentlyActive).length
+  const adminCount = users.filter((user) => user.role === "admin").length
+
+  async function toggleAdminRole(user: AdminUserRecord) {
+    const nextRole = user.role === "admin" ? "customer" : "admin"
+    const label = nextRole === "admin" ? "grant admin access to" : "remove admin access from"
+
+    if (!window.confirm(`Are you sure you want to ${label} ${user.email}?`)) return
+
+    setRoleSaving(true)
+    setError(null)
+    try {
+      const res = await fetch("/api/admin/users/role", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email: user.email, role: nextRole }),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to update role")
+
+      setUsers((prev) =>
+        prev.map((entry) =>
+          entry.email.toLowerCase() === user.email.toLowerCase()
+            ? { ...entry, role: nextRole }
+            : entry,
+        ),
+      )
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to update role")
+    } finally {
+      setRoleSaving(false)
+    }
+  }
 
   function openUser(user: AdminUserRecord) {
     setSelectedUserId(user.id)
@@ -101,10 +134,14 @@ export function CommunityUsersPage() {
 
             <CommunitySubnav />
 
-            <div className="mb-5 grid grid-cols-3 gap-4">
+            <div className="mb-5 grid grid-cols-4 gap-4">
               <div className="rounded-xl border border-[#EDE5D8] bg-white p-4">
                 <p className="text-[12px] text-[#9A8070]">Total Users</p>
                 <p className="mt-1 text-[28px] font-semibold text-[#2B1B12]">{users.length}</p>
+              </div>
+              <div className="rounded-xl border border-[#EDE5D8] bg-white p-4">
+                <p className="text-[12px] text-[#9A8070]">Admins</p>
+                <p className="mt-1 text-[28px] font-semibold text-[#2B1B12]">{adminCount}</p>
               </div>
               <div className="rounded-xl border border-[#EDE5D8] bg-white p-4">
                 <p className="text-[12px] text-[#9A8070]">Active (24h)</p>
@@ -141,7 +178,7 @@ export function CommunityUsersPage() {
               <table className="w-full">
                 <thead>
                   <tr className="border-b border-[#EDE5D8] bg-[#FAF7F2]">
-                    {["User", "Email", "Last Sign In", "Orders", "Status"].map((header) => (
+                    {["User", "Email", "Role", "Last Sign In", "Orders", "Status"].map((header) => (
                       <th
                         key={header}
                         className="px-4 py-3 text-left text-[11px] font-semibold tracking-wide text-[#9A8070] uppercase"
@@ -154,13 +191,13 @@ export function CommunityUsersPage() {
                 <tbody>
                   {loading ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-16 text-center">
+                      <td colSpan={6} className="px-4 py-16 text-center">
                         <Loader2 className="mx-auto size-6 animate-spin text-[#9A8070]" />
                       </td>
                     </tr>
                   ) : filteredUsers.length === 0 ? (
                     <tr>
-                      <td colSpan={5} className="px-4 py-16 text-center text-[13px] text-[#9A8070]">
+                      <td colSpan={6} className="px-4 py-16 text-center text-[13px] text-[#9A8070]">
                         No users found.
                       </td>
                     </tr>
@@ -197,6 +234,17 @@ export function CommunityUsersPage() {
                           </div>
                         </td>
                         <td className="px-4 py-4 text-[13px] text-[#6B5344]">{user.email}</td>
+                        <td className="px-4 py-4">
+                          <span
+                            className={`rounded-full px-2.5 py-0.5 text-[11px] font-semibold ${
+                              user.role === "admin"
+                                ? "bg-[#E3F2FD] text-[#1565C0]"
+                                : "bg-[#F0EDE8] text-[#6B5344]"
+                            }`}
+                          >
+                            {user.role === "admin" ? "Admin" : "Customer"}
+                          </span>
+                        </td>
                         <td className="px-4 py-4 text-[13px] text-[#9A8070]">
                           {formatDate(user.lastSignInAt)}
                         </td>
@@ -286,11 +334,34 @@ export function CommunityUsersPage() {
                       </dd>
                     </div>
                     <div className="flex justify-between gap-4">
+                      <dt className="text-[#9A8070]">Role</dt>
+                      <dd className="font-medium text-[#2B1B12]">
+                        {selectedUser.role === "admin" ? "Admin" : "Customer"}
+                      </dd>
+                    </div>
+                    <div className="flex justify-between gap-4">
                       <dt className="text-[#9A8070]">Orders placed</dt>
                       <dd className="font-medium text-[#2B1B12]">{selectedUser.orderCount}</dd>
                     </div>
                   </dl>
                 </section>
+
+                <button
+                  type="button"
+                  disabled={roleSaving}
+                  onClick={() => toggleAdminRole(selectedUser)}
+                  className={`w-full rounded-xl px-4 py-3 text-[12px] font-semibold tracking-wide uppercase transition-colors disabled:opacity-50 ${
+                    selectedUser.role === "admin"
+                      ? "border border-[#EDE5D8] bg-white text-[#6B5344] hover:bg-[#FAF7F2]"
+                      : "bg-[#2B1B12] text-white hover:bg-[#3D2B21]"
+                  }`}
+                >
+                  {roleSaving
+                    ? "Saving…"
+                    : selectedUser.role === "admin"
+                      ? "Remove Admin Access"
+                      : "Grant Admin Access"}
+                </button>
               </div>
             </div>
           )}

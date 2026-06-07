@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server"
 
+import { requireAdminApi } from "@/lib/admin-auth-server"
 import { loadAdminUsers, loadAdminUsersSummary } from "@/lib/users-admin-server"
 
 export async function GET(request: Request) {
+  const auth = await requireAdminApi()
+  if (!auth.ok) return auth.response
+
   try {
     const { searchParams } = new URL(request.url)
     const summaryOnly = searchParams.get("summary") === "1"

@@ -1,6 +1,7 @@
 import type { OrderStatus } from "@prisma/client"
 import { NextResponse } from "next/server"
 
+import { requireAdminApi } from "@/lib/admin-auth-server"
 import { loadAdminOrderById, updateAdminOrderStatus } from "@/lib/order-admin-server"
 
 const validStatuses: OrderStatus[] = [
@@ -16,6 +17,9 @@ export async function GET(
   _request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireAdminApi()
+  if (!auth.ok) return auth.response
+
   try {
     const { id } = await params
     const order = await loadAdminOrderById(id)
@@ -37,6 +41,9 @@ export async function PATCH(
   request: Request,
   { params }: { params: Promise<{ id: string }> },
 ) {
+  const auth = await requireAdminApi()
+  if (!auth.ok) return auth.response
+
   try {
     const { id } = await params
     const body = await request.json()

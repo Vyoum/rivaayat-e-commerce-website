@@ -55,7 +55,9 @@ export default function LoginPage() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search)
     const oauthError = params.get("error")
-    if (oauthError) {
+    if (oauthError === "admin_required") {
+      setError("This account does not have admin access. Ask an existing admin to grant you access.")
+    } else if (oauthError) {
       setError(decodeURIComponent(oauthError.replace(/\+/g, " ")))
     }
   }, [])

@@ -31,6 +31,11 @@ enum Category {
   custom_food
 }
 
+enum UserRole {
+  customer
+  admin
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
@@ -39,6 +44,7 @@ model User {
   email        String        @unique
   phone        String?
   avatarUrl    String?       @map("avatar_url")
+  role         UserRole      @default(customer)
   patronSince  DateTime      @default(now()) @map("patron_since")
   totalTips    Decimal       @default(0) @db.Decimal(10, 2) @map("total_tips")
   createdAt    DateTime      @default(now()) @map("created_at")

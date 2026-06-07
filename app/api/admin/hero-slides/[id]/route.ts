@@ -1,4 +1,6 @@
 import { NextResponse } from "next/server"
+
+import { requireAdminApi } from "@/lib/admin-auth-server"
 import { deleteHeroSlide, updateHeroSlide } from "@/lib/hero-slides"
 
 type RouteContext = {
@@ -6,6 +8,9 @@ type RouteContext = {
 }
 
 export async function PATCH(request: Request, context: RouteContext) {
+  const auth = await requireAdminApi()
+  if (!auth.ok) return auth.response
+
   try {
     const { id } = await context.params
     const body = await request.json()
@@ -20,6 +25,9 @@ export async function PATCH(request: Request, context: RouteContext) {
 }
 
 export async function DELETE(_request: Request, context: RouteContext) {
+  const auth = await requireAdminApi()
+  if (!auth.ok) return auth.response
+
   try {
     const { id } = await context.params
     await deleteHeroSlide(id)

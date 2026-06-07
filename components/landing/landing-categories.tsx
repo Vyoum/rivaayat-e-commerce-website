@@ -1,34 +1,14 @@
 import Image from "next/image"
 import Link from "next/link"
 
-const categories = [
-  {
-    title: "Textiles",
-    description: "Softness. Tradition. Woven with Purpose.",
-    href: "/clothing",
-    image: "/landing/cat-textiles.jpg",
-  },
-  {
-    title: "Décor",
-    description: "Soulful Spaces for Everyday Living.",
-    href: "/decor",
-    image: "/landing/cat-decor.jpg",
-  },
-  {
-    title: "Jewellery",
-    description: "Handcrafted Adornments. Timeless & Meaningful.",
-    href: "/jewellery",
-    image: "/landing/cat-jewellery.jpg",
-  },
-  {
-    title: "Kitchen & Dining",
-    description: "Rooted in Rituals. Made for Togetherness.",
-    href: "/custom-laddoos",
-    image: "/landing/cat-kitchen.jpg",
-  },
-]
+import type { CategoryCard } from "@/lib/category-cards-shared"
+import { DEFAULT_CATEGORY_CARDS } from "@/lib/category-cards-shared"
 
-export function LandingCategories() {
+type LandingCategoriesProps = {
+  cards?: CategoryCard[]
+}
+
+export function LandingCategories({ cards = DEFAULT_CATEGORY_CARDS }: LandingCategoriesProps) {
   return (
     <section className="landing-categories-section relative z-10 px-5 pb-16 pt-10 lg:px-8 lg:pb-20 lg:pt-12">
       <div className="landing-categories-hills pointer-events-none absolute inset-0" aria-hidden>
@@ -75,15 +55,15 @@ export function LandingCategories() {
         </div>
 
         <div className="mt-7 grid max-w-[760px] gap-4 sm:mx-auto sm:grid-cols-2 sm:gap-5">
-          {categories.map((cat) => (
+          {cards.map((cat) => (
             <Link
-              key={cat.title}
+              key={cat.id}
               href={cat.href}
               className="group overflow-hidden rounded-xl bg-[#E6D6C4] shadow-[0_2px_10px_rgba(94,68,48,0.12)] transition-shadow hover:shadow-[0_3px_16px_rgba(94,68,48,0.15)]"
             >
               <div className="relative aspect-[458/178] overflow-hidden bg-[#DCCAB6]">
                 <Image
-                  src={cat.image}
+                  src={cat.imageUrl}
                   alt={cat.title}
                   fill
                   className="object-cover object-center"

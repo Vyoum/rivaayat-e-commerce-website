@@ -1,8 +1,12 @@
 import { NextResponse } from "next/server"
 
+import { requireAdminApi } from "@/lib/admin-auth-server"
 import { uploadHeroMedia } from "@/lib/hero-media-upload"
 
 export async function POST(request: Request) {
+  const auth = await requireAdminApi()
+  if (!auth.ok) return auth.response
+
   try {
     const formData = await request.formData()
     const file = formData.get("file")
