@@ -167,16 +167,7 @@ export async function loadAdminOrderById(orderId: string): Promise<AdminOrder | 
 
 export async function getAdminOrderStatusCounts(): Promise<AdminOrderStatusCounts> {
   const prisma = getPrisma()
-  if (!prisma) {
-    return { all: 0, pending: 0, processing: 0, shipped: 0, delivered: 0, cancelled: 0 }
-  }
-
-  const grouped = await prisma.order.groupBy({
-    by: ["status"],
-    _count: { _all: true },
-  })
-
-  const counts: AdminOrderStatusCounts = {
+  const empty: AdminOrderStatusCounts = {
     all: 0,
     pending: 0,
     processing: 0,
@@ -184,19 +175,32 @@ export async function getAdminOrderStatusCounts(): Promise<AdminOrderStatusCount
     delivered: 0,
     cancelled: 0,
   }
+  if (!prisma) return empty
 
-  for (const row of grouped) {
-    counts.all += row._count._all
-    if (row.status === "pending") counts.pending += row._count._all
-    if (row.status === "confirmed" || row.status === "processing") {
-      counts.processing += row._count._all
+  try {
+    const grouped = await prisma.order.groupBy({
+      by: ["status"],
+      _count: { _all: true },
+    })
+
+    const counts: AdminOrderStatusCounts = { ...empty }
+
+    for (const row of grouped) {
+      counts.all += row._count._all
+      if (row.status === "pending") counts.pending += row._count._all
+      if (row.status === "confirmed" || row.status === "processing") {
+        counts.processing += row._count._all
+      }
+      if (row.status === "shipped") counts.shipped += row._count._all
+      if (row.status === "delivered") counts.delivered += row._count._all
+      if (row.status === "cancelled") counts.cancelled += row._count._all
     }
-    if (row.status === "shipped") counts.shipped += row._count._all
-    if (row.status === "delivered") counts.delivered += row._count._all
-    if (row.status === "cancelled") counts.cancelled += row._count._all
-  }
 
-  return counts
+    return counts
+  } catch (error) {
+    console.error("[admin orders] failed to load status counts:", error)
+    return empty
+  }
 }
 
 export async function updateAdminOrderStatus(

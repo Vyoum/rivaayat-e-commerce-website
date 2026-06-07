@@ -25,18 +25,26 @@ function resetPrismaCache() {
   void pool?.end().catch(() => {})
 }
 
+function isLocalDatabase(connectionString: string) {
+  try {
+    const hostname = new URL(connectionString).hostname
+    return hostname === "localhost" || hostname === "127.0.0.1" || hostname === "::1"
+  } catch {
+    return false
+  }
+}
+
 function normalizeDatabaseUrl(connectionString: string) {
   try {
     const url = new URL(connectionString)
     if (url.hostname.includes("pooler.supabase.com") && !url.searchParams.has("pgbouncer")) {
       url.searchParams.set("pgbouncer", "true")
     }
-    if (!url.searchParams.has("sslmode")) {
-      url.searchParams.set("sslmode", "require")
-    }
+    // Let pg Pool `ssl` config handle TLS — sslmode in the URL forces strict cert checks.
+    url.searchParams.delete("sslmode")
     return url.toString()
   } catch {
-    return connectionString
+    return connectionString.replace(/([?&])sslmode=[^&]*&?/g, "$1").replace(/[?&]$/, "")
   }
 }
 
@@ -66,9 +74,7 @@ function createPrismaClient() {
     globalForPrisma.pgPool ??
     new Pool({
       connectionString: normalizedUrl,
-      ssl: normalizedUrl.includes("supabase")
-        ? { rejectUnauthorized: false }
-        : undefined,
+      ssl: isLocalDatabase(normalizedUrl) ? undefined : { rejectUnauthorized: false },
       max: 1,
       idleTimeoutMillis: 0,
       connectionTimeoutMillis: 15000,
