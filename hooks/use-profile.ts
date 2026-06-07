@@ -2,13 +2,18 @@
 
 import { useCallback, useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
+
 import { getSupabaseBrowser } from "@/lib/supabase/browser"
 import type { ProfileData } from "@/types/profile"
 
-export function useProfile() {
+type UseProfileOptions = {
+  enabled?: boolean
+}
+
+export function useProfile({ enabled = true }: UseProfileOptions = {}) {
   const router = useRouter()
   const [profile, setProfile] = useState<ProfileData | null>(null)
-  const [loading, setLoading] = useState(true)
+  const [loading, setLoading] = useState(enabled)
   const [error, setError] = useState<string | null>(null)
 
   const loadProfile = useCallback(async () => {
@@ -23,23 +28,23 @@ export function useProfile() {
     }
 
     const {
-      data: { session },
-    } = await supabase.auth.getSession()
+      data: { user },
+      error: userError,
+    } = await supabase.auth.getUser()
 
-    if (!session) {
-      router.replace("/login")
+    if (userError || !user) {
+      router.replace("/login?next=/profile")
+      setLoading(false)
       return
     }
 
     try {
       const res = await fetch("/api/profile", {
-        headers: {
-          Authorization: `Bearer ${session.access_token}`,
-        },
+        credentials: "include",
       })
 
       if (res.status === 401) {
-        router.replace("/login")
+        router.replace("/login?next=/profile")
         return
       }
 
@@ -57,8 +62,13 @@ export function useProfile() {
   }, [router])
 
   useEffect(() => {
+    if (!enabled) {
+      setLoading(false)
+      return
+    }
+
     loadProfile()
-  }, [loadProfile])
+  }, [enabled, loadProfile])
 
   const signOut = useCallback(async () => {
     const supabase = getSupabaseBrowser()

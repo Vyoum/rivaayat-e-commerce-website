@@ -2,9 +2,12 @@
 
 import { useEffect, useState } from "react"
 import Link from "next/link"
-import { Search, User, ShoppingBag } from "lucide-react"
+import { Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
+import { AccountIconLink } from "@/components/account/account-icon-link"
+import { CartIconLink } from "@/components/cart/cart-icon-link"
+import { WishlistIconLink } from "@/components/wishlist/wishlist-icon-link"
 
 const navItems = [
   { label: "Our Story", href: "/outerboxdesign" },
@@ -72,26 +75,29 @@ export function LandingHeader() {
           >
             <Search className="size-[15px] stroke-[1.5]" />
           </button>
-          <Link
-            href="/profile"
-            aria-label="Account"
+          <AccountIconLink
             className={cn(
               "transition-colors duration-300",
               isScrolled ? "text-[#5C4332]/90 hover:text-[#2D1A12]" : "text-white/88 hover:text-white",
             )}
-          >
-            <User className="size-[15px] stroke-[1.5]" />
-          </Link>
-          <Link
-            href="/cart"
-            aria-label="Cart"
+            iconClassName="size-[15px] stroke-[1.5]"
+          />
+          <WishlistIconLink
             className={cn(
               "transition-colors duration-300",
               isScrolled ? "text-[#5C4332]/90 hover:text-[#2D1A12]" : "text-white/88 hover:text-white",
             )}
-          >
-            <ShoppingBag className="size-[15px] stroke-[1.5]" />
-          </Link>
+            iconClassName="size-[15px] stroke-[1.5]"
+            badgeClassName={isScrolled ? undefined : "bg-white text-[#785D44]"}
+          />
+          <CartIconLink
+            className={cn(
+              "transition-colors duration-300",
+              isScrolled ? "text-[#5C4332]/90 hover:text-[#2D1A12]" : "text-white/88 hover:text-white",
+            )}
+            iconClassName="size-[15px] stroke-[1.5]"
+            badgeClassName={isScrolled ? undefined : "bg-white text-[#785D44]"}
+          />
         </div>
       </div>
     </header>

@@ -1,95 +1,54 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { Heart, Share2, Trash2, ShoppingBag, ArrowUpRight, LayoutGrid, List } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { useWishlist } from "@/components/providers/wishlist-provider"
+import { useAuth } from "@/hooks/use-auth"
 
-interface WishlistItem {
-  id: string
-  name: string
-  category: string
-  price: number
-  image: string
-  artisan: string
-  addedDate: string
-  inStock: boolean
+function formatAddedDate(isoDate: string) {
+  const diffMs = Date.now() - new Date(isoDate).getTime()
+  const days = Math.floor(diffMs / (1000 * 60 * 60 * 24))
+  if (days <= 0) return "Today"
+  if (days === 1) return "1 day ago"
+  if (days < 7) return `${days} days ago`
+  if (days < 14) return "1 week ago"
+  if (days < 30) return `${Math.floor(days / 7)} weeks ago`
+  return `${Math.floor(days / 30)} month${Math.floor(days / 30) === 1 ? "" : "s"} ago`
 }
 
-const mockWishlistItems: WishlistItem[] = [
-  {
-    id: "1",
-    name: "Mandala Crochet Earrings",
-    category: "Jewellery",
-    price: 650,
-    image: "https://images.unsplash.com/photo-1599643478518-a784e5dc4c8f?w=400&h=500&fit=crop&q=80",
-    artisan: "Asha from Rajasthan",
-    addedDate: "2 days ago",
-    inStock: true,
-  },
-  {
-    id: "2",
-    name: "Hand-Woven Silk Scarf",
-    category: "Textiles",
-    price: 1200,
-    image: "https://images.unsplash.com/photo-1610701596007-11502861dcfa?w=400&h=500&fit=crop&q=80",
-    artisan: "Priya from Varanasi",
-    addedDate: "1 week ago",
-    inStock: true,
-  },
-  {
-    id: "3",
-    name: "Ceramic Tea Set",
-    category: "Home Décor",
-    price: 1800,
-    image: "https://images.unsplash.com/photo-1578500494198-246f612d03b3?w=400&h=500&fit=crop&q=80",
-    artisan: "Deepak from Jaipur",
-    addedDate: "10 days ago",
-    inStock: true,
-  },
-  {
-    id: "4",
-    name: "Indigo Block Print Cushion",
-    category: "Home Décor",
-    price: 899,
-    image: "https://images.unsplash.com/photo-1578500494198-246f612d03b3?w=400&h=500&fit=crop&q=80",
-    artisan: "Meera from Kutch",
-    addedDate: "3 weeks ago",
-    inStock: false,
-  },
-  {
-    id: "5",
-    name: "Brass Jewelry Box",
-    category: "Home Décor",
-    price: 2100,
-    image: "https://images.unsplash.com/photo-1593642632509-c6fed59fed98?w=400&h=500&fit=crop&q=80",
-    artisan: "Rajesh from Moradabad",
-    addedDate: "1 month ago",
-    inStock: true,
-  },
-  {
-    id: "6",
-    name: "Embroidered Phulkari Dupatta",
-    category: "Textiles",
-    price: 1500,
-    image: "https://images.unsplash.com/photo-1555049519-a85b0020ecaa?w=400&h=500&fit=crop&q=80",
-    artisan: "Harpreet from Punjab",
-    addedDate: "1 month ago",
-    inStock: true,
-  },
-]
-
 export function WishlistContent() {
+  const router = useRouter()
+  const { loading: authLoading, isLoggedIn } = useAuth()
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
-  const [items, setItems] = useState(mockWishlistItems)
+  const { items, removeItem } = useWishlist()
 
-  const removeItem = (id: string) => {
-    setItems(items.filter((item) => item.id !== id))
+  useEffect(() => {
+    if (!authLoading && !isLoggedIn) {
+      router.replace("/login?next=/wishlist")
+    }
+  }, [authLoading, isLoggedIn, router])
+
+  if (authLoading || !isLoggedIn) {
+    return null
   }
 
-  const inStockCount = items.filter((item) => item.inStock).length
-  const outOfStockCount = items.filter((item) => !item.inStock).length
+  const displayItems = items.map((item) => ({
+    id: item.id,
+    name: item.name,
+    category: item.location,
+    price: item.price,
+    image: item.image,
+    artisan: item.artisan,
+    addedDate: formatAddedDate(item.addedAt),
+    inStock: true,
+    slug: item.slug,
+  }))
+
+  const inStockCount = displayItems.filter((item) => item.inStock).length
 
   return (
     <>
@@ -162,7 +121,7 @@ export function WishlistContent() {
               : "space-y-4",
           )}
         >
-          {items.map((item) => (
+          {displayItems.map((item) => (
             <div
               key={item.id}
               className={cn(
@@ -210,7 +169,7 @@ export function WishlistContent() {
                     {item.category}
                   </p>
                   <Link
-                    href="#"
+                    href={`/products/${item.slug}`}
                     className="block font-serif text-[16px] font-normal text-[#3D2E24] hover:text-[#846246] transition-colors"
                   >
                     {item.name}

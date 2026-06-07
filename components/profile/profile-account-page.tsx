@@ -1,7 +1,8 @@
 "use client"
 
-import { useMemo, useState, type ReactNode } from "react"
+import { useCallback, useMemo, useState, type ReactNode } from "react"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import Image from "next/image"
 import {
   ShoppingBag,
@@ -20,12 +21,11 @@ import {
   LogOut,
   Package,
   Sparkles,
-  Loader2,
 } from "lucide-react"
 import { ProductDetailHeader } from "@/components/product/product-detail-header"
 import { cn } from "@/lib/utils"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
-import { useProfile } from "@/hooks/use-profile"
+import { getSupabaseBrowser } from "@/lib/supabase/browser"
 import {
   formatCurrency,
   formatOrderDate,
@@ -34,6 +34,7 @@ import {
 } from "@/lib/profile-utils"
 import type {
   ProfileCustomOrder,
+  ProfileData,
   ProfileOrder,
   ProfileWishlistItem,
 } from "@/types/profile"
@@ -355,9 +356,17 @@ function OurStoryPanel() {
   )
 }
 
-export function ProfileAccountPage() {
-  const { profile, loading, error, signOut } = useProfile()
+export function ProfileAccountPage({ profile }: { profile: ProfileData }) {
+  const router = useRouter()
   const [activeSection, setActiveSection] = useState<SectionId>("all-orders")
+
+  const signOut = useCallback(async () => {
+    const supabase = getSupabaseBrowser()
+    if (supabase) {
+      await supabase.auth.signOut()
+    }
+    router.replace("/login")
+  }, [router])
 
   const sidebarGroups = useMemo(
     () => [
@@ -369,7 +378,7 @@ export function ProfileAccountPage() {
             id: "custom-orders" as SectionId,
             label: "Custom Orders",
             icon: RefreshCcw,
-            badge: profile?.stats.customOrders ? String(profile.stats.customOrders) : null,
+            badge: profile.stats.customOrders ? String(profile.stats.customOrders) : null,
           },
           { id: "track-shipment" as SectionId, label: "Track Shipment", icon: Truck, badge: null },
         ],
@@ -393,27 +402,8 @@ export function ProfileAccountPage() {
         ],
       },
     ],
-    [profile?.stats.customOrders],
+    [profile.stats.customOrders],
   )
-
-  if (loading) {
-    return (
-      <main className="flex min-h-screen items-center justify-center bg-[#F5F3E9]">
-        <Loader2 className="size-8 animate-spin text-[#846246]" />
-      </main>
-    )
-  }
-
-  if (error || !profile) {
-    return (
-      <main className="flex min-h-screen flex-col items-center justify-center bg-[#F5F3E9] px-6 text-center">
-        <p className="font-sans text-[16px] text-[#6B5344]">{error ?? "Unable to load profile."}</p>
-        <Link href="/login" className="mt-4 font-sans text-[14px] font-semibold text-[#846246]">
-          Go to login →
-        </Link>
-      </main>
-    )
-  }
 
   const panels: Record<SectionId, ReactNode> = {
     "all-orders": <AllOrdersPanel orders={profile.orders} />,

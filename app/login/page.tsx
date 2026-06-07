@@ -12,8 +12,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import Link from "next/link"
 import { Eye, EyeOff, ArrowRight } from "lucide-react"
 import { HOUSE_OF_INDIKA, INDIKA_HINDI } from "@/lib/brand"
+import { getSafeRedirectPath } from "@/lib/auth-redirect"
 import { getSupabaseBrowser } from "@/lib/supabase/browser"
 import { signInWithOAuth } from "@/lib/supabase/oauth"
+
+function getLoginRedirectPath() {
+  const params = new URLSearchParams(window.location.search)
+  return getSafeRedirectPath(params.get("next"))
+}
 
 export default function LoginPage() {
   const router = useRouter()
@@ -36,7 +42,7 @@ export default function LoginPage() {
     setOauthLoading("google")
     setError(null)
 
-    const { error: oauthError } = await signInWithOAuth("google", "/profile")
+    const { error: oauthError } = await signInWithOAuth("google", getLoginRedirectPath())
     if (oauthError) {
       setError(oauthError.message)
       setOauthLoading(null)
@@ -66,7 +72,7 @@ export default function LoginPage() {
       return
     }
 
-    router.push("/profile")
+    router.push(getLoginRedirectPath())
   }
 
   return (

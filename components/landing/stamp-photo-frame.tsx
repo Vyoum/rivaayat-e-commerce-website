@@ -13,8 +13,9 @@ const VB_H = 400
 const OUTER_RX = 18
 const FRAME_INSET = 14
 const SCALLOP_R = 7
+const STAMP_FRAME_COLOR = "#B85A32"
 
-/** Postage-stamp perforations — arcs bulge outward into the black margin */
+/** Postage-stamp perforations — arcs bulge outward into the terracotta margin */
 function buildScallopedRect(
   x: number,
   y: number,
@@ -97,7 +98,7 @@ export function StampPhotoFrame({ src, alt }: StampPhotoFrameProps) {
           </clipPath>
         </defs>
 
-        <rect width={VB_W} height={VB_H} rx={OUTER_RX} fill="#121212" />
+        <rect width={VB_W} height={VB_H} rx={OUTER_RX} fill={STAMP_FRAME_COLOR} />
 
         <image
           href={src}

@@ -1,11 +1,13 @@
 "use client"
 
 import Link from "next/link"
-import { Search, ShoppingBag, User } from "lucide-react"
+import { Search } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
-import { useCart } from "@/components/providers/cart-provider"
+import { AccountIconLink } from "@/components/account/account-icon-link"
+import { CartIconLink } from "@/components/cart/cart-icon-link"
+import { WishlistIconLink } from "@/components/wishlist/wishlist-icon-link"
 
 export type SiteNavItem = {
   label: string
@@ -32,7 +34,6 @@ export function SiteHeader({
   className,
 }: SiteHeaderProps) {
   const isTransparent = variant === "transparent"
-  const { itemCount } = useCart()
 
   return (
     <header
@@ -87,31 +88,27 @@ export function SiteHeader({
           >
             <Search className="size-[17px] stroke-[1.5]" />
           </button>
-          <Link
-            href="/profile"
-            aria-label="Account"
+          <AccountIconLink
             className={cn(
               "transition-colors",
               isTransparent ? "text-white/85 hover:text-white" : "text-[#6B5A4E] hover:text-[#3D2E24]",
             )}
-          >
-            <User className="size-[17px] stroke-[1.5]" />
-          </Link>
-          <Link
-            href="/cart"
-            aria-label="Cart"
+            iconClassName="size-[17px] stroke-[1.5]"
+          />
+          <WishlistIconLink
             className={cn(
-              "relative transition-colors",
+              "transition-colors",
               isTransparent ? "text-white/85 hover:text-white" : "text-[#6B5A4E] hover:text-[#3D2E24]",
             )}
-          >
-            <ShoppingBag className="size-[17px] stroke-[1.5]" />
-            {itemCount > 0 ? (
-              <span className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-[#785D44] font-sans text-[9px] font-medium text-white">
-                {itemCount > 9 ? "9+" : itemCount}
-              </span>
-            ) : null}
-          </Link>
+            iconClassName="size-[17px] stroke-[1.5]"
+          />
+          <CartIconLink
+            className={cn(
+              "transition-colors",
+              isTransparent ? "text-white/85 hover:text-white" : "text-[#6B5A4E] hover:text-[#3D2E24]",
+            )}
+            iconClassName="size-[17px] stroke-[1.5]"
+          />
         </div>
       </div>
     </header>

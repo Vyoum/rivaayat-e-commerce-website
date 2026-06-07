@@ -313,10 +313,10 @@
   line-height: 1.55;
 }
 
-/* Postage stamp frame — black rounded outer + scalloped inner perforations */
+/* Postage stamp frame — terracotta rounded outer + scalloped inner perforations */
 .stamp-photo-frame-wrap {
   width: 100%;
-  filter: drop-shadow(0 3px 10px rgba(0, 0, 0, 0.28));
+  filter: drop-shadow(0 3px 10px rgba(166, 74, 42, 0.28));
 }
 
 .stamp-photo-frame {

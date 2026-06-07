@@ -1,3 +1,4 @@
+import { getAuthCallbackUrl } from "@/lib/auth-urls"
 import { getSupabaseBrowser } from "@/lib/supabase/browser"
 
 type OAuthProvider = "google" | "facebook"
@@ -11,7 +12,7 @@ export async function signInWithOAuth(
     return { error: new Error("Authentication is not configured.") }
   }
 
-  const redirectTo = `${window.location.origin}/auth/callback?next=${encodeURIComponent(redirectPath)}`
+  const redirectTo = getAuthCallbackUrl(redirectPath)
 
   const { error } = await supabase.auth.signInWithOAuth({
     provider,

@@ -2,9 +2,12 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import { useRouter } from "next/navigation"
 import { toast } from "sonner"
 
 import { useCart } from "@/components/providers/cart-provider"
+import { useWishlist } from "@/components/providers/wishlist-provider"
+import { ProductBarcodeButton } from "@/components/catalog/product-barcode-button"
 import type { CatalogProduct } from "@/lib/category-catalog"
 
 function formatCardPrice(price: number) {
@@ -24,16 +27,33 @@ type CatalogProductCardProps = {
 }
 
 export function CatalogProductCard({ product }: CatalogProductCardProps) {
+  const router = useRouter()
   const { addItem } = useCart()
+  const { isLoggedIn, isWishlisted, toggleItem } = useWishlist()
   const associationLines = getAssociationLines(product)
+  const wishlisted = isWishlisted(product.id)
 
   function handleAddToCart() {
     addItem(product)
     toast.success(`${product.name} added to cart`)
   }
 
+  function handleToggleWishlist() {
+    if (!isLoggedIn) {
+      const next = encodeURIComponent(window.location.pathname + window.location.search)
+      router.push(`/login?next=${next}`)
+      toast.info("Sign in to save items to your wishlist")
+      return
+    }
+
+    const added = toggleItem(product)
+    toast.success(
+      added ? `${product.name} added to wishlist` : `${product.name} removed from wishlist`,
+    )
+  }
+
   return (
-    <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#E8E0D4]/70 bg-[#FDF9F3] shadow-[0_4px_20px_rgba(61,46,36,0.06)]">
+    <article className="relative flex h-full flex-col overflow-hidden rounded-2xl border border-[#E8E0D4]/70 bg-[#FDF9F3] shadow-[0_4px_20px_rgba(61,46,36,0.06)]">
       <Link
         href={`/products/${product.slug}`}
         className="group relative block aspect-square overflow-hidden rounded-t-2xl bg-[#EDE8DC]"
@@ -74,7 +94,7 @@ export function CatalogProductCard({ product }: CatalogProductCardProps) {
 
         <div aria-hidden className="mt-4 border-t border-dashed border-black/45" />
 
-        <div className="mt-4 font-serif text-black">
+        <div className="mt-4 pr-12 font-serif text-black">
           <p className="text-[11px] font-light leading-none">Artisan</p>
           <p className="mt-2 text-[16px] font-normal leading-none">{product.artisan}</p>
           {associationLines.map((line) => (
@@ -84,6 +104,13 @@ export function CatalogProductCard({ product }: CatalogProductCardProps) {
           ))}
         </div>
       </div>
+
+      <ProductBarcodeButton
+        productId={product.id}
+        isActive={wishlisted}
+        onClick={handleToggleWishlist}
+        className="absolute bottom-4 right-5"
+      />
     </article>
   )
 }

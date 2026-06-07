@@ -2,9 +2,12 @@
 
 import { useState, useEffect } from "react"
 import Link from "next/link"
-import { Menu, X, ShoppingBag, Search, User } from "lucide-react"
+import { Menu, X, Search } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { cn } from "@/lib/utils"
+import { AccountIconLink } from "@/components/account/account-icon-link"
+import { CartIconLink } from "@/components/cart/cart-icon-link"
+import { WishlistIconLink } from "@/components/wishlist/wishlist-icon-link"
 
 const navItems = [
   { label: "Our Story", href: "/outerboxdesign" },
@@ -79,18 +82,14 @@ export function Header() {
           <Button variant="ghost" size="icon" className="hidden md:flex">
             <Search className="h-5 w-5" />
           </Button>
-          <Link href="/login">
-            <Button variant="ghost" size="icon" className="hidden md:flex">
-              <User className="h-5 w-5" />
-            </Button>
-          </Link>
+          <Button variant="ghost" size="icon" className="hidden md:flex" asChild>
+            <AccountIconLink iconClassName="h-5 w-5" />
+          </Button>
           <Button variant="ghost" size="icon" className="relative" asChild>
-            <Link href="/cart">
-              <ShoppingBag className="opacity-100 shadow-xl w-7 h-3.5" />
-              <span className="absolute -top-1 -right-1 w-4 h-4 bg-primary text-primary-foreground text-[10px] rounded-full flex items-center justify-center">
-                0
-              </span>
-            </Link>
+            <WishlistIconLink iconClassName="h-5 w-5" />
+          </Button>
+          <Button variant="ghost" size="icon" className="relative" asChild>
+            <CartIconLink iconClassName="h-5 w-5" />
           </Button>
           <Button
             variant="ghost"

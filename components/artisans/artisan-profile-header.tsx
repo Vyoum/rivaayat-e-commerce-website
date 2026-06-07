@@ -1,9 +1,12 @@
 "use client"
 
 import Link from "next/link"
-import { Search, User, ShoppingBag } from "lucide-react"
+import { Search } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
+import { AccountIconLink } from "@/components/account/account-icon-link"
+import { CartIconLink } from "@/components/cart/cart-icon-link"
+import { WishlistIconLink } from "@/components/wishlist/wishlist-icon-link"
 
 const navItems = [
   { label: "Curation", href: "/jewellery" },
@@ -67,26 +70,27 @@ export function ArtisanProfileHeader({ overHero = false }: { overHero?: boolean 
           >
             <Search className="size-[18px] stroke-[1.5]" />
           </button>
-          <Link
-            href="/profile"
-            aria-label="Account"
+          <AccountIconLink
             className={cn(
               "transition-colors",
               overHero ? "text-white/85 hover:text-white" : "text-[#6B5A4E] hover:text-[#3D2E24]",
             )}
-          >
-            <User className="size-[18px] stroke-[1.5]" />
-          </Link>
-          <Link
-            href="/cart"
-            aria-label="Cart"
+            iconClassName="size-[18px] stroke-[1.5]"
+          />
+          <WishlistIconLink
             className={cn(
               "transition-colors",
               overHero ? "text-white/85 hover:text-white" : "text-[#6B5A4E] hover:text-[#3D2E24]",
             )}
-          >
-            <ShoppingBag className="size-[18px] stroke-[1.5]" />
-          </Link>
+            iconClassName="size-[18px] stroke-[1.5]"
+          />
+          <CartIconLink
+            className={cn(
+              "transition-colors",
+              overHero ? "text-white/85 hover:text-white" : "text-[#6B5A4E] hover:text-[#3D2E24]",
+            )}
+            iconClassName="size-[18px] stroke-[1.5]"
+          />
         </div>
       </div>
     </header>
