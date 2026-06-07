@@ -4,6 +4,8 @@ import { ProfileAccountPage } from "@/components/profile/profile-account-page"
 import { buildFallbackProfile, loadProfileForUser } from "@/lib/profile-server"
 import { createSupabaseServerClient } from "@/lib/supabase/server"
 
+export const dynamic = "force-dynamic"
+
 export default async function ProfilePage() {
   const supabase = await createSupabaseServerClient()
   if (!supabase) {

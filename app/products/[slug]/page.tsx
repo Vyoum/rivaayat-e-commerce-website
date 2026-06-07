@@ -6,6 +6,8 @@ import { ProductDetailContent } from "@/components/product/product-detail-conten
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { getPublishedProductBySlug } from "@/lib/product-server"
 
+export const dynamic = "force-dynamic"
+
 type ProductPageProps = {
   params: Promise<{ slug: string }>
 }

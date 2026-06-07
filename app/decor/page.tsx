@@ -2,6 +2,8 @@ import { CategoryListingPage } from "@/components/catalog/category-listing-page"
 import { buildCategoryConfig } from "@/lib/product-catalog"
 import { getPublishedProductsByCategoryRoute } from "@/lib/product-server"
 
+export const dynamic = "force-dynamic"
+
 export default async function DecorPage() {
   const data = await getPublishedProductsByCategoryRoute("decor")
   if (!data) return null

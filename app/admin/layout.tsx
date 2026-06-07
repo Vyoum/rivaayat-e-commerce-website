@@ -1,6 +1,8 @@
 import type { Metadata } from "next"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
+export const dynamic = "force-dynamic"
+
 export const metadata: Metadata = {
   title: `Admin Console — ${HOUSE_OF_INDIKA}`,
   description: `${HOUSE_OF_INDIKA} admin dashboard`,

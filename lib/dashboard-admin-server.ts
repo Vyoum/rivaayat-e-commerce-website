@@ -157,6 +157,7 @@ export async function loadDashboardOverview(): Promise<DashboardOverview> {
 
   if (!prisma) return empty
 
+  try {
   const today = dayRange(0)
   const yesterday = dayRange(1)
   const monthStart = startOfDay(new Date(new Date().getFullYear(), new Date().getMonth(), 1))
@@ -313,5 +314,9 @@ export async function loadDashboardOverview(): Promise<DashboardOverview> {
     customOrders,
     pendingCustomCount,
     lowStock,
+  }
+  } catch (error) {
+    console.error("[dashboard] failed to load overview:", error)
+    return empty
   }
 }
