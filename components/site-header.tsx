@@ -18,7 +18,7 @@ export type SiteNavItem = {
 const defaultNavItems: SiteNavItem[] = [
   { label: "Our Story", href: "/outerboxdesign" },
   { label: "Collections", href: "/jewellery" },
-  { label: "Journal", href: "#" },
+  { label: "Custom Orders", href: "/custom-orders" },
   { label: "Contact", href: "#" },
 ]
 

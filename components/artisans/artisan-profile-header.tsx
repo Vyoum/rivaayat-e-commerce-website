@@ -12,7 +12,7 @@ const navItems = [
   { label: "Curation", href: "/jewellery" },
   { label: "Artisans", href: "/artisans/devendra-khatri", active: true },
   { label: "Our Story", href: "/outerboxdesign" },
-  { label: "Journal", href: "#" },
+  { label: "Custom Orders", href: "/custom-orders" },
 ]
 
 export function ArtisanProfileHeader({ overHero = false }: { overHero?: boolean }) {

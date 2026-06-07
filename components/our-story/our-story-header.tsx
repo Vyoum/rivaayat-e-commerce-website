@@ -4,7 +4,6 @@ import { useEffect, useState } from "react"
 import Link from "next/link"
 import { Search } from "lucide-react"
 import { cn } from "@/lib/utils"
-import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { AccountIconLink } from "@/components/account/account-icon-link"
 import { CartIconLink } from "@/components/cart/cart-icon-link"
 import { WishlistIconLink } from "@/components/wishlist/wishlist-icon-link"
@@ -15,19 +14,12 @@ const leftNavItems = [
   { label: "Collection", href: "/jewellery", id: "collection" as const },
 ]
 
-type SiteHeaderProps = {
-  activeLink?: "home" | "about" | "collection"
-  centerMode?: "brand" | "story"
-  storyCenterLine1?: string
-  storyCenterLine2?: string
+type OurStoryHeaderProps = {
+  centerLine1: string
+  centerLine2: string
 }
 
-export function SiteHeader({
-  activeLink,
-  centerMode = "brand",
-  storyCenterLine1 = "From Craft",
-  storyCenterLine2 = "to Collection",
-}: SiteHeaderProps) {
+export function OurStoryHeader({ centerLine1, centerLine2 }: OurStoryHeaderProps) {
   const [isScrolled, setIsScrolled] = useState(false)
 
   useEffect(() => {
@@ -69,39 +61,27 @@ export function SiteHeader({
             <Link
               key={item.id}
               href={item.href}
-              className={navLinkClass(activeLink === item.id)}
+              className={navLinkClass(item.id === "about")}
             >
               {item.label}
             </Link>
           ))}
         </nav>
 
-        {centerMode === "story" ? (
-          <Link
-            href="/"
-            className={cn(
-              "hidden text-center sm:block",
-              isScrolled ? "text-[#7D5A44]" : "text-white",
-            )}
-          >
-            <span className="landing-display-italic block text-[17px] leading-tight lg:text-[19px]">
-              {storyCenterLine1}
-            </span>
-            <span className="landing-display block text-[14px] leading-tight lg:text-[15px]">
-              {storyCenterLine2}
-            </span>
-          </Link>
-        ) : (
-          <Link
-            href="/"
-            className={cn(
-              "landing-brand text-center text-[17px] transition-colors duration-300 lg:text-[20px]",
-              isScrolled ? "text-[#8A9DAA]" : "text-white/95",
-            )}
-          >
-            {HOUSE_OF_INDIKA}
-          </Link>
-        )}
+        <Link
+          href="/"
+          className={cn(
+            "hidden text-center sm:block",
+            isScrolled ? "text-[#7D5A44]" : "text-white",
+          )}
+        >
+          <span className="landing-display-italic block text-[17px] leading-tight lg:text-[19px]">
+            {centerLine1}
+          </span>
+          <span className="landing-display block text-[14px] leading-tight lg:text-[15px]">
+            {centerLine2}
+          </span>
+        </Link>
 
         <div className="flex items-center justify-end gap-3 sm:gap-4">
           <button type="button" aria-label="Search" className={iconClass}>
@@ -119,11 +99,6 @@ export function SiteHeader({
             className={iconClass}
             iconClassName="size-[15px] stroke-[1.5]"
             badgeClassName={isScrolled ? undefined : "bg-white text-[#785D44]"}
-            showLabel
-            labelClassName={cn(
-              "landing-label hidden text-[10px] sm:inline",
-              isScrolled ? "text-[#5C4332]/90" : "text-white/88",
-            )}
           />
         </div>
       </div>

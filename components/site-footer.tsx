@@ -32,7 +32,7 @@ const customerPolicyLinks = [
 const usefulLinks = [
   { label: "Our Sourcing Story", href: "/outerboxdesign" },
   { label: "Sustainability & Impact", href: "#" },
-  { label: `The ${INDIKA_HINDI} Journal`, href: "#" },
+  { label: "Custom Orders", href: "/custom-orders" },
   { label: "Careers", href: "#" },
   { label: "Corporate Information", href: "#" },
 ]

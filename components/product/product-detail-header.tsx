@@ -10,7 +10,7 @@ const productNavItems = [
   { label: "Heritage", href: "/outerboxdesign" },
   { label: "Shop", href: "/jewellery", active: true },
   { label: "Artisans", href: "/artisans/devendra-khatri" },
-  { label: "Journal", href: "#" },
+  { label: "Custom Orders", href: "/custom-orders" },
 ]
 
 export function ProductDetailHeader() {

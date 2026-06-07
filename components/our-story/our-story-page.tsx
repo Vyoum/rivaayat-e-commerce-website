@@ -2,7 +2,7 @@ import Image from "next/image"
 import Link from "next/link"
 import { ArrowRight } from "lucide-react"
 
-import { SiteHeader } from "@/components/site/site-header"
+import { OurStoryHeader } from "@/components/our-story/our-story-header"
 import type { OurStoryContent } from "@/lib/our-story-content-shared"
 
 function TornPaperDivider({ fill }: { fill: string }) {
@@ -90,11 +90,9 @@ type OurStoryPageProps = {
 export function OurStoryPage({ content }: OurStoryPageProps) {
   return (
     <main className="landing-root min-h-screen overflow-x-hidden bg-[#F5EBE0]">
-      <SiteHeader
-        activeLink="about"
-        centerMode="story"
-        storyCenterLine1={content.heroTitleLine1}
-        storyCenterLine2={content.heroTitleLine2}
+      <OurStoryHeader
+        centerLine1={content.heroTitleLine1}
+        centerLine2={content.heroTitleLine2}
       />
 
       {/* Hero */}
