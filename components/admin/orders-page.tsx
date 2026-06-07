@@ -11,6 +11,7 @@ import {
 } from "lucide-react"
 import { AdminSidebar } from "./admin-sidebar"
 import { CommerceSubnav } from "./commerce-subnav"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
 const tabs = [
   { label: "All", count: 127 },
@@ -64,7 +65,7 @@ export function OrdersPage() {
       <div className="ml-[220px] flex min-h-screen flex-1 flex-col bg-[#FDF9F3]">
         <header className="flex h-[52px] items-center border-b border-[#EDE5D8] bg-white px-6">
           <span className="font-serif text-[15px] text-[#2B1B12]">
-            House of Indika
+            {HOUSE_OF_INDIKA}
           </span>
         </header>
 

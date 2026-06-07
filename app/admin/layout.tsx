@@ -1,8 +1,9 @@
 import type { Metadata } from "next"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
 export const metadata: Metadata = {
-  title: "Admin Console — House of Indika",
-  description: "House of Indika admin dashboard",
+  title: `Admin Console — ${HOUSE_OF_INDIKA}`,
+  description: `${HOUSE_OF_INDIKA} admin dashboard`,
 }
 
 export default function AdminLayout({

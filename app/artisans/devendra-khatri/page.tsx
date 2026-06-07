@@ -1,9 +1,10 @@
 import type { Metadata } from "next"
 import { ArtisanProfileHeader } from "@/components/artisans/artisan-profile-header"
 import { ArtisanProfileContent } from "@/components/artisans/artisan-profile-content"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
 export const metadata: Metadata = {
-  title: "Devendra Khatri — Master Weaver | House of Indika",
+  title: `Devendra Khatri — Master Weaver | ${HOUSE_OF_INDIKA}`,
   description:
     "Meet Devendra Khatri, master weaver from Maheshwar. Discover handloomed Maheshwari sarees, dupattas, and stoles woven with generations of tradition.",
 }

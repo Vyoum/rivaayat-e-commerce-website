@@ -11,6 +11,7 @@ import {
   ChevronDown,
 } from "lucide-react"
 import { AdminSidebar } from "./admin-sidebar"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
 const tabs = [
   { label: "All", count: 86, active: true },
@@ -71,7 +72,7 @@ export function ProductsPage() {
       <div className="ml-[220px] flex min-h-screen flex-1 flex-col bg-[#F9F6F1]">
         <header className="flex h-[56px] items-center justify-between border-b border-[#EDE5D8] bg-white px-6">
           <span className="font-serif text-[16px] text-[#2B1B12]">
-            House of Indika
+            {HOUSE_OF_INDIKA}
           </span>
           <nav className="flex items-center gap-5">
             {["Dashboard", "Analytics", "Settings"].map((link) => (

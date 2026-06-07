@@ -3,6 +3,7 @@
 import Link from "next/link"
 import { Search, User, ShoppingBag } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
 const navItems = [
   { label: "Curation", href: "/jewellery" },
@@ -30,7 +31,7 @@ export function ArtisanProfileHeader({ overHero = false }: { overHero?: boolean 
               overHero ? "text-white" : "text-[#3D2E24]",
             )}
           >
-            House of Indika
+            {HOUSE_OF_INDIKA}
           </Link>
 
           <nav className="hidden items-center gap-8 md:flex">

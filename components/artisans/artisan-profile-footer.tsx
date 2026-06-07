@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
 const linkColumns = [
   ["Shipping & Returns", "Privacy Policy"],
@@ -12,10 +13,10 @@ export function ArtisanProfileFooter() {
         <div className="flex flex-col gap-10 md:flex-row md:items-start md:justify-between">
           <div>
             <Link href="/" className="font-serif text-[24px] font-normal text-[#3D2E24]">
-              House of Indika
+              {HOUSE_OF_INDIKA}
             </Link>
             <p className="mt-3 font-sans text-[12px] text-[#9A8070]">
-              © 2024 House of Indika. Preserving the poetry of Indian craft.
+              © 2024 {HOUSE_OF_INDIKA}. Preserving the poetry of Indian craft.
             </p>
           </div>
 

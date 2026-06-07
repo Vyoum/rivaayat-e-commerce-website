@@ -181,7 +181,7 @@
   transform: translateY(0);
 }
 
-/* House of Indika landing page — story section paper texture */
+/* House of इंदिका landing page — story section paper texture */
 .landing-texture-wrap {
   position: relative;
   isolation: isolate;
@@ -239,7 +239,7 @@
   background-size: 220px 220px;
 }
 
-/* House of Indika typography — Cormorant Garamond serif */
+/* House of इंदिका typography — Cormorant Garamond serif */
 .landing-root {
   font-family: var(--font-serif), "Cormorant Garamond", Georgia, serif;
   color: #2d1a12;

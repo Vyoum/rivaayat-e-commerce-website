@@ -2,7 +2,9 @@
 
 import Image from "next/image"
 import Link from "next/link"
+import { toast } from "sonner"
 
+import { useCart } from "@/components/providers/cart-provider"
 import type { CatalogProduct } from "@/lib/category-catalog"
 
 function formatCardPrice(price: number) {
@@ -19,11 +21,16 @@ function getAssociationLines(product: CatalogProduct) {
 
 type CatalogProductCardProps = {
   product: CatalogProduct
-  onAddToCart?: (product: CatalogProduct) => void
 }
 
-export function CatalogProductCard({ product, onAddToCart }: CatalogProductCardProps) {
+export function CatalogProductCard({ product }: CatalogProductCardProps) {
+  const { addItem } = useCart()
   const associationLines = getAssociationLines(product)
+
+  function handleAddToCart() {
+    addItem(product)
+    toast.success(`${product.name} added to cart`)
+  }
 
   return (
     <article className="flex h-full flex-col overflow-hidden rounded-2xl border border-[#E8E0D4]/70 bg-[#FDF9F3] shadow-[0_4px_20px_rgba(61,46,36,0.06)]">
@@ -59,7 +66,7 @@ export function CatalogProductCard({ product, onAddToCart }: CatalogProductCardP
 
         <button
           type="button"
-          onClick={() => onAddToCart?.(product)}
+          onClick={handleAddToCart}
           className="mt-4 w-full text-center font-serif text-[26px] font-bold uppercase leading-none tracking-[0.12em] text-black transition-opacity hover:opacity-70 sm:text-[28px]"
         >
           Add to Cart

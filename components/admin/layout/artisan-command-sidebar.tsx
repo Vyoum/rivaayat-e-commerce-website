@@ -14,6 +14,7 @@ import {
   Plus,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
 const navItems = [
   { label: "Dashboard", icon: LayoutGrid, href: "/admin" },
@@ -30,7 +31,7 @@ export function ArtisanCommandSidebar() {
   return (
     <aside className="fixed top-0 left-0 z-30 flex h-screen w-[220px] flex-col bg-[#2D1B14]">
       <div className="px-5 pt-7 pb-5">
-        <p className="font-serif text-[15px] text-white">House of Indika</p>
+        <p className="font-serif text-[15px] text-white">{HOUSE_OF_INDIKA}</p>
         <p className="text-[11px] text-[#9A8070]">Artisan Command Centre</p>
       </div>
 

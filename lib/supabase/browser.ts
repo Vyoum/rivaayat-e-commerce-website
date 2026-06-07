@@ -9,6 +9,13 @@ export function getSupabaseBrowser() {
   const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
   if (!url || !key) return null
 
-  browserClient = createClient(url, key)
+  browserClient = createClient(url, key, {
+    auth: {
+      flowType: "pkce",
+      persistSession: true,
+      detectSessionInUrl: true,
+      autoRefreshToken: true,
+    },
+  })
   return browserClient
 }

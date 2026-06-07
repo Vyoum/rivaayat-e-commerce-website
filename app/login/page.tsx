@@ -2,7 +2,7 @@
 
 import type React from "react"
 
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
 import { Button } from "@/components/ui/button"
@@ -13,6 +13,7 @@ import Link from "next/link"
 import { Eye, EyeOff, ArrowRight } from "lucide-react"
 import { HOUSE_OF_INDIKA, INDIKA_HINDI } from "@/lib/brand"
 import { getSupabaseBrowser } from "@/lib/supabase/browser"
+import { signInWithOAuth } from "@/lib/supabase/oauth"
 
 export default function LoginPage() {
   const router = useRouter()
@@ -20,7 +21,27 @@ export default function LoginPage() {
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
   const [loading, setLoading] = useState(false)
+  const [oauthLoading, setOauthLoading] = useState<"google" | "facebook" | null>(null)
   const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search)
+    const oauthError = params.get("error")
+    if (oauthError) {
+      setError(decodeURIComponent(oauthError.replace(/\+/g, " ")))
+    }
+  }, [])
+
+  const handleGoogleSignIn = async () => {
+    setOauthLoading("google")
+    setError(null)
+
+    const { error: oauthError } = await signInWithOAuth("google", "/profile")
+    if (oauthError) {
+      setError(oauthError.message)
+      setOauthLoading(null)
+    }
+  }
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
@@ -191,10 +212,16 @@ export default function LoginPage() {
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
-                        <Button variant="outline" type="button" className="font-sans h-11 bg-transparent">
-                          Google
+                        <Button
+                          variant="outline"
+                          type="button"
+                          disabled={loading || oauthLoading !== null}
+                          onClick={handleGoogleSignIn}
+                          className="font-sans h-11 bg-transparent"
+                        >
+                          {oauthLoading === "google" ? "Redirecting..." : "Google"}
                         </Button>
-                        <Button variant="outline" type="button" className="font-sans h-11 bg-transparent">
+                        <Button variant="outline" type="button" className="font-sans h-11 bg-transparent" disabled>
                           Facebook
                         </Button>
                       </div>

@@ -24,6 +24,7 @@ import {
 } from "lucide-react"
 import { ProductDetailHeader } from "@/components/product/product-detail-header"
 import { cn } from "@/lib/utils"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { useProfile } from "@/hooks/use-profile"
 import {
   formatCurrency,
@@ -340,7 +341,7 @@ function OurStoryPanel() {
         </div>
         <div className="space-y-4 rounded-b-xl border border-t-0 border-[#E8E0D4] bg-white p-6">
           <p className="font-serif text-[20px] italic leading-relaxed text-[#6B5344]">
-            &quot;House of Indika started with a simple idea — to keep the beauty of handmade Indian crafts alive in a world that moves fast.&quot;
+            &quot;{HOUSE_OF_INDIKA} started with a simple idea — to keep the beauty of handmade Indian crafts alive in a world that moves fast.&quot;
           </p>
           <Link
             href="/outerboxdesign"

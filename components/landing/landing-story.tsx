@@ -41,7 +41,7 @@ export function LandingStory() {
 
           <div className="mt-5 space-y-4 landing-body text-[15px]">
             <p>
-              House of Indika was born from a simple belief — that the beauty of handmade Indian
+              {HOUSE_OF_INDIKA} was born from a simple belief — that the beauty of handmade Indian
               craft deserves to live in contemporary homes, and that the artisans who create it
               deserve dignity, fair wages, and a platform to share their stories with the world.
             </p>

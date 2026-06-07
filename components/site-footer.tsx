@@ -9,7 +9,7 @@ import {
   Twitter,
   Youtube,
 } from "lucide-react"
-import { INDIKA_HINDI } from "@/lib/brand"
+import { HOUSE_OF_INDIKA, INDIKA_HINDI } from "@/lib/brand"
 
 const onlineShoppingLinks = [
   { label: "Jewellery", href: "/jewellery" },
@@ -48,7 +48,7 @@ const trustItems = [
   {
     icon: Shield,
     title: "100% ORIGINAL",
-    description: "100% Original guarantee for all products at House of Indika.",
+    description: `100% Original guarantee for all products at ${HOUSE_OF_INDIKA}.`,
   },
   {
     icon: RefreshCw,
@@ -103,7 +103,7 @@ export function SiteFooter() {
           <Link href="/" className="inline-block">
             <span className="font-serif text-[36px] leading-none text-[#F5F0E8]">{INDIKA_HINDI}</span>
             <span className="mt-1 block font-sans text-[10px] tracking-[0.28em] text-[#F5F0E8]/50">
-              INDIKA
+              House of
             </span>
           </Link>
           <p className="mt-5 font-sans text-[12px] leading-[1.7] text-[#F5F0E8]/65">
@@ -118,7 +118,7 @@ export function SiteFooter() {
 
           <div>
             <h4 className="font-sans text-[10px] font-semibold tracking-[0.2em] text-[#F5F0E8]/45 uppercase">
-              Experience House of Indika on Mobile
+              Experience {HOUSE_OF_INDIKA} on Mobile
             </h4>
 
             <div className="mt-4 flex flex-col gap-2.5">
@@ -199,7 +199,7 @@ export function SiteFooter() {
 
         <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-[#F5F0E8]/10 pt-8 sm:flex-row">
           <p className="font-sans text-[11px] text-[#F5F0E8]/45">
-            © 2025 INDIKA. Crafted with love in India.
+            © 2025 {INDIKA_HINDI}. Crafted with love in India.
           </p>
           <div className="flex items-center gap-5 font-sans text-[11px] text-[#F5F0E8]/45">
             <Link href="#" className="transition-colors hover:text-[#F5F0E8]/75">

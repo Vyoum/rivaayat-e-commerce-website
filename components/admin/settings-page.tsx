@@ -1,6 +1,7 @@
 "use client"
 
 import Link from "next/link"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import {
   Search,
   Bell,
@@ -121,7 +122,7 @@ export function SettingsPage() {
                       </label>
                       <input
                         type="text"
-                        defaultValue="House of Indika"
+                        defaultValue={HOUSE_OF_INDIKA}
                         className="h-10 w-full rounded-lg border border-[#EDE5D8] px-3 text-[13px] outline-none focus:border-[#C4A882]"
                       />
                     </div>
@@ -141,7 +142,7 @@ export function SettingsPage() {
                       </label>
                       <textarea
                         rows={4}
-                        defaultValue="House of Indika celebrates India's rich artisanal heritage. We connect master craftspeople with conscious consumers, ensuring every purchase supports traditional skills and sustainable livelihoods."
+                        defaultValue={`${HOUSE_OF_INDIKA} celebrates India's rich artisanal heritage. We connect master craftspeople with conscious consumers, ensuring every purchase supports traditional skills and sustainable livelihoods.`}
                         className="w-full rounded-lg border border-[#EDE5D8] px-3 py-2 text-[13px] leading-relaxed outline-none focus:border-[#C4A882]"
                       />
                     </div>

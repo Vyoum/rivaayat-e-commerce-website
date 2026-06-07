@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
 const linkColumns = [
   ["The Craft", "Our Story", "Sustainability"],
@@ -12,7 +13,7 @@ export function ProductDetailFooter() {
         <div className="grid gap-12 md:grid-cols-[1.4fr_1fr_1fr] lg:gap-16">
           <div>
             <Link href="/" className="font-serif text-[26px] font-normal text-[#F5F0E8]">
-              House of Indika
+              {HOUSE_OF_INDIKA}
             </Link>
             <p className="mt-4 max-w-xs font-serif text-[15px] leading-relaxed text-[#F5F0E8]/75 italic">
               Bridging ancestral craftsmanship with contemporary living.
@@ -37,7 +38,7 @@ export function ProductDetailFooter() {
 
         <div className="mt-14 border-t border-[#F5F0E8]/15 pt-8 text-center">
           <p className="font-sans text-[12px] tracking-wide text-[#F5F0E8]/55">
-            © 2026 House of Indika. Crafted with Love.
+            © 2026 {HOUSE_OF_INDIKA}. Crafted with Love.
           </p>
         </div>
       </div>

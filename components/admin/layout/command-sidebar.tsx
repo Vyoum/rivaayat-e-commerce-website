@@ -13,6 +13,7 @@ import {
   Plus,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
 const navItems = [
   { label: "Overview", icon: LayoutGrid, href: "/admin" },
@@ -51,7 +52,7 @@ export function CommandSidebar({
           <span className="font-serif text-sm text-[#C4A882]">H</span>
         </div>
         <div>
-          <p className="font-serif text-[15px] text-white">House of Indika</p>
+          <p className="font-serif text-[15px] text-white">{HOUSE_OF_INDIKA}</p>
           <p className="text-[11px] text-[#9A8070]">{subtitle}</p>
         </div>
       </div>

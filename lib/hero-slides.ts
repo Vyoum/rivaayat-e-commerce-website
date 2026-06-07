@@ -6,6 +6,7 @@ import {
   MAX_HERO_SLIDES,
   type HeroSlide,
 } from "@/lib/hero-slides-shared"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
 export type { HeroSlide } from "@/lib/hero-slides-shared"
 export { DEFAULT_HERO_SLIDES, MAX_HERO_SLIDES } from "@/lib/hero-slides-shared"
@@ -59,7 +60,7 @@ export async function createHeroSlide(input: {
   const slide: HeroSlide = {
     id: randomUUID(),
     imageUrl: input.imageUrl,
-    alt: input.alt || "House of Indika hero image",
+    alt: input.alt || `${HOUSE_OF_INDIKA} hero image`,
     sortOrder: data.slides.length,
     isActive: true,
   }

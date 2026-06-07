@@ -4,6 +4,7 @@ import Link from "next/link"
 import { usePathname } from "next/navigation"
 import { Settings, HelpCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { adminNavItems, isAdminNavActive } from "./nav-config"
 
 export function AdminSidebar() {
@@ -13,7 +14,7 @@ export function AdminSidebar() {
     <aside className="fixed top-0 left-0 z-30 flex h-screen w-[220px] flex-col bg-[#2D1E17]">
       <div className="px-5 pt-7 pb-6">
         <p className="text-[11px] font-medium tracking-[0.15em] text-[#6B5344] uppercase">
-          House of Indika
+          {HOUSE_OF_INDIKA}
         </p>
         <p className="mt-1 text-[13px] font-medium text-[#C4A882]">
           Admin Console

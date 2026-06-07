@@ -4,7 +4,10 @@ import { useMemo, useState, useCallback } from "react"
 import Link from "next/link"
 import { Lock, Minus, Plus, Trash2, CheckCircle, XCircle, Loader2 } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
+import { useCart } from "@/components/providers/cart-provider"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { cn } from "@/lib/utils"
+import type { CartItem } from "@/lib/cart"
 
 declare global {
   interface Window {
@@ -24,47 +27,11 @@ function loadRazorpayScript(): Promise<boolean> {
   })
 }
 
-type CartItem = {
-  id: string
-  name: string
-  variant: string
-  artisan: string
-  price: number
-  quantity: number
-  image: string
-  tag?: string
-}
-
-const initialItems: CartItem[] = [
-  {
-    id: "1",
-    name: "The Kashi Urn",
-    variant: "Terracotta / Large",
-    artisan: "Master Potter Ramesh, Jaipur",
-    price: 4500,
-    quantity: 1,
-    image:
-      "https://images.unsplash.com/photo-1578749556568-bc2c40e68b61?w=400&h=500&fit=crop",
-    tag: "HANDCRAFTED",
-  },
-  {
-    id: "2",
-    name: "Varanasi Silk Throw",
-    variant: "Sage & Gold",
-    artisan: "The Weavers Guild, Varanasi",
-    price: 8200,
-    quantity: 2,
-    image:
-      "https://images.unsplash.com/photo-1586023492125-27b2c045efd7?w=400&h=500&fit=crop",
-    tag: "HANDCRAFTED",
-  },
-]
-
-const tipOptions = [50, 100, 200]
-
 function formatCurrency(amount: number) {
   return `₹${amount.toLocaleString("en-IN")}`
 }
+
+const tipOptions = [50, 100, 200]
 
 function LotusIcon() {
   return (
@@ -182,7 +149,7 @@ function CartItemCard({
 type PaymentState = "idle" | "loading" | "success" | "error"
 
 export function CartContent() {
-  const [items, setItems] = useState<CartItem[]>(initialItems)
+  const { items, updateQuantity, removeItem, clearCart } = useCart()
   const [selectedTip, setSelectedTip] = useState<number>(100)
   const [promoCode, setPromoCode] = useState("")
   const [giftMessage, setGiftMessage] = useState(false)
@@ -195,17 +162,6 @@ export function CartContent() {
   )
 
   const total = subtotal + selectedTip
-
-  const updateQuantity = (id: string, quantity: number) => {
-    if (quantity < 1) return
-    setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, quantity } : item)),
-    )
-  }
-
-  const removeItem = (id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id))
-  }
 
   const handleRazorpayCheckout = useCallback(async () => {
     setPaymentState("loading")
@@ -231,7 +187,7 @@ export function CartContent() {
         key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
         amount: order.amount,
         currency: order.currency,
-        name: "House of Indika",
+        name: HOUSE_OF_INDIKA,
         description: "Handcrafted treasures",
         order_id: order.id,
         handler: async (response: {
@@ -248,7 +204,7 @@ export function CartContent() {
           if (result.verified) {
             setPaymentState("success")
             setPaymentMessage(`Payment confirmed! ID: ${result.paymentId}`)
-            setItems([])
+            clearCart()
           } else {
             setPaymentState("error")
             setPaymentMessage("Payment verification failed. Please contact support.")
@@ -273,7 +229,7 @@ export function CartContent() {
       setPaymentState("error")
       setPaymentMessage(err instanceof Error ? err.message : "Something went wrong.")
     }
-  }, [total])
+  }, [total, clearCart])
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12 sm:py-16">

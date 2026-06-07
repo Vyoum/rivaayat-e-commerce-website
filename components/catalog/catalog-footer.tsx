@@ -11,7 +11,7 @@ export function CatalogFooter() {
             {HOUSE_OF_INDIKA}
           </Link>
           <p className="mt-3 font-sans text-[12px] text-[#F5F0E8]/55">
-            © 2026 House of Indika. Crafted with Heritage.
+            © 2026 {HOUSE_OF_INDIKA}. Crafted with Heritage.
           </p>
           <div className="mt-4 flex items-center gap-3">
             <button

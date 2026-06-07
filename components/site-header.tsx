@@ -5,6 +5,7 @@ import { Search, ShoppingBag, User } from "lucide-react"
 
 import { cn } from "@/lib/utils"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
+import { useCart } from "@/components/providers/cart-provider"
 
 export type SiteNavItem = {
   label: string
@@ -31,6 +32,7 @@ export function SiteHeader({
   className,
 }: SiteHeaderProps) {
   const isTransparent = variant === "transparent"
+  const { itemCount } = useCart()
 
   return (
     <header
@@ -99,11 +101,16 @@ export function SiteHeader({
             href="/cart"
             aria-label="Cart"
             className={cn(
-              "transition-colors",
+              "relative transition-colors",
               isTransparent ? "text-white/85 hover:text-white" : "text-[#6B5A4E] hover:text-[#3D2E24]",
             )}
           >
             <ShoppingBag className="size-[17px] stroke-[1.5]" />
+            {itemCount > 0 ? (
+              <span className="absolute -right-1.5 -top-1.5 flex size-4 items-center justify-center rounded-full bg-[#785D44] font-sans text-[9px] font-medium text-white">
+                {itemCount > 9 ? "9+" : itemCount}
+              </span>
+            ) : null}
           </Link>
         </div>
       </div>

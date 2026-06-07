@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
 const paymentMethods = ["UPI", "VISA", "MASTERCARD", "COD"]
 
@@ -29,7 +30,7 @@ export function CartFooter() {
           href="/"
           className="font-serif text-[36px] font-light tracking-wide text-[#2B1B12] sm:text-[42px]"
         >
-          House of Indika
+          {HOUSE_OF_INDIKA}
         </Link>
 
         <nav className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2">
@@ -45,7 +46,7 @@ export function CartFooter() {
         </nav>
 
         <p className="font-sans text-[12px] text-[#9A8070]">
-          © 2026 House of Indika. Crafted with Love.{" "}
+          © 2026 {HOUSE_OF_INDIKA}. Crafted with Love.{" "}
           <span className="text-[#6B5344]">नमस्ते</span>
         </p>
       </div>

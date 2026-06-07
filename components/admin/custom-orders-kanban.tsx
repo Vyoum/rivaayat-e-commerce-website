@@ -5,6 +5,7 @@ import Link from "next/link"
 import { Search, X, Sparkles } from "lucide-react"
 import { AdminSidebar } from "./admin-sidebar"
 import { CommerceSubnav } from "./commerce-subnav"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
 const columns = [
   {
@@ -82,7 +83,7 @@ export function CustomOrdersKanban() {
         <header className="flex h-[52px] items-center justify-between border-b border-[#EDE5D8] bg-white px-6">
           <div className="flex items-center gap-6">
             <span className="text-[13px] font-medium text-[#6B5344]">
-              House of Indika
+              {HOUSE_OF_INDIKA}
             </span>
             <nav className="flex items-center gap-5">
               {["Dashboard", "Analytics", "Reports"].map((tab) => (

@@ -14,6 +14,7 @@ import {
   Plus,
 } from "lucide-react"
 import { cn } from "@/lib/utils"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
 const navItems = [
   { label: "Artisan Hub", icon: Palette, href: "/admin/community/artisans" },
@@ -30,7 +31,7 @@ export function ArtisanAdminSidebar() {
   return (
     <aside className="fixed top-0 left-0 z-30 flex h-screen w-[220px] flex-col bg-[#F2EBE1]">
       <div className="px-5 pt-7 pb-5">
-        <p className="font-serif text-[17px] text-[#2B1B12]">House of Indika</p>
+        <p className="font-serif text-[17px] text-[#2B1B12]">{HOUSE_OF_INDIKA}</p>
         <p className="text-[11px] text-[#9A8070]">Artisan Admin</p>
       </div>
 

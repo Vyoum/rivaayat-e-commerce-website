@@ -14,6 +14,7 @@ import {
   ChevronDown,
 } from "lucide-react"
 import { AdminSidebar } from "./admin-sidebar"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
 export function AddProductPage() {
   return (
@@ -31,7 +32,7 @@ export function AddProductPage() {
             />
           </div>
           <span className="mx-auto font-serif text-[16px] text-[#2B1B12]">
-            House of Indika
+            {HOUSE_OF_INDIKA}
           </span>
           <nav className="flex items-center gap-4">
             {["Dashboard", "Analytics", "Settings"].map((l) => (

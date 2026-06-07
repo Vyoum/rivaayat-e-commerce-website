@@ -1,4 +1,5 @@
 import Link from "next/link"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { AdminSidebar } from "./admin-sidebar"
 import { AdminTopbar } from "./admin-topbar"
 import { FileText, Image, PenLine, Plus } from "lucide-react"
@@ -49,7 +50,7 @@ export function ContentPage() {
                 Content
               </h1>
               <p className="mt-1 text-[13px] text-[#9A8070]">
-                Manage stories, blog posts, and media across House of Indika.
+                Manage stories, blog posts, and media across {HOUSE_OF_INDIKA}.
               </p>
             </div>
             <button

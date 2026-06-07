@@ -13,12 +13,15 @@ import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
 import { Eye, EyeOff, ArrowRight } from "lucide-react"
 import { getSupabaseBrowser } from "@/lib/supabase/browser"
+import { signInWithOAuth } from "@/lib/supabase/oauth"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
 export default function SignupPage() {
   const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
   const [loading, setLoading] = useState(false)
+  const [oauthLoading, setOauthLoading] = useState<"google" | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     firstName: "",
@@ -63,6 +66,17 @@ export default function SignupPage() {
     }
 
     router.push("/profile")
+  }
+
+  const handleGoogleSignUp = async () => {
+    setOauthLoading("google")
+    setError(null)
+
+    const { error: oauthError } = await signInWithOAuth("google", "/profile")
+    if (oauthError) {
+      setError(oauthError.message)
+      setOauthLoading(null)
+    }
   }
 
   return (
@@ -133,7 +147,7 @@ export default function SignupPage() {
                   <CardHeader className="space-y-3 pb-8">
                     <CardTitle className="font-serif text-3xl text-center">Create Account</CardTitle>
                     <CardDescription className="font-sans text-center text-base">
-                      Join the Rivaayat family today
+                      Join the {HOUSE_OF_INDIKA} family today
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
@@ -274,10 +288,16 @@ export default function SignupPage() {
                       </div>
 
                       <div className="grid grid-cols-2 gap-4">
-                        <Button variant="outline" type="button" className="font-sans h-11 bg-transparent">
-                          Google
+                        <Button
+                          variant="outline"
+                          type="button"
+                          disabled={loading || oauthLoading !== null}
+                          onClick={handleGoogleSignUp}
+                          className="font-sans h-11 bg-transparent"
+                        >
+                          {oauthLoading === "google" ? "Redirecting..." : "Google"}
                         </Button>
-                        <Button variant="outline" type="button" className="font-sans h-11 bg-transparent">
+                        <Button variant="outline" type="button" className="font-sans h-11 bg-transparent" disabled>
                           Facebook
                         </Button>
                       </div>
