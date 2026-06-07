@@ -20,25 +20,16 @@ import type { AdminProduct } from "@/types/product"
 import type { AdminProductTab } from "@/types/product"
 import { ADMIN_CATEGORY_COLORS } from "@/lib/product-catalog"
 
-const tabs: { label: AdminProductTab; countKey: keyof ProductCounts }[] = [
-  { label: "All", countKey: "All" },
-  { label: "Clothing", countKey: "clothing" },
-  { label: "Jewellery", countKey: "jewellery" },
-  { label: "Décor", countKey: "decor" },
-  { label: "Custom Food", countKey: "custom_food" },
-  { label: "Draft", countKey: "Draft" },
+const tabs: { label: string; tab: AdminProductTab; countKey: keyof ProductCounts }[] = [
+  { label: "All", tab: "All", countKey: "All" },
+  { label: "Clothing", tab: "clothing", countKey: "clothing" },
+  { label: "Jewellery", tab: "jewellery", countKey: "jewellery" },
+  { label: "Décor", tab: "decor", countKey: "decor" },
+  { label: "Custom Food", tab: "custom_food", countKey: "custom_food" },
+  { label: "Draft", tab: "Draft", countKey: "Draft" },
 ]
 
 type ProductCounts = Record<"All" | "jewellery" | "clothing" | "decor" | "custom_food" | "Draft", number>
-
-const tabToApi: Record<string, AdminProductTab> = {
-  All: "All",
-  Clothing: "clothing",
-  Jewellery: "jewellery",
-  "Décor": "decor",
-  "Custom Food": "custom_food",
-  Draft: "Draft",
-}
 
 export function ProductsPage() {
   const [products, setProducts] = useState<AdminProduct[]>([])
@@ -131,14 +122,13 @@ export function ProductsPage() {
 
           <div className="mb-5 flex items-center gap-1 border-b border-[#EDE5D8]">
             {tabs.map((tab) => {
-              const apiTab = tabToApi[tab.label === "All" ? "All" : tab.label] ?? tab.label
-              const isActive = activeTab === apiTab
+              const isActive = activeTab === tab.tab
 
               return (
                 <button
                   key={tab.label}
                   type="button"
-                  onClick={() => setActiveTab(apiTab)}
+                  onClick={() => setActiveTab(tab.tab)}
                   className={`px-4 py-2.5 text-[13px] font-medium ${
                     isActive
                       ? "border-b-2 border-[#2B1B12] text-[#2B1B12]"

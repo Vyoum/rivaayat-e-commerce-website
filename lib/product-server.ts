@@ -89,6 +89,10 @@ export async function getPublishedProductsByCategoryRoute(categoryRoute: string)
   if (!dbCategory) return null
 
   const prisma = getPrisma()
+  if (!prisma) {
+    return { meta, products: [] }
+  }
+
   const products = await prisma.product.findMany({
     where: { category: dbCategory, isPublished: true },
     orderBy: { createdAt: "desc" },
@@ -103,6 +107,8 @@ export async function getPublishedProductsByCategoryRoute(categoryRoute: string)
 
 export async function getPublishedProductBySlug(slug: string) {
   const prisma = getPrisma()
+  if (!prisma) return null
+
   const product = await prisma.product.findFirst({
     where: { slug, isPublished: true },
     select: productSelect,

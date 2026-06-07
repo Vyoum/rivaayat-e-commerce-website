@@ -84,6 +84,7 @@ function mapDbProductToAdmin(product: {
 
 async function ensureUniqueSlug(baseSlug: string, excludeId?: string) {
   const prisma = getPrisma()
+  if (!prisma) throw new Error("Database unavailable")
   let slug = baseSlug
   let counter = 1
 
@@ -114,6 +115,8 @@ export async function loadAdminProducts(options?: { tab?: AdminProductTab; query
         : {}
 
   const prisma = getPrisma()
+  if (!prisma) return []
+
   const products = await prisma.product.findMany({
     where: {
       ...where,
@@ -136,6 +139,10 @@ export async function loadAdminProducts(options?: { tab?: AdminProductTab; query
 
 export async function getAdminProductCounts() {
   const prisma = getPrisma()
+  if (!prisma) {
+    return { All: 0, jewellery: 0, clothing: 0, decor: 0, custom_food: 0, Draft: 0 }
+  }
+
   const [all, jewellery, clothing, decor, customFood, draft] = await Promise.all([
     prisma.product.count(),
     prisma.product.count({ where: { category: "jewellery" } }),
@@ -157,6 +164,8 @@ export async function getAdminProductCounts() {
 
 export async function getAdminProductById(id: string) {
   const prisma = getPrisma()
+  if (!prisma) return null
+
   const product = await prisma.product.findUnique({
     where: { id },
     select: productSelect,
@@ -167,6 +176,7 @@ export async function getAdminProductById(id: string) {
 
 export async function createAdminProduct(input: CreateProductInput) {
   const prisma = getPrisma()
+  if (!prisma) throw new Error("Database unavailable")
   const baseSlug = slugify(input.slug?.trim() || input.name)
   if (!baseSlug) throw new Error("Product name must contain valid characters for a URL slug")
 
@@ -203,6 +213,7 @@ export async function createAdminProduct(input: CreateProductInput) {
 
 export async function updateAdminProduct(id: string, input: UpdateProductInput) {
   const prisma = getPrisma()
+  if (!prisma) throw new Error("Database unavailable")
   const existing = await prisma.product.findUnique({ where: { id }, select: { id: true, slug: true } })
   if (!existing) throw new Error("Product not found")
 
@@ -247,6 +258,8 @@ export async function updateAdminProduct(id: string, input: UpdateProductInput) 
 
 export async function deleteAdminProduct(id: string) {
   const prisma = getPrisma()
+  if (!prisma) throw new Error("Database unavailable")
+
   await prisma.product.delete({ where: { id } })
 }
 
