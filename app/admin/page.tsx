@@ -11,10 +11,37 @@ import { loadDashboardOverview } from "@/lib/dashboard-admin-server"
 import { loadAdminOrders } from "@/lib/order-admin-server"
 
 export default async function AdminPage() {
-  const [overview, recentOrders] = await Promise.all([
+  const [overviewResult, ordersResult] = await Promise.allSettled([
     loadDashboardOverview(),
     loadAdminOrders(),
   ])
+
+  const overview =
+    overviewResult.status === "fulfilled"
+      ? overviewResult.value
+      : {
+          greeting: { period: "morning" as const, dateLabel: new Date().toLocaleDateString("en-IN") },
+          metrics: [],
+          revenue: {
+            totalRevenue: 0,
+            avgOrderValue: 0,
+            paidOrderRate: 0,
+            daily: [],
+            maxDailyRevenue: 1,
+          },
+          customOrders: [],
+          pendingCustomCount: 0,
+          lowStock: [],
+        }
+
+  const recentOrders = ordersResult.status === "fulfilled" ? ordersResult.value : []
+
+  if (overviewResult.status === "rejected") {
+    console.error("[admin page] dashboard load failed:", overviewResult.reason)
+  }
+  if (ordersResult.status === "rejected") {
+    console.error("[admin page] orders load failed:", ordersResult.reason)
+  }
 
   return (
     <div className="flex min-h-screen">

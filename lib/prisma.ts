@@ -22,14 +22,31 @@ function resetPrismaCache() {
   globalForPrisma.prisma = undefined
 }
 
+function normalizeDatabaseUrl(connectionString: string) {
+  try {
+    const url = new URL(connectionString)
+    if (url.hostname.includes("pooler.supabase.com") && !url.searchParams.has("pgbouncer")) {
+      url.searchParams.set("pgbouncer", "true")
+    }
+    if (!url.searchParams.has("sslmode")) {
+      url.searchParams.set("sslmode", "require")
+    }
+    return url.toString()
+  } catch {
+    return connectionString
+  }
+}
+
 function createPrismaClient() {
   const connectionString = process.env.DATABASE_URL
   if (!connectionString) return null
 
+  const normalizedUrl = normalizeDatabaseUrl(connectionString)
+
   if (
     globalForPrisma.pgPool &&
     globalForPrisma.databaseUrl &&
-    globalForPrisma.databaseUrl !== connectionString
+    globalForPrisma.databaseUrl !== normalizedUrl
   ) {
     resetPrismaCache()
   }
@@ -45,14 +62,18 @@ function createPrismaClient() {
   const pool =
     globalForPrisma.pgPool ??
     new Pool({
-      connectionString,
-      ssl: connectionString.includes("supabase")
+      connectionString: normalizedUrl,
+      ssl: normalizedUrl.includes("supabase")
         ? { rejectUnauthorized: false }
         : undefined,
+      max: 1,
+      idleTimeoutMillis: 0,
+      connectionTimeoutMillis: 15000,
+      allowExitOnIdle: true,
     })
 
   globalForPrisma.pgPool = pool
-  globalForPrisma.databaseUrl = connectionString
+  globalForPrisma.databaseUrl = normalizedUrl
   globalForPrisma.schemaFingerprint = SCHEMA_FINGERPRINT
 
   return new PrismaClient({

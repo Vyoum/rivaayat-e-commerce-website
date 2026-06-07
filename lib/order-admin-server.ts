@@ -125,26 +125,31 @@ export async function loadAdminOrders(options?: {
   const query = options?.query?.trim()
   const statusFilter = tabStatusFilters[tab]
 
-  const orders = await prisma.order.findMany({
-    where: {
-      ...(statusFilter ? { status: { in: statusFilter } } : {}),
-      ...(query
-        ? {
-            OR: [
-              { razorpayOrderId: { contains: query, mode: "insensitive" } },
-              { razorpayPaymentId: { contains: query, mode: "insensitive" } },
-              { user: { name: { contains: query, mode: "insensitive" } } },
-              { user: { email: { contains: query, mode: "insensitive" } } },
-              { items: { some: { productName: { contains: query, mode: "insensitive" } } } },
-            ],
-          }
-        : {}),
-    },
-    include: orderInclude,
-    orderBy: { createdAt: "desc" },
-  })
+  try {
+    const orders = await prisma.order.findMany({
+      where: {
+        ...(statusFilter ? { status: { in: statusFilter } } : {}),
+        ...(query
+          ? {
+              OR: [
+                { razorpayOrderId: { contains: query, mode: "insensitive" } },
+                { razorpayPaymentId: { contains: query, mode: "insensitive" } },
+                { user: { name: { contains: query, mode: "insensitive" } } },
+                { user: { email: { contains: query, mode: "insensitive" } } },
+                { items: { some: { productName: { contains: query, mode: "insensitive" } } } },
+              ],
+            }
+          : {}),
+      },
+      include: orderInclude,
+      orderBy: { createdAt: "desc" },
+    })
 
-  return orders.map(mapDbOrderToAdmin)
+    return orders.map(mapDbOrderToAdmin)
+  } catch (error) {
+    console.error("[admin orders] failed to load orders:", error)
+    return []
+  }
 }
 
 export async function loadAdminOrderById(orderId: string): Promise<AdminOrder | null> {
