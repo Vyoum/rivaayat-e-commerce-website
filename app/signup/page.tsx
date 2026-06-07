@@ -4,7 +4,7 @@ import type React from "react"
 
 import { useState } from "react"
 import { useRouter } from "next/navigation"
-import { Header } from "@/components/header"
+import { AuthHeader } from "@/components/auth/auth-header"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -83,7 +83,7 @@ export default function SignupPage() {
 
   return (
     <main className="min-h-screen bg-background">
-      <Header />
+      <AuthHeader />
 
       <div className="relative min-h-screen pt-24 pb-16">
         {/* Hero Background Image */}

@@ -3,8 +3,12 @@ import type { Category } from "@prisma/client"
 import { getCategoryMeta, mapDbProductToCatalog } from "@/lib/product-catalog"
 import { getPrisma } from "@/lib/prisma"
 import type { StoreProductDetail } from "@/types/product"
-import { CATEGORY_ENUM_TO_ROUTE, CATEGORY_LABELS } from "@/lib/product-catalog"
-import { categoryCatalog } from "@/lib/category-catalog"
+import {
+  CATEGORY_ENUM_TO_ROUTE,
+  CATEGORY_LABELS,
+  CATEGORY_ROUTE_TO_ENUM,
+} from "@/lib/product-catalog"
+import { categoryCatalog, getProductBySlug, type CatalogProduct } from "@/lib/category-catalog"
 
 const productSelect = {
   id: true,
@@ -30,6 +34,37 @@ function getSubcategoryLabel(categoryRoute: string, subcategory: string | null) 
   if (!subcategory) return null
   const config = categoryCatalog[categoryRoute]
   return config?.subcategories.find((entry) => entry.id === subcategory)?.label ?? subcategory
+}
+
+function mapCatalogProductToDetail(
+  product: CatalogProduct,
+  categoryRoute: string,
+  category: Category,
+): StoreProductDetail {
+  return {
+    id: product.id,
+    name: product.name,
+    slug: product.slug,
+    price: product.price,
+    description: `${product.name} — handcrafted by ${product.artisan} in ${product.location}.`,
+    story: null,
+    materialsCare: null,
+    category,
+    categoryRoute,
+    categoryLabel: CATEGORY_LABELS[category],
+    subcategory: product.subcategory ?? null,
+    subcategoryLabel: getSubcategoryLabel(categoryRoute, product.subcategory ?? null),
+    artisanName: product.artisan,
+    location: product.location,
+    imageUrls: [product.image],
+    badge: product.badge ?? null,
+    handcrafted: product.badge === "HANDCRAFTED",
+    inStock: true,
+  }
+}
+
+function getCatalogProductsForRoute(categoryRoute: string): CatalogProduct[] {
+  return categoryCatalog[categoryRoute]?.products ?? []
 }
 
 function mapDbProductToDetail(product: {
@@ -89,31 +124,52 @@ export async function getPublishedProductsByCategoryRoute(categoryRoute: string)
   if (!dbCategory) return null
 
   const prisma = getPrisma()
-  if (!prisma) {
-    return { meta, products: [] }
+  let products: ReturnType<typeof mapDbProductToCatalog>[] = []
+
+  if (prisma) {
+    try {
+      const dbProducts = await prisma.product.findMany({
+        where: { category: dbCategory, isPublished: true },
+        orderBy: { createdAt: "desc" },
+        select: productSelect,
+      })
+      products = dbProducts.map(mapDbProductToCatalog)
+    } catch (error) {
+      console.error("[product-server] failed to load products:", error)
+    }
   }
 
-  const products = await prisma.product.findMany({
-    where: { category: dbCategory, isPublished: true },
-    orderBy: { createdAt: "desc" },
-    select: productSelect,
-  })
+  if (products.length === 0) {
+    products = getCatalogProductsForRoute(categoryRoute)
+  }
 
   return {
     meta,
-    products: products.map(mapDbProductToCatalog),
+    products,
   }
 }
 
 export async function getPublishedProductBySlug(slug: string) {
   const prisma = getPrisma()
-  if (!prisma) return null
 
-  const product = await prisma.product.findFirst({
-    where: { slug, isPublished: true },
-    select: productSelect,
-  })
+  if (prisma) {
+    try {
+      const product = await prisma.product.findFirst({
+        where: { slug, isPublished: true },
+        select: productSelect,
+      })
 
-  if (!product) return null
-  return mapDbProductToDetail(product)
+      if (product) return mapDbProductToDetail(product)
+    } catch (error) {
+      console.error("[product-server] failed to load product by slug:", error)
+    }
+  }
+
+  const catalogHit = getProductBySlug(slug)
+  if (!catalogHit) return null
+
+  const category = CATEGORY_ROUTE_TO_ENUM[catalogHit.category.slug]
+  if (!category) return null
+
+  return mapCatalogProductToDetail(catalogHit.product, catalogHit.category.slug, category)
 }
