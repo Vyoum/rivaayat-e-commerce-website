@@ -3,6 +3,7 @@ import path from "path"
 
 import {
   DEFAULT_OUR_STORY_CONTENT,
+  mergeOurStoryContent,
   type OurStoryContent,
 } from "@/lib/our-story-content-shared"
 import {
@@ -20,14 +21,7 @@ type OurStoryContentFile = {
 }
 
 function mergeWithDefaults(content: Partial<OurStoryContent>): OurStoryContent {
-  return {
-    ...DEFAULT_OUR_STORY_CONTENT,
-    ...content,
-    bodyParagraphs: [
-      content.bodyParagraphs?.[0] ?? DEFAULT_OUR_STORY_CONTENT.bodyParagraphs[0],
-      content.bodyParagraphs?.[1] ?? DEFAULT_OUR_STORY_CONTENT.bodyParagraphs[1],
-    ],
-  }
+  return mergeOurStoryContent(content)
 }
 
 async function readFile(): Promise<OurStoryContentFile> {

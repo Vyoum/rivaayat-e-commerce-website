@@ -9,11 +9,19 @@ import { LowStockAlerts } from "@/components/admin/low-stock-alerts"
 import { QuickActions } from "@/components/admin/quick-actions"
 import { loadDashboardOverview } from "@/lib/dashboard-admin-server"
 import { loadAdminOrders } from "@/lib/order-admin-server"
+import { getAdminProfile } from "@/lib/admin-profile-server"
 
 export default async function AdminPage() {
-  const [overviewResult, ordersResult] = await Promise.allSettled([
-    loadDashboardOverview(),
-    loadAdminOrders(),
+  const [overviewResult, ordersResult, profile] = await Promise.all([
+    loadDashboardOverview().then(
+      (value) => ({ status: "fulfilled" as const, value }),
+      (reason) => ({ status: "rejected" as const, reason }),
+    ),
+    loadAdminOrders().then(
+      (value) => ({ status: "fulfilled" as const, value }),
+      (reason) => ({ status: "rejected" as const, reason }),
+    ),
+    getAdminProfile(),
   ])
 
   const overview =
@@ -43,6 +51,8 @@ export default async function AdminPage() {
     console.error("[admin page] orders load failed:", ordersResult.reason)
   }
 
+  const adminName = profile?.name ?? "Admin"
+
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
@@ -51,7 +61,7 @@ export default async function AdminPage() {
         <AdminTopbar />
 
         <main className="flex-1 space-y-5 p-6">
-          <GreetingBanner greeting={overview.greeting} />
+          <GreetingBanner greeting={overview.greeting} adminName={adminName} />
           <MetricCards metrics={overview.metrics} />
 
           <div className="grid grid-cols-[1fr_340px] gap-5">

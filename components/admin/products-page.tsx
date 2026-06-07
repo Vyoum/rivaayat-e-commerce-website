@@ -14,6 +14,8 @@ import {
 } from "lucide-react"
 
 import { AdminSidebar } from "./admin-sidebar"
+import { AdminUserAvatar } from "./admin-user-avatar"
+import { useAdminProfile } from "./admin-session-provider"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { formatProductPrice } from "@/lib/product-utils"
 import type { AdminProduct } from "@/types/product"
@@ -32,6 +34,7 @@ const tabs: { label: string; tab: AdminProductTab; countKey: keyof ProductCounts
 type ProductCounts = Record<"All" | "jewellery" | "clothing" | "decor" | "custom_food" | "Draft", number>
 
 export function ProductsPage() {
+  const profile = useAdminProfile()
   const [products, setProducts] = useState<AdminProduct[]>([])
   const [counts, setCounts] = useState<ProductCounts>({
     All: 0,
@@ -96,11 +99,7 @@ export function ProductsPage() {
             <button type="button" className="text-[#6B5344]">
               <HelpCircle className="size-[18px]" />
             </button>
-            <img
-              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face"
-              alt=""
-              className="size-8 rounded-full object-cover"
-            />
+            {profile ? <AdminUserAvatar profile={profile} size="sm" /> : null}
           </div>
         </header>
 

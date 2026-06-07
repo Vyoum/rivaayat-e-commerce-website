@@ -1,6 +1,13 @@
+"use client"
+
 import { Bell, Search } from "lucide-react"
 
+import { AdminUserAvatar } from "./admin-user-avatar"
+import { useAdminProfile } from "./admin-session-provider"
+
 export function AdminTopbar() {
+  const profile = useAdminProfile()
+
   return (
     <header className="sticky top-0 z-20 flex h-[60px] items-center gap-6 border-b border-[#EDE5D8] bg-white px-6">
       <h1 className="shrink-0 text-[15px] font-semibold text-[#2D1E17]">
@@ -24,11 +31,7 @@ export function AdminTopbar() {
         >
           <Bell className="size-[18px]" strokeWidth={1.75} />
         </button>
-        <img
-          src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face"
-          alt="Profile"
-          className="size-8 rounded-full object-cover"
-        />
+        {profile ? <AdminUserAvatar profile={profile} size="sm" /> : null}
       </div>
     </header>
   )

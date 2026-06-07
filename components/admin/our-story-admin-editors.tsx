@@ -240,87 +240,207 @@ function OurStoryEditor() {
         </div>
       )}
 
-      <div className="grid gap-4 rounded-xl border border-[#EDE5D8] bg-white p-5 shadow-sm lg:grid-cols-2">
-        <ImageUploadField
-          label="Hero background image"
-          imageUrl={content.heroImageUrl}
-          uploading={uploadingHero}
-          onUpload={handleHeroUpload}
-          onUrlChange={(heroImageUrl) => setContent({ ...content, heroImageUrl })}
-        />
+      <div className="space-y-5">
+        <div className="grid gap-4 rounded-xl border border-[#EDE5D8] bg-white p-5 shadow-sm lg:grid-cols-2">
+          <ImageUploadField
+            label="Hero background image"
+            imageUrl={content.heroImageUrl}
+            uploading={uploadingHero}
+            onUpload={handleHeroUpload}
+            onUrlChange={(heroImageUrl) => setContent({ ...content, heroImageUrl })}
+          />
 
-        <div className="space-y-4">
-          <div>
-            <FieldLabel>Eyebrow label</FieldLabel>
-            <TextInput
-              value={content.eyebrow}
-              onChange={(eyebrow) => setContent({ ...content, eyebrow })}
-            />
-          </div>
-          <div>
-            <FieldLabel>Page title</FieldLabel>
-            <TextInput
-              value={content.title}
-              onChange={(title) => setContent({ ...content, title })}
-            />
-          </div>
-          <div>
-            <FieldLabel>Hero intro</FieldLabel>
-            <TextArea
-              value={content.intro}
-              onChange={(intro) => setContent({ ...content, intro })}
-              rows={4}
-            />
+          <div className="space-y-4">
+            <div>
+              <FieldLabel>Hero title line 1</FieldLabel>
+              <TextInput
+                value={content.heroTitleLine1}
+                onChange={(heroTitleLine1) => setContent({ ...content, heroTitleLine1 })}
+                placeholder="From Craft"
+              />
+            </div>
+            <div>
+              <FieldLabel>Hero title line 2</FieldLabel>
+              <TextInput
+                value={content.heroTitleLine2}
+                onChange={(heroTitleLine2) => setContent({ ...content, heroTitleLine2 })}
+                placeholder="to Collection"
+              />
+            </div>
+            <div>
+              <FieldLabel>Craftsmanship intro</FieldLabel>
+              <TextArea
+                value={content.craftsmanshipIntro}
+                onChange={(craftsmanshipIntro) => setContent({ ...content, craftsmanshipIntro })}
+                rows={3}
+              />
+            </div>
+            <div>
+              <FieldLabel>Craftsmanship closing line</FieldLabel>
+              <TextInput
+                value={content.craftsmanshipClosing}
+                onChange={(craftsmanshipClosing) => setContent({ ...content, craftsmanshipClosing })}
+              />
+            </div>
           </div>
         </div>
 
-        <div>
-          <FieldLabel>Section title</FieldLabel>
-          <TextInput
-            value={content.sectionTitle}
-            onChange={(sectionTitle) => setContent({ ...content, sectionTitle })}
-          />
+        <div className="rounded-xl border border-[#EDE5D8] bg-white p-5 shadow-sm">
+          <h3 className="font-serif text-[16px] font-semibold text-[#2D1E17]">Heritage section</h3>
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <ImageUploadField
+              label="Heritage image"
+              imageUrl={content.heritageImageUrl}
+              uploading={false}
+              onUpload={handleHeroUpload}
+              onUrlChange={(heritageImageUrl) => setContent({ ...content, heritageImageUrl })}
+            />
+            <div className="space-y-4">
+              <div>
+                <FieldLabel>Title</FieldLabel>
+                <TextInput
+                  value={content.heritageTitle}
+                  onChange={(heritageTitle) => setContent({ ...content, heritageTitle })}
+                />
+              </div>
+              <div>
+                <FieldLabel>Body</FieldLabel>
+                <TextArea
+                  value={content.heritageBody}
+                  onChange={(heritageBody) => setContent({ ...content, heritageBody })}
+                  rows={3}
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <FieldLabel>CTA label</FieldLabel>
+                  <TextInput
+                    value={content.heritageCtaLabel}
+                    onChange={(heritageCtaLabel) => setContent({ ...content, heritageCtaLabel })}
+                  />
+                </div>
+                <div>
+                  <FieldLabel>CTA link</FieldLabel>
+                  <TextInput
+                    value={content.heritageCtaHref}
+                    onChange={(heritageCtaHref) => setContent({ ...content, heritageCtaHref })}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div>
-          <FieldLabel>Section subtitle</FieldLabel>
-          <TextInput
-            value={content.sectionSubtitle}
-            onChange={(sectionSubtitle) => setContent({ ...content, sectionSubtitle })}
-          />
+
+        <div className="rounded-xl border border-[#EDE5D8] bg-white p-5 shadow-sm">
+          <h3 className="font-serif text-[16px] font-semibold text-[#2D1E17]">Symphony section</h3>
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <ImageUploadField
+              label="Workshop background image"
+              imageUrl={content.symphonyImageUrl}
+              uploading={false}
+              onUpload={handleHeroUpload}
+              onUrlChange={(symphonyImageUrl) => setContent({ ...content, symphonyImageUrl })}
+            />
+            <div className="space-y-4">
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <FieldLabel>Title</FieldLabel>
+                  <TextInput
+                    value={content.symphonyTitle}
+                    onChange={(symphonyTitle) => setContent({ ...content, symphonyTitle })}
+                  />
+                </div>
+                <div>
+                  <FieldLabel>Title accent (italic)</FieldLabel>
+                  <TextInput
+                    value={content.symphonyTitleAccent}
+                    onChange={(symphonyTitleAccent) =>
+                      setContent({ ...content, symphonyTitleAccent })
+                    }
+                  />
+                </div>
+              </div>
+              <div>
+                <FieldLabel>Body</FieldLabel>
+                <TextArea
+                  value={content.symphonyBody}
+                  onChange={(symphonyBody) => setContent({ ...content, symphonyBody })}
+                  rows={3}
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <FieldLabel>CTA label</FieldLabel>
+                  <TextInput
+                    value={content.symphonyCtaLabel}
+                    onChange={(symphonyCtaLabel) => setContent({ ...content, symphonyCtaLabel })}
+                  />
+                </div>
+                <div>
+                  <FieldLabel>CTA link</FieldLabel>
+                  <TextInput
+                    value={content.symphonyCtaHref}
+                    onChange={(symphonyCtaHref) => setContent({ ...content, symphonyCtaHref })}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
-        <div>
-          <FieldLabel>Body paragraph 1</FieldLabel>
-          <TextArea
-            value={content.bodyParagraphs[0]}
-            onChange={(value) =>
-              setContent({
-                ...content,
-                bodyParagraphs: [value, content.bodyParagraphs[1]],
-              })
-            }
-            rows={4}
-          />
-        </div>
-        <div>
-          <FieldLabel>Body paragraph 2</FieldLabel>
-          <TextArea
-            value={content.bodyParagraphs[1]}
-            onChange={(value) =>
-              setContent({
-                ...content,
-                bodyParagraphs: [content.bodyParagraphs[0], value],
-              })
-            }
-            rows={4}
-          />
-        </div>
-        <div className="lg:col-span-2">
-          <FieldLabel>Highlighted quote</FieldLabel>
-          <TextArea
-            value={content.quote}
-            onChange={(quote) => setContent({ ...content, quote })}
-            rows={3}
-          />
+
+        <div className="rounded-xl border border-[#EDE5D8] bg-white p-5 shadow-sm">
+          <h3 className="font-serif text-[16px] font-semibold text-[#2D1E17]">Footer CTA</h3>
+          <div className="mt-4 grid gap-4 lg:grid-cols-2">
+            <div className="space-y-4">
+              <ImageUploadField
+                label="Footer background"
+                imageUrl={content.footerBackgroundUrl}
+                uploading={false}
+                onUpload={handleHeroUpload}
+                onUrlChange={(footerBackgroundUrl) => setContent({ ...content, footerBackgroundUrl })}
+              />
+              <ImageUploadField
+                label="Footer thumbnail left"
+                imageUrl={content.footerThumbLeftUrl}
+                uploading={false}
+                onUpload={handleHeroUpload}
+                onUrlChange={(footerThumbLeftUrl) => setContent({ ...content, footerThumbLeftUrl })}
+              />
+              <ImageUploadField
+                label="Footer thumbnail right"
+                imageUrl={content.footerThumbRightUrl}
+                uploading={false}
+                onUpload={handleHeroUpload}
+                onUrlChange={(footerThumbRightUrl) => setContent({ ...content, footerThumbRightUrl })}
+              />
+            </div>
+            <div className="space-y-4">
+              <div>
+                <FieldLabel>Footer text</FieldLabel>
+                <TextArea
+                  value={content.footerText}
+                  onChange={(footerText) => setContent({ ...content, footerText })}
+                  rows={3}
+                />
+              </div>
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <FieldLabel>CTA label</FieldLabel>
+                  <TextInput
+                    value={content.footerCtaLabel}
+                    onChange={(footerCtaLabel) => setContent({ ...content, footerCtaLabel })}
+                  />
+                </div>
+                <div>
+                  <FieldLabel>CTA link</FieldLabel>
+                  <TextInput
+                    value={content.footerCtaHref}
+                    onChange={(footerCtaHref) => setContent({ ...content, footerCtaHref })}
+                  />
+                </div>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
     </div>

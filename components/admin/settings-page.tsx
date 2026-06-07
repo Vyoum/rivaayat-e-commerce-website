@@ -11,6 +11,8 @@ import {
   Lock,
 } from "lucide-react"
 import { AdminSidebar } from "./admin-sidebar"
+import { AdminUserAvatar } from "./admin-user-avatar"
+import { useAdminProfile } from "./admin-session-provider"
 
 const settingsNav = [
   "Store Information",
@@ -23,6 +25,8 @@ const settingsNav = [
 ]
 
 export function SettingsPage() {
+  const profile = useAdminProfile()
+
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
@@ -55,11 +59,7 @@ export function SettingsPage() {
             <button type="button" className="text-[#6B5344]">
               <History className="size-[18px]" />
             </button>
-            <img
-              src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face"
-              alt=""
-              className="size-8 rounded-full object-cover"
-            />
+            {profile ? <AdminUserAvatar profile={profile} size="sm" /> : null}
           </div>
         </header>
 

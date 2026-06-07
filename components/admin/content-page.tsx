@@ -4,6 +4,7 @@ import { AdminSidebar } from "./admin-sidebar"
 import { AdminTopbar } from "./admin-topbar"
 import { CategoryCardsManager } from "./category-cards-manager"
 import { HeroSlideshowManager } from "./hero-slideshow-manager"
+import { HomepageStoryManager } from "./homepage-story-manager"
 import { FileText, PenLine } from "lucide-react"
 
 const otherContentItems = [
@@ -43,6 +44,10 @@ export function ContentPage() {
 
           <section className="rounded-xl border border-[#EDE5D8] bg-[#FAF7F2]/50 p-5 shadow-sm">
             <HeroSlideshowManager compact />
+          </section>
+
+          <section className="rounded-xl border border-[#EDE5D8] bg-[#FAF7F2]/50 p-5 shadow-sm">
+            <HomepageStoryManager compact />
           </section>
 
           <section className="rounded-xl border border-[#EDE5D8] bg-[#FAF7F2]/50 p-5 shadow-sm">

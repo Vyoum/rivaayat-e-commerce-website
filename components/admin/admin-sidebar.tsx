@@ -6,9 +6,12 @@ import { Settings, HelpCircle } from "lucide-react"
 import { cn } from "@/lib/utils"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { adminNavItems, isAdminNavActive } from "./nav-config"
+import { useAdminProfile } from "./admin-session-provider"
+import { AdminUserAvatar } from "./admin-user-avatar"
 
 export function AdminSidebar() {
   const pathname = usePathname()
+  const profile = useAdminProfile()
 
   return (
     <aside className="fixed top-0 left-0 z-30 flex h-screen w-[220px] flex-col bg-[#2D1E17]">
@@ -74,17 +77,15 @@ export function AdminSidebar() {
       </div>
 
       <div className="border-t border-[#3D2B21] px-4 py-5">
-        <div className="flex items-center gap-3">
-          <img
-            src="https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=80&h=80&fit=crop&crop=face"
-            alt="Kala"
-            className="size-9 rounded-full object-cover"
-          />
-          <div>
-            <p className="text-[13px] font-medium text-white">Kala</p>
-            <p className="text-[11px] text-[#9A8070]">Brand Owner</p>
+        {profile ? (
+          <div className="flex items-center gap-3">
+            <AdminUserAvatar profile={profile} />
+            <div className="min-w-0">
+              <p className="truncate text-[13px] font-medium text-white">{profile.name}</p>
+              <p className="truncate text-[11px] text-[#9A8070]">{profile.roleLabel}</p>
+            </div>
           </div>
-        </div>
+        ) : null}
       </div>
     </aside>
   )

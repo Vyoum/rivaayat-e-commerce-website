@@ -3,22 +3,25 @@ import { Calendar } from "lucide-react"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import type { DashboardOverview } from "@/lib/dashboard-admin-server"
 
-const periodGreetings = {
-  morning: "Good morning, Kala.",
-  afternoon: "Good afternoon, Kala.",
-  evening: "Good evening, Kala.",
-}
+const periodLabels = {
+  morning: "Good morning",
+  afternoon: "Good afternoon",
+  evening: "Good evening",
+} as const
 
 type GreetingBannerProps = {
   greeting: DashboardOverview["greeting"]
+  adminName: string
 }
 
-export function GreetingBanner({ greeting }: GreetingBannerProps) {
+export function GreetingBanner({ greeting, adminName }: GreetingBannerProps) {
+  const firstName = adminName.trim().split(/\s+/)[0] || adminName
+
   return (
     <div className="flex items-center justify-between rounded-xl bg-[#E8D8C3] px-6 py-5">
       <div>
         <h2 className="font-serif text-[26px] leading-tight font-semibold text-[#2D1E17]">
-          {periodGreetings[greeting.period]}
+          {periodLabels[greeting.period]}, {firstName}.
         </h2>
         <p className="mt-1 text-[13px] text-[#6B5344]">
           Here&apos;s how {HOUSE_OF_INDIKA} is doing today.

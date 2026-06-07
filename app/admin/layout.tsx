@@ -3,6 +3,8 @@ import { redirect } from "next/navigation"
 import type { Metadata } from "next"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { getAdminAccess } from "@/lib/admin-auth-server"
+import { getAdminProfile } from "@/lib/admin-profile-server"
+import { AdminSessionProvider } from "@/components/admin/admin-session-provider"
 
 export const dynamic = "force-dynamic"
 
@@ -40,9 +42,16 @@ export default async function AdminLayout({
     redirect("/login?next=/admin&error=admin_required")
   }
 
+  const profile = (await getAdminProfile()) ?? {
+    name: access.email?.split("@")[0] ?? "Admin",
+    email: access.email ?? "",
+    avatarUrl: null,
+    roleLabel: "Administrator",
+  }
+
   return (
     <div className="min-h-screen bg-[#FDF8F1] [font-family:var(--font-sans)]">
-      {children}
+      <AdminSessionProvider profile={profile}>{children}</AdminSessionProvider>
     </div>
   )
 }
