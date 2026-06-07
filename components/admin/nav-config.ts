@@ -30,7 +30,7 @@ export const adminNavItems: AdminNavItem[] = [
   {
     label: "Community",
     icon: Users,
-    href: "/admin/community/artisans",
+    href: "/admin/community",
     match: (pathname) => pathname.startsWith("/admin/community"),
   },
   {

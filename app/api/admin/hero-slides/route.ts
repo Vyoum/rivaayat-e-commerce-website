@@ -27,12 +27,16 @@ export async function POST(request: Request) {
       return NextResponse.json({ slides })
     }
 
-    const { imageUrl, alt } = body
+    const { imageUrl, alt, mediaType } = body
     if (!imageUrl || typeof imageUrl !== "string") {
       return NextResponse.json({ error: "imageUrl is required" }, { status: 400 })
     }
 
-    const slide = await createHeroSlide({ imageUrl, alt: alt ?? "" })
+    const slide = await createHeroSlide({
+      imageUrl,
+      alt: alt ?? "",
+      mediaType: mediaType === "video" ? "video" : "image",
+    })
     return NextResponse.json({ slide }, { status: 201 })
   } catch (error) {
     return NextResponse.json(

@@ -1,6 +1,7 @@
 export type HeroSlide = {
   id: string
   imageUrl: string
+  mediaType?: "image" | "video"
   alt: string
   sortOrder: number
   isActive: boolean

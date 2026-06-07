@@ -6,6 +6,7 @@ import {
   MAX_HERO_SLIDES,
   type HeroSlide,
 } from "@/lib/hero-slides-shared"
+import { readHeroSlidesFromRemote, writeHeroSlidesToRemote } from "@/lib/hero-slides-remote"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
 export type { HeroSlide } from "@/lib/hero-slides-shared"
@@ -19,6 +20,16 @@ type HeroSlidesFile = {
 
 async function readFile(): Promise<HeroSlidesFile> {
   try {
+    const remote = await readHeroSlidesFromRemote()
+    if (remote) {
+      const parsed = JSON.parse(remote) as HeroSlidesFile
+      if (Array.isArray(parsed.slides)) return parsed
+    }
+  } catch {
+    // fall through to local file
+  }
+
+  try {
     const raw = await fs.readFile(DATA_FILE, "utf-8")
     const parsed = JSON.parse(raw) as HeroSlidesFile
     if (!Array.isArray(parsed.slides)) return { slides: DEFAULT_HERO_SLIDES }
@@ -29,8 +40,10 @@ async function readFile(): Promise<HeroSlidesFile> {
 }
 
 async function writeFile(data: HeroSlidesFile) {
+  const serialized = JSON.stringify(data, null, 2)
+  await writeHeroSlidesToRemote(serialized)
   await fs.mkdir(path.dirname(DATA_FILE), { recursive: true })
-  await fs.writeFile(DATA_FILE, JSON.stringify(data, null, 2), "utf-8")
+  await fs.writeFile(DATA_FILE, serialized, "utf-8")
 }
 
 function sortSlides(slides: HeroSlide[]) {
@@ -51,6 +64,7 @@ export async function getAllHeroSlides(): Promise<HeroSlide[]> {
 export async function createHeroSlide(input: {
   imageUrl: string
   alt: string
+  mediaType?: "image" | "video"
 }): Promise<HeroSlide> {
   const data = await readFile()
   if (data.slides.length >= MAX_HERO_SLIDES) {
@@ -60,6 +74,7 @@ export async function createHeroSlide(input: {
   const slide: HeroSlide = {
     id: randomUUID(),
     imageUrl: input.imageUrl,
+    mediaType: input.mediaType ?? "image",
     alt: input.alt || `${HOUSE_OF_INDIKA} hero image`,
     sortOrder: data.slides.length,
     isActive: true,
@@ -72,7 +87,7 @@ export async function createHeroSlide(input: {
 
 export async function updateHeroSlide(
   id: string,
-  patch: Partial<Pick<HeroSlide, "imageUrl" | "alt" | "sortOrder" | "isActive">>,
+  patch: Partial<Pick<HeroSlide, "imageUrl" | "alt" | "sortOrder" | "isActive" | "mediaType">>,
 ): Promise<HeroSlide> {
   const data = await readFile()
   const index = data.slides.findIndex((s) => s.id === id)

@@ -53,14 +53,25 @@ export function LandingHero({ slides: initialSlides }: LandingHeroProps) {
               index === currentSlide ? "opacity-100" : "opacity-0"
             }`}
           >
-            <Image
-              src={slide.imageUrl}
-              alt={slide.alt}
-              fill
-              className="object-cover object-center brightness-[0.92] saturate-[1.05]"
-              priority={index === 0}
-              sizes="100vw"
-            />
+            {slide.mediaType === "video" ? (
+              <video
+                src={slide.imageUrl}
+                autoPlay
+                muted
+                loop
+                playsInline
+                className="size-full object-cover object-center brightness-[0.92] saturate-[1.05]"
+              />
+            ) : (
+              <Image
+                src={slide.imageUrl}
+                alt={slide.alt}
+                fill
+                className="object-cover object-center brightness-[0.92] saturate-[1.05]"
+                priority={index === 0}
+                sizes="100vw"
+              />
+            )}
           </div>
         ))}
         <div className="absolute inset-0 bg-gradient-to-b from-black/35 via-black/15 to-black/45" />

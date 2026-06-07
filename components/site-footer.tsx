@@ -199,7 +199,7 @@ export function SiteFooter() {
 
         <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-[#F5F0E8]/10 pt-8 sm:flex-row">
           <p className="font-sans text-[11px] text-[#F5F0E8]/45">
-            © 2025 {INDIKA_HINDI}. Crafted with love in India.
+            © 2026 {INDIKA_HINDI}. Crafted with love in India.
           </p>
           <div className="flex items-center gap-5 font-sans text-[11px] text-[#F5F0E8]/45">
             <Link href="#" className="transition-colors hover:text-[#F5F0E8]/75">

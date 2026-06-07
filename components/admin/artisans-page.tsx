@@ -12,6 +12,8 @@ import {
   Video,
 } from "lucide-react"
 import { AdminSidebar } from "./admin-sidebar"
+import { CommunitySubnav } from "./community-subnav"
+import { CommunityUsersBlock } from "./community-users-block"
 
 const artisans = [
   {
@@ -79,6 +81,12 @@ export function ArtisansPage() {
                   and assignments.
                 </p>
               </div>
+            </div>
+
+            <CommunitySubnav />
+
+            <div className="mb-5 max-w-sm">
+              <CommunityUsersBlock />
             </div>
 
             <div className="mb-5 grid grid-cols-3 gap-4">
