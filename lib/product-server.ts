@@ -137,8 +137,11 @@ export async function getPublishedProductsByCategoryRoute(categoryRoute: string)
     } catch (error) {
       console.error("[product-server] failed to load products:", error)
     }
+
+    return { meta, products }
   }
 
+  // Demo catalog only when no database is configured
   if (products.length === 0) {
     products = getCatalogProductsForRoute(categoryRoute)
   }
@@ -163,6 +166,8 @@ export async function getPublishedProductBySlug(slug: string) {
     } catch (error) {
       console.error("[product-server] failed to load product by slug:", error)
     }
+
+    return null
   }
 
   const catalogHit = getProductBySlug(slug)

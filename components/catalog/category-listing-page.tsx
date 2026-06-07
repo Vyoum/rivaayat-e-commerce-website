@@ -18,7 +18,7 @@ const filterLabels: Record<ActiveFilter, string> = {
 }
 
 export function CategoryListingPage({ category }: { category: CategoryConfig }) {
-  const [activeSubcategory, setActiveSubcategory] = useState(category.subcategories[0]?.id ?? "")
+  const [activeSubcategory, setActiveSubcategory] = useState("")
   const [sortBy, setSortBy] = useState("best-selling")
   const [page, setPage] = useState(1)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
@@ -86,6 +86,22 @@ export function CategoryListingPage({ category }: { category: CategoryConfig }) 
           </p>
 
           <div className="mt-6 flex flex-wrap gap-3">
+            <button
+              type="button"
+              onClick={() => {
+                setActiveSubcategory("")
+                setPage(1)
+                setVisibleCount(PAGE_SIZE)
+              }}
+              className={cn(
+                "inline-flex items-center gap-2 rounded-full px-5 py-2 font-sans text-[12px] font-medium transition-colors",
+                activeSubcategory === ""
+                  ? "bg-[#785D44] text-white"
+                  : "border border-[#C4B5A5] bg-[#FCF8F4] text-[#6B5344] hover:border-[#785D44]",
+              )}
+            >
+              All Pieces
+            </button>
             {category.subcategories.map((sub, index) => {
               const isActive = activeSubcategory === sub.id
               return (
