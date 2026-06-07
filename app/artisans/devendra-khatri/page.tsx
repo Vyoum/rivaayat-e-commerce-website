@@ -1,6 +1,5 @@
 import type { Metadata } from "next"
 import { ArtisanProfileHeader } from "@/components/artisans/artisan-profile-header"
-import { ArtisanProfileFooter } from "@/components/artisans/artisan-profile-footer"
 import { ArtisanProfileContent } from "@/components/artisans/artisan-profile-content"
 
 export const metadata: Metadata = {
@@ -14,7 +13,6 @@ export default function DevendraKhatriPage() {
     <main className="relative min-h-screen bg-[#FDF8F4]">
       <ArtisanProfileHeader overHero />
       <ArtisanProfileContent />
-      <ArtisanProfileFooter />
     </main>
   )
 }

@@ -1,6 +1,5 @@
 import type { Metadata } from "next"
 import { CartHeader } from "@/components/cart/cart-header"
-import { CartFooter } from "@/components/cart/cart-footer"
 import { CartContent } from "@/components/cart/cart-content"
 
 export const metadata: Metadata = {
@@ -14,7 +13,6 @@ export default function CartPage() {
     <main className="min-h-screen bg-[#FCFAF5]">
       <CartHeader />
       <CartContent />
-      <CartFooter />
     </main>
   )
 }

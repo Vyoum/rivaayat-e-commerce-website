@@ -3,8 +3,8 @@
 import type React from "react"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
@@ -12,10 +12,14 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Checkbox } from "@/components/ui/checkbox"
 import Link from "next/link"
 import { Eye, EyeOff, ArrowRight } from "lucide-react"
+import { getSupabaseBrowser } from "@/lib/supabase/browser"
 
 export default function SignupPage() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [showConfirmPassword, setShowConfirmPassword] = useState(false)
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
   const [formData, setFormData] = useState({
     firstName: "",
     lastName: "",
@@ -25,10 +29,40 @@ export default function SignupPage() {
     agreeToTerms: false,
   })
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle signup logic here
-    console.log("Signup attempt:", formData)
+    setLoading(true)
+    setError(null)
+
+    if (formData.password !== formData.confirmPassword) {
+      setError("Passwords do not match.")
+      setLoading(false)
+      return
+    }
+
+    const supabase = getSupabaseBrowser()
+    if (!supabase) {
+      setError("Authentication is not configured.")
+      setLoading(false)
+      return
+    }
+
+    const fullName = `${formData.firstName} ${formData.lastName}`.trim()
+    const { error: signUpError } = await supabase.auth.signUp({
+      email: formData.email,
+      password: formData.password,
+      options: {
+        data: { full_name: fullName },
+      },
+    })
+
+    if (signUpError) {
+      setError(signUpError.message)
+      setLoading(false)
+      return
+    }
+
+    router.push("/profile")
   }
 
   return (
@@ -103,6 +137,11 @@ export default function SignupPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
+                    {error && (
+                      <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 font-sans text-sm text-red-700">
+                        {error}
+                      </p>
+                    )}
                     <form onSubmit={handleSubmit} className="space-y-5">
                       <div className="grid grid-cols-2 gap-4">
                         <div className="space-y-2">
@@ -220,8 +259,8 @@ export default function SignupPage() {
                         </label>
                       </div>
 
-                      <Button type="submit" className="w-full h-11 font-sans text-base group" size="lg">
-                        Create Account
+                      <Button type="submit" disabled={loading} className="w-full h-11 font-sans text-base group" size="lg">
+                        {loading ? "Creating account..." : "Create Account"}
                         <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                       </Button>
 
@@ -261,7 +300,6 @@ export default function SignupPage() {
         </div>
       </div>
 
-      <Footer />
     </main>
   )
 }

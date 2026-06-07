@@ -3,28 +3,53 @@
 import type React from "react"
 
 import { useState } from "react"
+import { useRouter } from "next/navigation"
 import { Header } from "@/components/header"
-import { Footer } from "@/components/footer"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import Link from "next/link"
 import { Eye, EyeOff, ArrowRight } from "lucide-react"
+import { HOUSE_OF_INDIKA, INDIKA_HINDI } from "@/lib/brand"
+import { getSupabaseBrowser } from "@/lib/supabase/browser"
 
 export default function LoginPage() {
+  const router = useRouter()
   const [showPassword, setShowPassword] = useState(false)
   const [email, setEmail] = useState("")
   const [password, setPassword] = useState("")
+  const [loading, setLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle login logic here
-    console.log("Login attempt:", { email, password })
+    setLoading(true)
+    setError(null)
+
+    const supabase = getSupabaseBrowser()
+    if (!supabase) {
+      setError("Authentication is not configured.")
+      setLoading(false)
+      return
+    }
+
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    })
+
+    if (signInError) {
+      setError(signInError.message)
+      setLoading(false)
+      return
+    }
+
+    router.push("/profile")
   }
 
   return (
-    <main className="min-h-screen bg-background">
+    <main className="min-h-screen bg-[#ede0d0]">
       <Header />
 
       <div className="relative min-h-screen pt-24 pb-16">
@@ -36,7 +61,7 @@ export default function LoginPage() {
               alt="Artisan at work"
               className="h-full w-full object-cover opacity-20"
             />
-            <div className="absolute inset-0 bg-gradient-to-br from-background/95 via-background/90 to-background/95" />
+            <div className="absolute inset-0 bg-gradient-to-br from-[#ede0d0]/95 via-[#f2e6d8]/90 to-[#ede0d0]/95" />
           </div>
         </div>
 
@@ -47,28 +72,29 @@ export default function LoginPage() {
               {/* Left Column - Hero Text */}
               <div className="space-y-8 text-center lg:text-left">
                 <div className="space-y-4">
-                  <h1 className="font-serif text-5xl font-bold tracking-tight text-foreground sm:text-6xl lg:text-7xl text-balance">
-                    Welcome back to Rivaayat
+                  <h1 className="text-balance text-center font-serif text-5xl font-bold tracking-tight text-[#2D1A12] sm:text-6xl lg:text-left lg:text-7xl">
+                    Welcome back to{" "}
+                    <span className="landing-brand block text-[#8A9DAA] sm:inline">{HOUSE_OF_INDIKA}</span>
                   </h1>
-                  <p className="font-serif text-xl text-muted-foreground italic lg:text-2xl">
-                    रिवायत में वापसी पर स्वागत है
+                  <p className="font-serif text-xl italic text-[#7D5A44] lg:text-2xl">
+                    {INDIKA_HINDI} में वापसी पर स्वागत है
                   </p>
-                  <p className="font-sans text-lg text-muted-foreground mt-6 leading-relaxed">
+                  <p className="mt-6 font-sans text-lg leading-relaxed text-[#5C4332]">
                     Sign in to continue your journey with handcrafted stories.
                   </p>
                 </div>
 
-                <div className="rounded-2xl border border-border/50 bg-card/50 backdrop-blur-sm p-8 space-y-4">
+                <div className="rounded-2xl border border-[#8A6A55]/20 bg-[#E6D6C4]/60 p-8 backdrop-blur-sm space-y-4">
                   <div className="flex items-start gap-3">
-                    <div className="mt-1 h-2 w-2 rounded-full bg-accent flex-shrink-0" />
-                    <p className="font-sans text-base text-foreground/90 leading-relaxed text-pretty">
+                    <div className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-[#B85A32]" />
+                    <p className="font-sans text-base leading-relaxed text-pretty text-[#2D1A12]/90">
                       Log in to view your saved favourites, track orders, and discover recommendations tailored to your
                       style and taste.
                     </p>
                   </div>
                   <div className="flex items-start gap-3">
-                    <div className="mt-1 h-2 w-2 rounded-full bg-accent flex-shrink-0" />
-                    <p className="font-sans text-base text-foreground/90 leading-relaxed text-pretty">
+                    <div className="mt-1 h-2 w-2 flex-shrink-0 rounded-full bg-[#B85A32]" />
+                    <p className="font-sans text-base leading-relaxed text-pretty text-[#2D1A12]/90">
                       New here? Create an account to explore curated collections, customise your food orders, and stay
                       updated on fresh drops and craft stories.
                     </p>
@@ -79,7 +105,7 @@ export default function LoginPage() {
                 <div className="hidden lg:block">
                   <div className="flex items-center gap-4">
                     <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
-                    <span className="font-serif text-sm text-muted-foreground italic">
+                    <span className="font-serif text-sm italic text-[#7A6658]">
                       Every login is a return to tradition
                     </span>
                     <div className="h-px flex-1 bg-gradient-to-r from-transparent via-border to-transparent" />
@@ -89,7 +115,7 @@ export default function LoginPage() {
 
               {/* Right Column - Login Form */}
               <div className="flex items-center justify-center">
-                <Card className="w-full max-w-md border-border/50 bg-card/80 backdrop-blur-sm shadow-2xl">
+                <Card className="w-full max-w-md border-[#8A6A55]/20 bg-[#FAF6F0]/90 shadow-2xl backdrop-blur-sm">
                   <CardHeader className="space-y-3 pb-8">
                     <CardTitle className="font-serif text-3xl text-center">Sign In</CardTitle>
                     <CardDescription className="font-sans text-center text-base">
@@ -97,6 +123,11 @@ export default function LoginPage() {
                     </CardDescription>
                   </CardHeader>
                   <CardContent>
+                    {error && (
+                      <p className="mb-4 rounded-lg border border-red-200 bg-red-50 px-3 py-2 font-sans text-sm text-red-700">
+                        {error}
+                      </p>
+                    )}
                     <form onSubmit={handleSubmit} className="space-y-6">
                       <div className="space-y-2">
                         <Label htmlFor="email" className="font-sans text-sm font-medium">
@@ -145,8 +176,8 @@ export default function LoginPage() {
                         </div>
                       </div>
 
-                      <Button type="submit" className="w-full h-11 font-sans text-base group" size="lg">
-                        Sign In
+                      <Button type="submit" disabled={loading} className="w-full h-11 font-sans text-base group" size="lg">
+                        {loading ? "Signing in..." : "Sign In"}
                         <ArrowRight className="ml-2 h-4 w-4 transition-transform group-hover:translate-x-1" />
                       </Button>
 
@@ -186,7 +217,6 @@ export default function LoginPage() {
         </div>
       </div>
 
-      <Footer />
     </main>
   )
 }

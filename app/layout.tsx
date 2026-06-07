@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Cormorant_Garamond, DM_Sans, Playfair_Display } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
+import { SiteFooterGate } from "@/components/site-footer-gate"
 import "./globals.css"
 
 const cormorant = Cormorant_Garamond({
@@ -41,6 +42,7 @@ export default function RootLayout({
         className={`${cormorant.variable} ${dmSans.variable} ${playfair.variable} font-serif antialiased`}
       >
         {children}
+        <SiteFooterGate />
         <Analytics />
       </body>
     </html>
