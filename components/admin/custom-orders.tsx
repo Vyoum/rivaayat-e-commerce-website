@@ -39,10 +39,13 @@ export function CustomOrders({ orders, pendingCount }: CustomOrdersProps) {
               className="rounded-xl border border-[#E8D8C3] bg-white/60 p-4"
             >
               <div className="flex items-start justify-between gap-2">
-                <h4 className="text-[14px] font-semibold text-[#2D1E17]">{order.title}</h4>
+                <div>
+                  <h4 className="text-[14px] font-semibold text-[#2D1E17]">{order.title}</h4>
+                  <p className="mt-0.5 text-[12px] text-[#6B5344]">{order.customerName}</p>
+                </div>
                 <span className="shrink-0 text-[11px] text-[#9A8070]">{order.timeAgo}</span>
               </div>
-              <p className="mt-1.5 text-[12px] leading-relaxed text-[#6B5344]">{order.description}</p>
+              <p className="mt-1.5 text-[12px] leading-relaxed text-[#6B5344]">{order.summary}</p>
               <div className="mt-3 flex items-center gap-2">
                 {order.showAssign ? (
                   <>
@@ -52,13 +55,17 @@ export function CustomOrders({ orders, pendingCount }: CustomOrdersProps) {
                     >
                       Assign Artisan
                     </Link>
-                    <button
-                      type="button"
-                      className="flex size-8 items-center justify-center rounded-lg border border-[#EDE5D8] bg-white transition-colors hover:bg-[#FAF7F2]"
-                      aria-label="Contact on WhatsApp"
-                    >
-                      <WhatsAppIcon />
-                    </button>
+                    {order.whatsapp ? (
+                      <a
+                        href={`https://wa.me/${order.whatsapp.replace(/\D/g, "")}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="flex size-8 items-center justify-center rounded-lg border border-[#EDE5D8] bg-white transition-colors hover:bg-[#FAF7F2]"
+                        aria-label="Contact on WhatsApp"
+                      >
+                        <WhatsAppIcon />
+                      </a>
+                    ) : null}
                   </>
                 ) : (
                   <Link

@@ -1,3 +1,7 @@
+import {
+  formatCustomOrderSummary,
+  parseCustomOrderDescription,
+} from "@/lib/custom-order-utils"
 import { formatCurrency } from "@/lib/profile-utils"
 import { getPrisma } from "@/lib/prisma"
 
@@ -19,7 +23,9 @@ export type DashboardCustomOrder = {
   id: string
   title: string
   timeAgo: string
-  description: string
+  summary: string
+  customerName: string
+  whatsapp: string
   showAssign: boolean
 }
 
@@ -285,13 +291,18 @@ export async function loadDashboardOverview(): Promise<DashboardOverview> {
     },
   ]
 
-  const customOrders: DashboardCustomOrder[] = customOrdersRaw.map((order) => ({
-    id: order.id,
-    title: order.description.split(/[.!?\n]/)[0]?.trim().slice(0, 48) || "Custom Request",
-    timeAgo: formatRelativeTime(order.createdAt),
-    description: order.description,
-    showAssign: !order.artisanId,
-  }))
+  const customOrders: DashboardCustomOrder[] = customOrdersRaw.map((order) => {
+    const parsed = parseCustomOrderDescription(order.description)
+    return {
+      id: order.id,
+      title: parsed.category || "Custom Request",
+      timeAgo: formatRelativeTime(order.createdAt),
+      summary: formatCustomOrderSummary(parsed),
+      customerName: parsed.contactName || "Guest customer",
+      whatsapp: parsed.whatsapp,
+      showAssign: !order.artisanId,
+    }
+  })
 
   const lowStock: DashboardLowStockProduct[] = lowStockProducts.map((product) => ({
     id: product.id,
