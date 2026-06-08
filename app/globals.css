@@ -324,3 +324,10 @@
   aspect-ratio: 3 / 4;
   width: 100%;
 }
+
+/* Our Story page — editorial cream layout */
+.story-page-root {
+  font-family: var(--font-serif), "Cormorant Garamond", Georgia, serif;
+  color: #2d1a12;
+  -webkit-font-smoothing: antialiased;
+}

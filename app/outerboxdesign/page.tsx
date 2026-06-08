@@ -1,8 +1,8 @@
 import { OurStoryPage } from "@/components/our-story/our-story-page"
-import { getOurStoryContent } from "@/lib/our-story-content"
+import { getOurStoryPageContent } from "@/lib/our-story-page-content"
 
 export default async function OurStoryRoute() {
-  const content = await getOurStoryContent()
+  const content = await getOurStoryPageContent()
 
   return <OurStoryPage content={content} />
 }
