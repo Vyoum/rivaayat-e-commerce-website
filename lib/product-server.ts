@@ -1,6 +1,6 @@
 import type { Category } from "@prisma/client"
 
-import { getCategoryMeta, mapDbProductToCatalog } from "@/lib/product-catalog"
+import { enrichCatalogProduct, getCategoryMeta, mapDbProductToCatalog } from "@/lib/product-catalog"
 import { applyCategoryCardToMeta, getCategoryCardByRoute } from "@/lib/category-cards"
 import { getPrisma } from "@/lib/prisma"
 import type { StoreProductDetail } from "@/types/product"
@@ -141,7 +141,7 @@ export async function getPublishedProductsByCategoryRoute(categoryRoute: string)
         orderBy: { createdAt: "desc" },
         select: productSelect,
       })
-      products = dbProducts.map(mapDbProductToCatalog)
+      products = dbProducts.map((product) => mapDbProductToCatalog(product, categoryRoute))
     } catch (error) {
       console.error("[product-server] failed to load products:", error)
     }
@@ -151,7 +151,9 @@ export async function getPublishedProductsByCategoryRoute(categoryRoute: string)
 
   // Demo catalog only when no database is configured
   if (products.length === 0) {
-    products = getCatalogProductsForRoute(categoryRoute)
+    products = getCatalogProductsForRoute(categoryRoute).map((product) =>
+      enrichCatalogProduct(product, categoryRoute),
+    )
   }
 
   return {

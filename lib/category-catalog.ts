@@ -8,6 +8,10 @@ export type CatalogProduct = {
   image: string
   badge?: "HANDCRAFTED" | "CUSTOMISABLE"
   subcategory?: string
+  subcategoryLabel?: string
+  categoryRoute?: string
+  categoryLabel?: string
+  inStock?: boolean
   tags?: string[]
   association?: string[]
   swatchImages?: string[]

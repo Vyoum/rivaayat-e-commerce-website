@@ -2,13 +2,20 @@ import Image from "next/image"
 import Link from "next/link"
 
 import type { CategoryCard } from "@/lib/category-cards-shared"
-import { DEFAULT_CATEGORY_CARDS } from "@/lib/category-cards-shared"
+import {
+  DEFAULT_CATEGORY_CARDS,
+  DEFAULT_CATEGORY_SECTION_HEADING,
+} from "@/lib/category-cards-shared"
 
 type LandingCategoriesProps = {
   cards?: CategoryCard[]
+  sectionHeading?: string
 }
 
-export function LandingCategories({ cards = DEFAULT_CATEGORY_CARDS }: LandingCategoriesProps) {
+export function LandingCategories({
+  cards = DEFAULT_CATEGORY_CARDS,
+  sectionHeading = DEFAULT_CATEGORY_SECTION_HEADING,
+}: LandingCategoriesProps) {
   return (
     <section className="landing-categories-section relative z-10 px-5 pb-16 pt-10 lg:px-8 lg:pb-20 lg:pt-12">
       <div className="landing-categories-hills pointer-events-none absolute inset-0" aria-hidden>
@@ -46,7 +53,7 @@ export function LandingCategories({ cards = DEFAULT_CATEGORY_CARDS }: LandingCat
 
       <div className="relative z-10 mx-auto max-w-[820px]">
         <h2 className="landing-display text-center text-[26px] text-[#2D1A12] sm:text-[30px]">
-          A Heritage of Four Worlds
+          {sectionHeading}
         </h2>
         <div className="mx-auto mt-2.5 flex w-16 items-center gap-1.5">
           <span className="h-px flex-1 bg-[#8A6A55]/55" />

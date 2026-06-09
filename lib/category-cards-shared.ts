@@ -1,3 +1,5 @@
+export const DEFAULT_CATEGORY_SECTION_HEADING = "A Heritage of Four Worlds"
+
 export type CategoryCardKey = "clothing" | "decor" | "jewellery" | "custom-laddoos"
 
 export type CategoryCard = {

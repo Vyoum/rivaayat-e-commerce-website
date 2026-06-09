@@ -60,6 +60,28 @@ export function routeSlugToDbCategory(slug: string): Category | null {
   return CATEGORY_ROUTE_TO_ENUM[slug] ?? null
 }
 
+function getSubcategoryLabel(categoryRoute: string, subcategory: string | null | undefined) {
+  if (!subcategory) return undefined
+  const config = categoryCatalog[categoryRoute]
+  return config?.subcategories.find((entry) => entry.id === subcategory)?.label ?? subcategory
+}
+
+export function enrichCatalogProduct(
+  product: CatalogProduct,
+  categoryRoute: string,
+): CatalogProduct {
+  const meta = getCategoryMeta(categoryRoute)
+  const dbCategory = routeSlugToDbCategory(categoryRoute)
+
+  return {
+    ...product,
+    categoryRoute,
+    categoryLabel: meta?.breadcrumb ?? (dbCategory ? CATEGORY_LABELS[dbCategory] : categoryRoute),
+    subcategoryLabel: getSubcategoryLabel(categoryRoute, product.subcategory),
+    inStock: product.inStock ?? true,
+  }
+}
+
 export function storeProductDetailToCatalog(product: {
   id: string
   name: string
@@ -70,6 +92,10 @@ export function storeProductDetailToCatalog(product: {
   imageUrls: string[]
   badge: string | null
   subcategory: string | null
+  subcategoryLabel?: string | null
+  categoryRoute?: string
+  categoryLabel?: string
+  inStock?: boolean
   tags?: string[]
 }): CatalogProduct {
   return {
@@ -82,6 +108,10 @@ export function storeProductDetailToCatalog(product: {
     image: product.imageUrls[0] ?? "/placeholder.svg",
     badge: product.badge as CatalogProduct["badge"],
     subcategory: product.subcategory ?? undefined,
+    subcategoryLabel: product.subcategoryLabel ?? undefined,
+    categoryRoute: product.categoryRoute,
+    categoryLabel: product.categoryLabel,
+    inStock: product.inStock ?? true,
     tags: product.tags,
     association: product.location
       ? [`associated with ${product.location}`, "and artisan textures"]
@@ -89,27 +119,31 @@ export function storeProductDetailToCatalog(product: {
   }
 }
 
-export function mapDbProductToCatalog(product: {
-  id: string
-  name: string
-  slug: string
-  price: unknown
-  artisanName: string | null
-  location: string | null
-  imageUrls: string[]
-  badge: string | null
-  handcrafted?: boolean
-  subcategory: string | null
-  tags: string[]
-  artisan?: { name: string } | null
-}): CatalogProduct {
+export function mapDbProductToCatalog(
+  product: {
+    id: string
+    name: string
+    slug: string
+    price: unknown
+    artisanName: string | null
+    location: string | null
+    imageUrls: string[]
+    badge: string | null
+    handcrafted?: boolean
+    inStock?: boolean
+    subcategory: string | null
+    tags: string[]
+    artisan?: { name: string } | null
+  },
+  categoryRoute?: string,
+): CatalogProduct {
   const artisan = product.artisanName ?? product.artisan?.name ?? "Artisan"
   const location = product.location ?? ""
   const badge =
     (product.badge as CatalogProduct["badge"]) ??
     (product.handcrafted ? "HANDCRAFTED" : undefined)
 
-  return {
+  const base: CatalogProduct = {
     id: product.id,
     name: product.name,
     slug: product.slug,
@@ -120,6 +154,9 @@ export function mapDbProductToCatalog(product: {
     badge,
     subcategory: product.subcategory ?? undefined,
     tags: product.tags.length > 0 ? product.tags : undefined,
+    inStock: product.inStock ?? true,
     association: location ? [`associated with ${location}`, "and artisan textures"] : undefined,
   }
+
+  return categoryRoute ? enrichCatalogProduct(base, categoryRoute) : base
 }

@@ -1,13 +1,37 @@
 "use client"
 
-import { useEffect, useState } from "react"
+import { useEffect, useMemo, useState, type ReactNode } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Heart, Share2, Trash2, ShoppingBag, ArrowUpRight, LayoutGrid, List } from "lucide-react"
+import {
+  Heart,
+  Share2,
+  Trash2,
+  ShoppingBag,
+  ArrowUpRight,
+  LayoutGrid,
+  List,
+  SlidersHorizontal,
+  X,
+} from "lucide-react"
 import { cn } from "@/lib/utils"
 import { useWishlist } from "@/components/providers/wishlist-provider"
 import { useAuth } from "@/hooks/use-auth"
+import {
+  DEFAULT_WISHLIST_FILTERS,
+  WISHLIST_PRICE_FILTER_LABELS,
+  WISHLIST_STOCK_FILTER_LABELS,
+  filterWishlistItems,
+  getWishlistCategoryLabel,
+  getWishlistCategoryOptions,
+  getWishlistInStock,
+  getWishlistSubcategoryLabel,
+  getWishlistSubcategoryOptions,
+  type WishlistFilters,
+  type WishlistPriceFilter,
+  type WishlistStockFilter,
+} from "@/lib/wishlist-filters"
 
 function formatAddedDate(isoDate: string) {
   const diffMs = Date.now() - new Date(isoDate).getTime()
@@ -20,10 +44,37 @@ function formatAddedDate(isoDate: string) {
   return `${Math.floor(days / 30)} month${Math.floor(days / 30) === 1 ? "" : "s"} ago`
 }
 
+function FilterPill({
+  active,
+  onClick,
+  children,
+}: {
+  active: boolean
+  onClick: () => void
+  children: ReactNode
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      className={cn(
+        "inline-flex items-center rounded-full px-3.5 py-1.5 font-sans text-[11px] font-medium transition-colors",
+        active
+          ? "bg-[#846246] text-white"
+          : "border border-[#D9CFC0] bg-white text-[#6B5344] hover:border-[#846246]",
+      )}
+    >
+      {children}
+    </button>
+  )
+}
+
 export function WishlistContent() {
   const router = useRouter()
   const { loading: authLoading, isLoggedIn } = useAuth()
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
+  const [filters, setFilters] = useState<WishlistFilters>(DEFAULT_WISHLIST_FILTERS)
+  const [filtersOpen, setFiltersOpen] = useState(false)
   const { items, removeItem } = useWishlist()
 
   useEffect(() => {
@@ -32,23 +83,52 @@ export function WishlistContent() {
     }
   }, [authLoading, isLoggedIn, router])
 
-  if (authLoading || !isLoggedIn) {
-    return null
-  }
+  const categoryOptions = useMemo(() => getWishlistCategoryOptions(items), [items])
+  const subcategoryOptions = useMemo(
+    () => getWishlistSubcategoryOptions(items, filters.category),
+    [items, filters.category],
+  )
 
-  const displayItems = items.map((item) => ({
+  const filteredItems = useMemo(() => filterWishlistItems(items, filters), [items, filters])
+
+  const hasActiveFilters =
+    filters.category !== "all" ||
+    filters.subcategory !== "all" ||
+    filters.price !== "all" ||
+    filters.stock !== "all"
+
+  const displayItems = filteredItems.map((item) => ({
     id: item.id,
     name: item.name,
-    category: item.location,
+    category: getWishlistCategoryLabel(item),
+    subcategory: getWishlistSubcategoryLabel(item),
     price: item.price,
     image: item.image,
     artisan: item.artisan,
     addedDate: formatAddedDate(item.addedAt),
-    inStock: true,
+    inStock: getWishlistInStock(item),
     slug: item.slug,
   }))
 
-  const inStockCount = displayItems.filter((item) => item.inStock).length
+  const inStockCount = items.filter((item) => getWishlistInStock(item)).length
+
+  function updateFilters(patch: Partial<WishlistFilters>) {
+    setFilters((prev) => {
+      const next = { ...prev, ...patch }
+      if (patch.category && patch.category !== prev.category) {
+        next.subcategory = "all"
+      }
+      return next
+    })
+  }
+
+  function clearFilters() {
+    setFilters(DEFAULT_WISHLIST_FILTERS)
+  }
+
+  if (authLoading || !isLoggedIn) {
+    return null
+  }
 
   return (
     <>
@@ -79,36 +159,169 @@ export function WishlistContent() {
       </section>
 
       {/* Controls */}
-      <section className="mx-auto max-w-7xl px-6 pb-8 lg:px-10 flex items-center justify-between">
-        <div className="flex items-center gap-2">
-          <button
-            onClick={() => setViewMode("grid")}
-            className={cn(
-              "p-2 rounded transition-colors",
-              viewMode === "grid"
-                ? "bg-[#846246] text-white"
-                : "text-[#9A8070] hover:bg-[#EDE8DC]",
-            )}
-            aria-label="Grid view"
-          >
-            <LayoutGrid className="size-5" />
-          </button>
-          <button
-            onClick={() => setViewMode("list")}
-            className={cn(
-              "p-2 rounded transition-colors",
-              viewMode === "list"
-                ? "bg-[#846246] text-white"
-                : "text-[#9A8070] hover:bg-[#EDE8DC]",
-            )}
-            aria-label="List view"
-          >
-            <List className="size-5" />
-          </button>
+      <section className="mx-auto max-w-7xl px-6 pb-4 lg:px-10">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-center gap-2">
+            <button
+              onClick={() => setViewMode("grid")}
+              className={cn(
+                "rounded p-2 transition-colors",
+                viewMode === "grid"
+                  ? "bg-[#846246] text-white"
+                  : "text-[#9A8070] hover:bg-[#EDE8DC]",
+              )}
+              aria-label="Grid view"
+            >
+              <LayoutGrid className="size-5" />
+            </button>
+            <button
+              onClick={() => setViewMode("list")}
+              className={cn(
+                "rounded p-2 transition-colors",
+                viewMode === "list"
+                  ? "bg-[#846246] text-white"
+                  : "text-[#9A8070] hover:bg-[#EDE8DC]",
+              )}
+              aria-label="List view"
+            >
+              <List className="size-5" />
+            </button>
+            <button
+              type="button"
+              onClick={() => setFiltersOpen((open) => !open)}
+              className={cn(
+                "ml-1 inline-flex items-center gap-2 rounded-full border px-3.5 py-2 font-sans text-[11px] font-medium uppercase tracking-wider transition-colors",
+                filtersOpen || hasActiveFilters
+                  ? "border-[#846246] bg-[#846246] text-white"
+                  : "border-[#D9CFC0] bg-white text-[#6B5344] hover:border-[#846246]",
+              )}
+            >
+              <SlidersHorizontal className="size-3.5" />
+              Filters
+              {hasActiveFilters ? (
+                <span className="rounded-full bg-white/20 px-1.5 py-0.5 text-[10px]">On</span>
+              ) : null}
+            </button>
+          </div>
+          <p className="font-sans text-[13px] text-[#9A8070]">
+            Showing {filteredItems.length} of {items.length}{" "}
+            {items.length === 1 ? "item" : "items"}
+          </p>
         </div>
-        <p className="font-sans text-[13px] text-[#9A8070]">
-          {items.length} {items.length === 1 ? "item" : "items"}
-        </p>
+
+        {filtersOpen && items.length > 0 ? (
+          <div className="mt-4 rounded-xl border border-[#E8E0D4] bg-white p-5">
+            <div className="flex items-center justify-between gap-3">
+              <p className="font-sans text-[12px] font-semibold uppercase tracking-[0.14em] text-[#9A8070]">
+                Refine your collection
+              </p>
+              {hasActiveFilters ? (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="inline-flex items-center gap-1 font-sans text-[11px] font-medium text-[#846246] transition-colors hover:text-[#5C4332]"
+                >
+                  <X className="size-3" />
+                  Clear all
+                </button>
+              ) : null}
+            </div>
+
+            <div className="mt-4 space-y-4">
+              <div>
+                <p className="mb-2 font-sans text-[11px] font-medium uppercase tracking-wider text-[#9A8070]">
+                  Category
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <FilterPill
+                    active={filters.category === "all"}
+                    onClick={() => updateFilters({ category: "all" })}
+                  >
+                    All
+                  </FilterPill>
+                  {categoryOptions.map((category) => (
+                    <FilterPill
+                      key={category}
+                      active={filters.category === category}
+                      onClick={() => updateFilters({ category })}
+                    >
+                      {category}
+                    </FilterPill>
+                  ))}
+                </div>
+              </div>
+
+              <div>
+                <p className="mb-2 font-sans text-[11px] font-medium uppercase tracking-wider text-[#9A8070]">
+                  Subcategory
+                </p>
+                <div className="flex flex-wrap gap-2">
+                  <FilterPill
+                    active={filters.subcategory === "all"}
+                    onClick={() => updateFilters({ subcategory: "all" })}
+                  >
+                    All
+                  </FilterPill>
+                  {subcategoryOptions.map((subcategory) => (
+                    <FilterPill
+                      key={subcategory}
+                      active={filters.subcategory === subcategory}
+                      onClick={() => updateFilters({ subcategory })}
+                    >
+                      {subcategory}
+                    </FilterPill>
+                  ))}
+                </div>
+              </div>
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <div>
+                  <label
+                    htmlFor="wishlist-price-filter"
+                    className="mb-2 block font-sans text-[11px] font-medium uppercase tracking-wider text-[#9A8070]"
+                  >
+                    Price
+                  </label>
+                  <select
+                    id="wishlist-price-filter"
+                    value={filters.price}
+                    onChange={(event) =>
+                      updateFilters({ price: event.target.value as WishlistPriceFilter })
+                    }
+                    className="h-10 w-full rounded-lg border border-[#D9CFC0] bg-[#FCFAF5] px-3 font-sans text-[12px] text-[#3D2E24] outline-none focus:border-[#846246]"
+                  >
+                    {(Object.keys(WISHLIST_PRICE_FILTER_LABELS) as WishlistPriceFilter[]).map(
+                      (value) => (
+                        <option key={value} value={value}>
+                          {WISHLIST_PRICE_FILTER_LABELS[value]}
+                        </option>
+                      ),
+                    )}
+                  </select>
+                </div>
+
+                <div>
+                  <p className="mb-2 font-sans text-[11px] font-medium uppercase tracking-wider text-[#9A8070]">
+                    Availability
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {(Object.keys(WISHLIST_STOCK_FILTER_LABELS) as WishlistStockFilter[]).map(
+                      (value) => (
+                        <FilterPill
+                          key={value}
+                          active={filters.stock === value}
+                          onClick={() => updateFilters({ stock: value })}
+                        >
+                          {WISHLIST_STOCK_FILTER_LABELS[value]}
+                        </FilterPill>
+                      ),
+                    )}
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ) : null}
       </section>
 
       {/* Items Grid/List */}
@@ -121,6 +334,24 @@ export function WishlistContent() {
               : "space-y-4",
           )}
         >
+          {displayItems.length === 0 ? (
+            <div className="col-span-full rounded-xl border border-dashed border-[#D9CFC0] bg-white px-6 py-14 text-center">
+              <p className="font-serif text-[22px] text-[#3D2E24]">No items match these filters</p>
+              <p className="mt-2 font-sans text-[14px] text-[#9A8070]">
+                Try adjusting category, subcategory, price, or stock filters.
+              </p>
+              {hasActiveFilters ? (
+                <button
+                  type="button"
+                  onClick={clearFilters}
+                  className="mt-5 font-sans text-[12px] font-semibold uppercase tracking-wider text-[#846246] underline underline-offset-4"
+                >
+                  Clear filters
+                </button>
+              ) : null}
+            </div>
+          ) : null}
+
           {displayItems.map((item) => (
             <div
               key={item.id}
@@ -165,9 +396,13 @@ export function WishlistContent() {
                 viewMode === "list" && "flex-1 flex items-center justify-between"
               )}>
                 <div className="space-y-3">
-                  <p className="font-sans text-[11px] font-medium text-[#9A8070] uppercase tracking-wider">
-                    {item.category}
-                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <p className="font-sans text-[11px] font-medium uppercase tracking-wider text-[#9A8070]">
+                      {item.category}
+                    </p>
+                    <span className="text-[#D9CFC0]">·</span>
+                    <p className="font-sans text-[11px] text-[#B5A898]">{item.subcategory}</p>
+                  </div>
                   <Link
                     href={`/products/${item.slug}`}
                     className="block font-serif text-[16px] font-normal text-[#3D2E24] hover:text-[#846246] transition-colors"

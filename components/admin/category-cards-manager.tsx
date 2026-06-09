@@ -5,6 +5,7 @@ import Image from "next/image"
 import { ImageIcon, Loader2, Upload } from "lucide-react"
 
 import type { CategoryCard, CategoryCardKey } from "@/lib/category-cards-shared"
+import { DEFAULT_CATEGORY_SECTION_HEADING } from "@/lib/category-cards-shared"
 
 type CategoryCardsManagerProps = {
   compact?: boolean
@@ -17,10 +18,13 @@ type CardDraft = {
 
 export function CategoryCardsManager({ compact = false }: CategoryCardsManagerProps) {
   const [cards, setCards] = useState<CategoryCard[]>([])
+  const [sectionHeading, setSectionHeading] = useState(DEFAULT_CATEGORY_SECTION_HEADING)
+  const [sectionHeadingDraft, setSectionHeadingDraft] = useState(DEFAULT_CATEGORY_SECTION_HEADING)
   const [drafts, setDrafts] = useState<Partial<Record<CategoryCardKey, CardDraft>>>({})
   const [loading, setLoading] = useState(true)
   const [savingId, setSavingId] = useState<CategoryCardKey | null>(null)
   const [savingTextId, setSavingTextId] = useState<CategoryCardKey | null>(null)
+  const [savingSectionHeading, setSavingSectionHeading] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const fileRefs = useRef<Partial<Record<CategoryCardKey, HTMLInputElement | null>>>({})
 
@@ -43,7 +47,10 @@ export function CategoryCardsManager({ compact = false }: CategoryCardsManagerPr
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Failed to load category cards")
       const nextCards = data.cards ?? []
+      const nextHeading = data.sectionHeading ?? DEFAULT_CATEGORY_SECTION_HEADING
       setCards(nextCards)
+      setSectionHeading(nextHeading)
+      setSectionHeadingDraft(nextHeading)
       syncDrafts(nextCards)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load category cards")
@@ -120,6 +127,31 @@ export function CategoryCardsManager({ compact = false }: CategoryCardsManagerPr
     return draft.title !== card.title || draft.description !== card.description
   }
 
+  async function handleSaveSectionHeading() {
+    setSavingSectionHeading(true)
+    setError(null)
+
+    try {
+      const saveRes = await fetch("/api/admin/category-cards", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ sectionHeading: sectionHeadingDraft }),
+      })
+      const saveData = await saveRes.json()
+      if (!saveRes.ok) throw new Error(saveData.error || "Failed to save section heading")
+
+      const nextHeading = saveData.sectionHeading ?? sectionHeadingDraft.trim()
+      setSectionHeading(nextHeading)
+      setSectionHeadingDraft(nextHeading)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save section heading")
+    } finally {
+      setSavingSectionHeading(false)
+    }
+  }
+
+  const sectionHeadingDirty = sectionHeadingDraft.trim() !== sectionHeading
+
   return (
     <div className={compact ? "space-y-4" : "space-y-5"}>
       <div>
@@ -127,9 +159,43 @@ export function CategoryCardsManager({ compact = false }: CategoryCardsManagerPr
           Homepage Categories
         </h2>
         <p className="mt-1 text-[13px] text-[#9A8070]">
-          Update category names, taglines, and photos for &ldquo;A Heritage of Four Worlds&rdquo; on the homepage and collection pages.
+          Update the section heading, category names, taglines, and photos on the homepage and collection pages.
         </p>
       </div>
+
+      {!loading ? (
+        <div className="rounded-xl border border-[#EDE5D8] bg-white p-4 shadow-sm">
+          <label className="block">
+            <span className="text-[11px] font-medium tracking-wide text-[#9A8070] uppercase">
+              Section heading
+            </span>
+            <input
+              value={sectionHeadingDraft}
+              onChange={(event) => setSectionHeadingDraft(event.target.value)}
+              maxLength={80}
+              placeholder={DEFAULT_CATEGORY_SECTION_HEADING}
+              className="mt-1 h-10 w-full rounded-lg border border-[#EDE5D8] px-3 font-serif text-[15px] text-[#2D1E17] outline-none focus:border-[#C4A882]"
+            />
+          </label>
+          <p className="mt-1 text-[10px] text-[#C4B5A5]">
+            {sectionHeadingDraft.length}/80 characters
+          </p>
+          <div className="mt-3 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+            <p className="font-serif text-[18px] text-[#2D1E17]">
+              {sectionHeadingDraft.trim() || DEFAULT_CATEGORY_SECTION_HEADING}
+            </p>
+            <button
+              type="button"
+              disabled={savingSectionHeading || !sectionHeadingDirty || !sectionHeadingDraft.trim()}
+              onClick={() => void handleSaveSectionHeading()}
+              className="inline-flex items-center justify-center gap-2 rounded-lg bg-[#2B1B12] px-4 py-2.5 text-[12px] font-medium text-white hover:bg-[#3D2B21] disabled:cursor-not-allowed disabled:opacity-50"
+            >
+              {savingSectionHeading ? <Loader2 className="size-4 animate-spin" /> : null}
+              {savingSectionHeading ? "Saving…" : sectionHeadingDirty ? "Save Heading" : "Saved"}
+            </button>
+          </div>
+        </div>
+      ) : null}
 
       {error && (
         <div className="rounded-lg border border-[#F5C2C0] bg-[#FEF2F2] px-4 py-3 text-[13px] text-[#B42318]">

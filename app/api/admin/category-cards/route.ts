@@ -1,7 +1,11 @@
 import { NextResponse } from "next/server"
 
 import { requireAdminApi } from "@/lib/admin-auth-server"
-import { getAllCategoryCardsAdmin, updateCategoryCard } from "@/lib/category-cards"
+import {
+  getAllCategoryCardsAdmin,
+  updateCategoryCard,
+  updateCategorySectionHeading,
+} from "@/lib/category-cards"
 import type { CategoryCardKey } from "@/lib/category-cards-shared"
 import { CATEGORY_CARD_KEYS } from "@/lib/category-cards-shared"
 
@@ -10,8 +14,8 @@ export async function GET() {
   if (!auth.ok) return auth.response
 
   try {
-    const cards = await getAllCategoryCardsAdmin()
-    return NextResponse.json({ cards })
+    const { cards, sectionHeading } = await getAllCategoryCardsAdmin()
+    return NextResponse.json({ cards, sectionHeading })
   } catch (error) {
     return NextResponse.json(
       { error: error instanceof Error ? error.message : "Failed to load category cards" },
@@ -30,6 +34,12 @@ export async function PATCH(request: Request) {
       imageUrl?: string
       title?: string
       description?: string
+      sectionHeading?: string
+    }
+
+    if (body.sectionHeading !== undefined) {
+      const sectionHeading = await updateCategorySectionHeading(body.sectionHeading)
+      return NextResponse.json({ sectionHeading })
     }
 
     if (!body.id || !CATEGORY_CARD_KEYS.includes(body.id)) {

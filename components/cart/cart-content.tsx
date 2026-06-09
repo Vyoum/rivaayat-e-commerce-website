@@ -365,33 +365,6 @@ export function CartContent() {
 
           {items.length > 0 && (
             <>
-              <div className="rounded-xl border border-[#EDE5D8] bg-[#F5F2EB] p-6 sm:p-7">
-                <h2 className="font-serif text-[22px] font-normal text-[#2B1B12]">
-                  Add a Little Extra Love
-                </h2>
-                <p className="mt-2 font-sans text-[13px] leading-relaxed text-[#9A8070]">
-                  Your tip goes directly to the artisan community supporting
-                  their craft.
-                </p>
-                <div className="mt-5 flex flex-wrap gap-3">
-                  {tipOptions.map((amount) => (
-                    <button
-                      key={amount}
-                      type="button"
-                      onClick={() => setSelectedTip(amount)}
-                      className={cn(
-                        "rounded-lg border px-5 py-2.5 font-sans text-[13px] transition-all",
-                        selectedTip === amount
-                          ? "border-[#2B1B12] bg-white text-[#2B1B12]"
-                          : "border-[#EDE5D8] bg-white/60 text-[#6B5344] hover:border-[#C4A882]",
-                      )}
-                    >
-                      + {formatCurrency(amount)}
-                    </button>
-                  ))}
-                </div>
-              </div>
-
               <div className="pt-2">
                 <p className="font-sans text-[12px] text-[#6B5344]">
                   Have a promo code?
@@ -445,7 +418,40 @@ export function CartContent() {
           )}
         </div>
 
-        <aside className="lg:sticky lg:top-8">
+        <aside className="space-y-4 lg:sticky lg:top-8">
+          {items.length > 0 ? (
+            <div className="rounded-xl border border-[#EDE5D8] bg-[#F5F2EB] p-5 sm:p-6">
+              <div className="flex items-start gap-3">
+                <LotusIcon />
+                <div className="min-w-0 flex-1">
+                  <h2 className="font-serif text-[18px] font-normal text-[#2B1B12]">
+                    Add a Little Extra Love
+                  </h2>
+                  <p className="mt-1.5 font-sans text-[12px] leading-relaxed text-[#9A8070]">
+                    Your tip goes directly to the artisan community supporting their craft.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-2">
+                {tipOptions.map((amount) => (
+                  <button
+                    key={amount}
+                    type="button"
+                    onClick={() => setSelectedTip(amount)}
+                    className={cn(
+                      "rounded-lg border px-2 py-2.5 font-sans text-[12px] transition-all",
+                      selectedTip === amount
+                        ? "border-[#2B1B12] bg-white text-[#2B1B12]"
+                        : "border-[#EDE5D8] bg-white/60 text-[#6B5344] hover:border-[#C4A882]",
+                    )}
+                  >
+                    + {formatCurrency(amount)}
+                  </button>
+                ))}
+              </div>
+            </div>
+          ) : null}
+
           <div className="rounded-xl border border-[#D4C4B0] bg-[#E8DFD0] p-6 sm:p-7">
             <h2 className="font-serif text-[24px] font-normal text-[#2B1B12]">
               Order Summary

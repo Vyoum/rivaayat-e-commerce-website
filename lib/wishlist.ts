@@ -9,6 +9,11 @@ export type WishlistItem = {
   artisan: string
   location: string
   addedAt: string
+  categoryRoute?: string
+  categoryLabel?: string
+  subcategory?: string
+  subcategoryLabel?: string
+  inStock?: boolean
 }
 
 export function catalogProductToWishlistItem(product: CatalogProduct): WishlistItem {
@@ -21,6 +26,11 @@ export function catalogProductToWishlistItem(product: CatalogProduct): WishlistI
     artisan: product.artisan,
     location: product.location,
     addedAt: new Date().toISOString(),
+    categoryRoute: product.categoryRoute,
+    categoryLabel: product.categoryLabel,
+    subcategory: product.subcategory,
+    subcategoryLabel: product.subcategoryLabel,
+    inStock: product.inStock ?? true,
   }
 }
 
