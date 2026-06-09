@@ -1,5 +1,5 @@
+import Image from "next/image"
 import Link from "next/link"
-import { StampPhotoFrame } from "@/components/landing/stamp-photo-frame"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import type { HomepageStoryContent } from "@/lib/homepage-story-shared"
 import { DEFAULT_HOMEPAGE_STORY } from "@/lib/homepage-story-shared"
@@ -14,7 +14,18 @@ export function LandingStory({ content = DEFAULT_HOMEPAGE_STORY }: LandingStoryP
       <div className="mx-auto grid max-w-[960px] gap-8 lg:grid-cols-[minmax(0,1fr)_minmax(0,1.05fr)] lg:gap-10 lg:items-start">
         <div className="mx-auto grid w-full max-w-[340px] grid-cols-2 gap-3 sm:max-w-none sm:gap-3.5 lg:max-w-[400px]">
           {content.images.map((img) => (
-            <StampPhotoFrame key={img.id} src={img.src} alt={img.alt} />
+            <div
+              key={img.id}
+              className="relative aspect-[3/4] overflow-hidden rounded-xl bg-[#EDE8DC]"
+            >
+              <Image
+                src={img.src}
+                alt={img.alt}
+                fill
+                className="object-cover"
+                sizes="(max-width: 640px) 45vw, 200px"
+              />
+            </div>
           ))}
         </div>
 
