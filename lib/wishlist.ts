@@ -23,3 +23,15 @@ export function catalogProductToWishlistItem(product: CatalogProduct): WishlistI
     addedAt: new Date().toISOString(),
   }
 }
+
+export function wishlistItemToCatalogProduct(item: WishlistItem): CatalogProduct {
+  return {
+    id: item.id,
+    name: item.name,
+    slug: item.slug,
+    price: item.price,
+    artisan: item.artisan,
+    location: item.location,
+    image: item.image,
+  }
+}

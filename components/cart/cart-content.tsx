@@ -4,6 +4,7 @@ import { useMemo, useState, useCallback, useEffect } from "react"
 import Link from "next/link"
 import { Lock, Minus, Plus, Trash2, CheckCircle, XCircle, Loader2 } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
+import { CartWishlistTab } from "@/components/cart/cart-wishlist-tab"
 import { useCart } from "@/components/providers/cart-provider"
 import { useAuth } from "@/hooks/use-auth"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
@@ -34,7 +35,7 @@ function formatCurrency(amount: number) {
   return `₹${amount.toLocaleString("en-IN")}`
 }
 
-const tipOptions = [50, 100, 200]
+const tipOptions = [10, 20, 50]
 
 function LotusIcon() {
   return (
@@ -154,7 +155,7 @@ type PaymentState = "idle" | "loading" | "success" | "error"
 export function CartContent() {
   const { items, updateQuantity, removeItem, clearCart } = useCart()
   const { userId } = useAuth()
-  const [selectedTip, setSelectedTip] = useState<number>(100)
+  const [selectedTip, setSelectedTip] = useState<number>(20)
   const [promoCode, setPromoCode] = useState("")
   const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null)
   const [promoError, setPromoError] = useState<string | null>(null)
@@ -359,6 +360,8 @@ export function CartContent() {
               />
             ))
           )}
+
+          <CartWishlistTab />
 
           {items.length > 0 && (
             <>
