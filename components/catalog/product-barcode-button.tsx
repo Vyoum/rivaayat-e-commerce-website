@@ -1,5 +1,7 @@
 "use client"
 
+import Link from "next/link"
+
 import { cn } from "@/lib/utils"
 
 /** Decorative barcode bars — deterministic pattern from product id */
@@ -19,48 +21,41 @@ function getBarcodeBars(productId: string, count = 11) {
 
 type ProductBarcodeButtonProps = {
   productId: string
-  isActive?: boolean
-  onClick: () => void
+  href: string
+  artisanName?: string
   className?: string
 }
 
 export function ProductBarcodeButton({
   productId,
-  isActive = false,
-  onClick,
+  href,
+  artisanName,
   className,
 }: ProductBarcodeButtonProps) {
   const bars = getBarcodeBars(productId)
 
   return (
-    <button
-      type="button"
-      onClick={(event) => {
-        event.preventDefault()
-        event.stopPropagation()
-        onClick()
-      }}
-      aria-label={isActive ? "Remove from wishlist" : "Add to wishlist"}
-      aria-pressed={isActive}
+    <Link
+      href={href}
+      onClick={(event) => event.stopPropagation()}
+      aria-label={
+        artisanName ? `View ${artisanName}'s artisan profile` : "View artisan profile"
+      }
       className={cn(
-        "inline-flex items-end gap-[2px] border-0 bg-transparent p-0 opacity-[0.42] transition-opacity hover:opacity-80 focus-visible:opacity-100 focus-visible:outline-none",
-        isActive && "opacity-70 hover:opacity-90",
+        "inline-flex items-end gap-[2px] rounded-sm border border-black/15 bg-[#FDF9F3]/95 px-1 py-0.5 opacity-[0.55] shadow-[0_1px_4px_rgba(61,46,36,0.08)] transition-opacity hover:border-[#846246]/40 hover:bg-white hover:opacity-90 focus-visible:opacity-100 focus-visible:outline-none",
         className,
       )}
     >
       {bars.map((width, index) => (
         <span
           key={index}
-          className={cn(
-            "block rounded-[0.5px] bg-black/70",
-            isActive && "bg-[#B85A32]/85",
-          )}
+          className="block rounded-[0.5px] bg-black/70"
           style={{
             width: `${width}px`,
             height: "24px",
           }}
         />
       ))}
-    </button>
+    </Link>
   )
 }

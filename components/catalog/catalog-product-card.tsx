@@ -6,8 +6,10 @@ import { useRouter } from "next/navigation"
 import { Heart } from "lucide-react"
 import { toast } from "sonner"
 
+import { ProductBarcodeButton } from "@/components/catalog/product-barcode-button"
 import { useCart } from "@/components/providers/cart-provider"
 import { useWishlist } from "@/components/providers/wishlist-provider"
+import { getArtisanProfileHref } from "@/lib/artisan-routes"
 import type { CatalogProduct } from "@/lib/category-catalog"
 import { cn } from "@/lib/utils"
 
@@ -125,7 +127,7 @@ export function CatalogProductCard({ product }: CatalogProductCardProps) {
 
         <div aria-hidden className="mt-4 border-t border-dashed border-black/45" />
 
-        <div className="mt-4 font-serif text-black">
+        <div className="mt-4 pr-12 font-serif text-black">
           <p className="text-[11px] font-light leading-none">Artisan</p>
           <p className="mt-2 text-[16px] font-normal leading-none">{product.artisan}</p>
           {associationLines.map((line) => (
@@ -136,6 +138,12 @@ export function CatalogProductCard({ product }: CatalogProductCardProps) {
         </div>
       </div>
 
+      <ProductBarcodeButton
+        productId={product.id}
+        href={getArtisanProfileHref(product.artisan)}
+        artisanName={product.artisan}
+        className="absolute bottom-4 right-5"
+      />
     </article>
   )
 }
