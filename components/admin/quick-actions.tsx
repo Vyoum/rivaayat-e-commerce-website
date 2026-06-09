@@ -5,7 +5,7 @@ const actions = [
   { label: "Add Product", icon: Plus, href: "/admin/store/products/new" },
   { label: "Add Artisan", icon: UserPlus, href: "/admin/community/artisans" },
   { label: "Custom Orders", icon: Ruler, href: "/admin/commerce/custom-orders" },
-  { label: "Create Promo", icon: Tag, href: "/admin" },
+  { label: "Discount Codes", icon: Tag, href: "/admin/commerce/discount-codes" },
 ]
 
 export function QuickActions() {

@@ -1,6 +1,6 @@
 "use client"
 
-import { useMemo, useState, useCallback } from "react"
+import { useMemo, useState, useCallback, useEffect } from "react"
 import Link from "next/link"
 import { Lock, Minus, Plus, Trash2, CheckCircle, XCircle, Loader2 } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -10,6 +10,7 @@ import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import type { CartItem } from "@/lib/cart"
 import { buildOrderFromCheckout, saveStoredOrder } from "@/lib/orders-storage"
 import { cn } from "@/lib/utils"
+import type { AppliedPromo } from "@/types/discount-code"
 
 declare global {
   interface Window {
@@ -155,7 +156,11 @@ export function CartContent() {
   const { userId } = useAuth()
   const [selectedTip, setSelectedTip] = useState<number>(100)
   const [promoCode, setPromoCode] = useState("")
-  const [giftMessage, setGiftMessage] = useState(false)
+  const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null)
+  const [promoError, setPromoError] = useState<string | null>(null)
+  const [promoLoading, setPromoLoading] = useState(false)
+  const [isGift, setIsGift] = useState(false)
+  const [giftMessageText, setGiftMessageText] = useState("")
   const [paymentState, setPaymentState] = useState<PaymentState>("idle")
   const [paymentMessage, setPaymentMessage] = useState("")
 
@@ -164,7 +169,45 @@ export function CartContent() {
     [items],
   )
 
-  const total = subtotal + selectedTip
+  const discountAmount = appliedPromo?.discountAmount ?? 0
+  const total = Math.max(1, subtotal + selectedTip - discountAmount)
+
+  useEffect(() => {
+    setAppliedPromo(null)
+    setPromoError(null)
+  }, [subtotal])
+
+  const handleApplyPromo = useCallback(async () => {
+    if (!promoCode.trim()) {
+      setPromoError("Enter a promo code.")
+      return
+    }
+
+    setPromoLoading(true)
+    setPromoError(null)
+
+    try {
+      const res = await fetch("/api/promo/validate", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ code: promoCode, subtotal }),
+      })
+      const data = await res.json()
+
+      if (!res.ok || !data.valid) {
+        setAppliedPromo(null)
+        setPromoError(data.error ?? "Invalid promo code.")
+        return
+      }
+
+      setAppliedPromo(data.promo)
+      setPromoCode(data.promo.code)
+    } catch {
+      setPromoError("Could not validate promo code. Try again.")
+    } finally {
+      setPromoLoading(false)
+    }
+  }, [promoCode, subtotal])
 
   const handleRazorpayCheckout = useCallback(async () => {
     setPaymentState("loading")
@@ -178,6 +221,9 @@ export function CartContent() {
     }
 
     try {
+      const giftMessage =
+        isGift && giftMessageText.trim() ? giftMessageText.trim().slice(0, 500) : null
+
       const res = await fetch("/api/razorpay/create-order", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -208,13 +254,23 @@ export function CartContent() {
               subtotal,
               artisanTip: selectedTip,
               total,
+              giftMessage,
+              promoCode: appliedPromo?.code ?? null,
             }),
           })
           const result = await verify.json()
           if (result.verified) {
             const order =
               result.order ??
-              buildOrderFromCheckout(response.razorpay_order_id, items, total, selectedTip)
+              buildOrderFromCheckout(
+                response.razorpay_order_id,
+                items,
+                total,
+                selectedTip,
+                giftMessage,
+                appliedPromo?.code ?? null,
+                discountAmount,
+              )
 
             if (userId) {
               saveStoredOrder(userId, order)
@@ -222,6 +278,7 @@ export function CartContent() {
 
             setPaymentState("success")
             setPaymentMessage(`Payment confirmed! ID: ${result.paymentId}`)
+            setAppliedPromo(null)
             clearCart()
           } else {
             setPaymentState("error")
@@ -247,7 +304,18 @@ export function CartContent() {
       setPaymentState("error")
       setPaymentMessage(err instanceof Error ? err.message : "Something went wrong.")
     }
-  }, [total, subtotal, selectedTip, items, userId, clearCart])
+  }, [
+    total,
+    subtotal,
+    selectedTip,
+    discountAmount,
+    items,
+    userId,
+    clearCart,
+    isGift,
+    giftMessageText,
+    appliedPromo,
+  ])
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12 sm:py-16">
@@ -329,17 +397,46 @@ export function CartContent() {
                   <input
                     type="text"
                     value={promoCode}
-                    onChange={(e) => setPromoCode(e.target.value.toUpperCase())}
+                    onChange={(e) => {
+                      setPromoCode(e.target.value.toUpperCase())
+                      setPromoError(null)
+                    }}
                     placeholder="ENTER CODE HERE"
-                    className="h-11 flex-1 rounded-lg border border-[#EDE5D8] bg-white px-4 font-sans text-[12px] uppercase tracking-[0.08em] text-[#2B1B12] placeholder:text-[#C4A882]/70 outline-none focus:border-[#C4A882] focus:ring-1 focus:ring-[#C4A882]/30"
+                    disabled={Boolean(appliedPromo)}
+                    className="h-11 flex-1 rounded-lg border border-[#EDE5D8] bg-white px-4 font-sans text-[12px] uppercase tracking-[0.08em] text-[#2B1B12] placeholder:text-[#C4A882]/70 outline-none focus:border-[#C4A882] focus:ring-1 focus:ring-[#C4A882]/30 disabled:opacity-70"
                   />
-                  <button
-                    type="button"
-                    className="shrink-0 font-sans text-[12px] font-medium uppercase tracking-[0.12em] text-[#6B5344] transition-colors hover:text-[#2B1B12]"
-                  >
-                    Apply
-                  </button>
+                  {appliedPromo ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAppliedPromo(null)
+                        setPromoCode("")
+                        setPromoError(null)
+                      }}
+                      className="shrink-0 font-sans text-[12px] font-medium uppercase tracking-[0.12em] text-[#C5221F] transition-colors hover:text-[#9A1B1B]"
+                    >
+                      Remove
+                    </button>
+                  ) : (
+                    <button
+                      type="button"
+                      onClick={() => void handleApplyPromo()}
+                      disabled={promoLoading}
+                      className="shrink-0 font-sans text-[12px] font-medium uppercase tracking-[0.12em] text-[#6B5344] transition-colors hover:text-[#2B1B12] disabled:opacity-60"
+                    >
+                      {promoLoading ? "Checking…" : "Apply"}
+                    </button>
+                  )}
                 </div>
+                {promoError ? (
+                  <p className="mt-2 font-sans text-[12px] text-[#C5221F]">{promoError}</p>
+                ) : null}
+                {appliedPromo ? (
+                  <p className="mt-2 font-sans text-[12px] text-[#1E7E34]">
+                    {appliedPromo.code} applied — {appliedPromo.label} (
+                    {formatCurrency(appliedPromo.discountAmount)} off)
+                  </p>
+                ) : null}
               </div>
             </>
           )}
@@ -366,6 +463,12 @@ export function CartContent() {
                 <span className="text-[#6B5344]">Shipping</span>
                 <span className="text-[#2B1B12]">Complimentary</span>
               </div>
+              {appliedPromo ? (
+                <div className="flex items-center justify-between font-sans text-[13px]">
+                  <span className="text-[#1E7E34]">Promo ({appliedPromo.code})</span>
+                  <span className="text-[#1E7E34]">−{formatCurrency(discountAmount)}</span>
+                </div>
+              ) : null}
             </div>
 
             <div className="my-5 border-t border-[#D4C4B0]" />
@@ -382,16 +485,37 @@ export function CartContent() {
               </div>
             </div>
 
-            <label className="mt-6 flex cursor-pointer items-center gap-2.5">
-              <Checkbox
-                checked={giftMessage}
-                onCheckedChange={(checked) => setGiftMessage(checked === true)}
-                className="border-[#C4A882] data-[state=checked]:border-[#2B1B12] data-[state=checked]:bg-[#2B1B12]"
-              />
-              <span className="font-sans text-[13px] text-[#6B5344]">
-                Add a gift message
-              </span>
-            </label>
+            <div className="mt-6 space-y-3">
+              <label className="flex cursor-pointer items-center gap-2.5">
+                <Checkbox
+                  checked={isGift}
+                  onCheckedChange={(checked) => {
+                    const enabled = checked === true
+                    setIsGift(enabled)
+                    if (!enabled) setGiftMessageText("")
+                  }}
+                  className="border-[#C4A882] data-[state=checked]:border-[#2B1B12] data-[state=checked]:bg-[#2B1B12]"
+                />
+                <span className="font-sans text-[13px] text-[#6B5344]">
+                  Add a gift message
+                </span>
+              </label>
+
+              {isGift ? (
+                <textarea
+                  value={giftMessageText}
+                  onChange={(event) => setGiftMessageText(event.target.value.slice(0, 500))}
+                  rows={4}
+                  placeholder="Write a personal note for the recipient — we'll include it with the package."
+                  className="w-full resize-y rounded-lg border border-[#EDE5D8] bg-white px-4 py-3 font-serif text-[13px] leading-relaxed text-[#2B1B12] placeholder:text-[#C4A882]/70 outline-none focus:border-[#C4A882] focus:ring-1 focus:ring-[#C4A882]/30"
+                />
+              ) : null}
+              {isGift ? (
+                <p className="font-sans text-[11px] text-[#9A8070]">
+                  {giftMessageText.length}/500 characters
+                </p>
+              ) : null}
+            </div>
 
             {/* Payment status feedback */}
             {paymentState === "success" && (

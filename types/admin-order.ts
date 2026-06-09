@@ -18,6 +18,8 @@ export type AdminOrder = {
   paymentLabel: string
   subtotal: number
   artisanTip: number
+  discountAmount: number
+  promoCode: string | null
   total: number
   giftMessage: string | null
   shippingAddress: string | null

@@ -32,6 +32,9 @@ export function buildOrderFromCheckout(
   items: StoredCheckoutItem[],
   total: number,
   artisanTip: number,
+  giftMessage?: string | null,
+  promoCode?: string | null,
+  discountAmount?: number,
 ): ProfileOrder {
   return {
     id: orderId,
@@ -40,6 +43,9 @@ export function buildOrderFromCheckout(
     paymentStatus: "paid",
     total,
     artisanTip,
+    discountAmount: discountAmount ?? 0,
+    promoCode: promoCode?.trim().toUpperCase() || null,
+    giftMessage: giftMessage?.trim() || null,
     createdAt: new Date().toISOString(),
     items: checkoutItemsToOrderItems(items),
   }

@@ -4,53 +4,35 @@ import { useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
-import {
-  ChevronDown,
-  ChevronRight,
-  Minus,
-  Plus,
-  Sparkles,
-  Star,
-  Truck,
-} from "lucide-react"
+import { ChevronDown, ChevronRight, Minus, Plus, Sparkles, Truck } from "lucide-react"
 import { toast } from "sonner"
 
 import { useCart } from "@/components/providers/cart-provider"
 import { useWishlist } from "@/components/providers/wishlist-provider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
+import { ProductReviewsSection } from "@/components/product/product-reviews-section"
+import { StarRating } from "@/components/product/star-rating"
 import { storeProductDetailToCatalog } from "@/lib/product-catalog"
+import { MOCK_REVIEW_SUMMARY } from "@/lib/product-testimonials"
 import { cn } from "@/lib/utils"
 import type { StoreProductDetail } from "@/types/product"
+import type { ProductReviewsData } from "@/types/review"
 
 const defaultShipping =
   "Ships within 3–5 business days across India. Free shipping on orders above ₹999. Returns accepted within 7 days of delivery for unused items in original packaging. Each piece is handcrafted — minor variations in colour and pattern are a mark of authenticity, not a defect."
 
-function StarRating({ rating }: { rating: number }) {
-  return (
-    <div className="flex items-center gap-0.5">
-      {Array.from({ length: 5 }).map((_, i) => {
-        const fill = Math.min(Math.max(rating - i, 0), 1)
-        return (
-          <div key={i} className="relative size-[14px]">
-            <Star className="absolute inset-0 size-[14px] fill-[#E8E0D4] text-[#E8E0D4]" />
-            {fill > 0 && (
-              <div className="absolute inset-0 overflow-hidden" style={{ width: `${fill * 100}%` }}>
-                <Star className="size-[14px] fill-[#C4A035] text-[#C4A035]" />
-              </div>
-            )}
-          </div>
-        )
-      })}
-    </div>
-  )
-}
-
 type ProductDetailContentProps = {
   product: StoreProductDetail
+  reviewsData: ProductReviewsData | null
+  reviewsEnabled: boolean
 }
 
-export function ProductDetailContent({ product }: ProductDetailContentProps) {
+export function ProductDetailContent({
+  product,
+  reviewsData,
+  reviewsEnabled,
+}: ProductDetailContentProps) {
   const router = useRouter()
   const { addItem } = useCart()
   const { isLoggedIn, isWishlisted, toggleItem } = useWishlist()
@@ -104,6 +86,16 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
     storyParagraphs.length > 0 || Boolean(product.storyImageUrl)
 
   const wishlisted = isWishlisted(product.id)
+
+  const hasRealReviews = (reviewsData?.summary.totalCount ?? 0) > 0
+  const headerRating = hasRealReviews
+    ? reviewsData!.summary.averageRating
+    : MOCK_REVIEW_SUMMARY.averageRating
+  const headerReviewLabel = hasRealReviews
+    ? `${headerRating.toFixed(1)} (${reviewsData!.summary.totalCount} ${
+        reviewsData!.summary.totalCount === 1 ? "Review" : "Reviews"
+      })`
+    : `${MOCK_REVIEW_SUMMARY.averageRating} (${MOCK_REVIEW_SUMMARY.totalCount} Reviews)`
 
   function handleAddToCart() {
     if (!product.inStock) {
@@ -209,8 +201,8 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
             </h1>
 
             <div className="mt-4 flex items-center gap-2.5">
-              <StarRating rating={4.8} />
-              <span className="font-sans text-[13px] text-[#9A8070]">4.8 (24 Reviews)</span>
+              <StarRating rating={headerRating} />
+              <span className="font-sans text-[13px] text-[#9A8070]">{headerReviewLabel}</span>
             </div>
 
             <p className="mt-5 font-serif text-[30px] font-normal text-[#3D2E24]">
@@ -384,6 +376,13 @@ export function ProductDetailContent({ product }: ProductDetailContentProps) {
           </div>
         </section>
       )}
+
+      <ProductReviewsSection
+        slug={product.slug}
+        productName={product.name}
+        reviewsEnabled={reviewsEnabled}
+        initialData={reviewsData}
+      />
     </>
   )
 }

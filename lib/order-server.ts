@@ -13,6 +13,9 @@ type CreateOrderInput = {
   subtotal: number
   artisanTip: number
   total: number
+  giftMessage?: string | null
+  promoCode?: string | null
+  discountAmount?: number
 }
 
 async function getOrCreateDbUser(authUser: User) {
@@ -124,6 +127,9 @@ export async function createOrderFromCheckout(
       subtotal: input.subtotal,
       artisanTip: input.artisanTip,
       total: input.total,
+      giftMessage: input.giftMessage?.trim() || null,
+      promoCode: input.promoCode?.trim().toUpperCase() || null,
+      discountAmount: input.discountAmount ?? 0,
       items: {
         create: orderItems.map((item) => ({
           productName: item.productName,

@@ -36,6 +36,11 @@ enum UserRole {
   admin
 }
 
+enum DiscountType {
+  percentage
+  fixed
+}
+
 // ─── Models ───────────────────────────────────────────────────────────────────
 
 model User {
@@ -53,6 +58,7 @@ model User {
   orders       Order[]
   wishlist     Wishlist[]
   customOrders CustomOrder[]
+  reviews      Review[]
 
   @@map("users")
 }
@@ -98,6 +104,7 @@ model Product {
   artisan    Artisan?    @relation(fields: [artisanId], references: [id])
   orderItems OrderItem[]
   wishlist   Wishlist[]
+  reviews    Review[]
 
   @@map("products")
 }
@@ -114,6 +121,8 @@ model Order {
   total             Decimal       @db.Decimal(10, 2)
   shippingAddress   String?       @map("shipping_address")
   giftMessage       String?       @map("gift_message")
+  promoCode         String?       @map("promo_code")
+  discountAmount    Decimal       @default(0) @db.Decimal(10, 2) @map("discount_amount")
   createdAt         DateTime      @default(now()) @map("created_at")
   updatedAt         DateTime      @updatedAt @map("updated_at")
 
@@ -164,4 +173,37 @@ model CustomOrder {
   artisan Artisan? @relation(fields: [artisanId], references: [id])
 
   @@map("custom_orders")
+}
+
+model Review {
+  id        String   @id @default(uuid())
+  productId String   @map("product_id")
+  userId    String   @map("user_id")
+  rating    Int
+  title     String?
+  body      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([productId, userId])
+  @@map("reviews")
+}
+
+model DiscountCode {
+  id             String       @id @default(uuid())
+  code           String       @unique
+  type           DiscountType
+  value          Decimal      @db.Decimal(10, 2)
+  minOrderAmount Decimal?     @db.Decimal(10, 2) @map("min_order_amount")
+  maxUses        Int?         @map("max_uses")
+  usedCount      Int          @default(0) @map("used_count")
+  isActive       Boolean      @default(true) @map("is_active")
+  expiresAt      DateTime?    @map("expires_at")
+  createdAt      DateTime     @default(now()) @map("created_at")
+  updatedAt      DateTime     @updatedAt @map("updated_at")
+
+  @@map("discount_codes")
 }

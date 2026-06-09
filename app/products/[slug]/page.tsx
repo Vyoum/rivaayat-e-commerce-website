@@ -4,7 +4,10 @@ import { notFound } from "next/navigation"
 import { ProductDetailHeader } from "@/components/product/product-detail-header"
 import { ProductDetailContent } from "@/components/product/product-detail-content"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
+import { getPrisma } from "@/lib/prisma"
 import { getPublishedProductBySlug } from "@/lib/product-server"
+import { getProductReviewsBySlug } from "@/lib/review-server"
+import { createSupabaseServerClient } from "@/lib/supabase/server"
 
 export const dynamic = "force-dynamic"
 
@@ -26,6 +29,27 @@ export async function generateMetadata({ params }: ProductPageProps): Promise<Me
   }
 }
 
+async function resolveDbUserId() {
+  const prisma = getPrisma()
+  if (!prisma) return null
+
+  const supabase = await createSupabaseServerClient()
+  if (!supabase) return null
+
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
+  if (!user?.email) return null
+
+  const dbUser = await prisma.user.findUnique({
+    where: { email: user.email },
+    select: { id: true },
+  })
+
+  return dbUser?.id ?? null
+}
+
 export default async function ProductPage({ params }: ProductPageProps) {
   const { slug } = await params
   const product = await getPublishedProductBySlug(slug)
@@ -34,10 +58,18 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound()
   }
 
+  const userId = await resolveDbUserId()
+  const reviewsData = await getProductReviewsBySlug(slug, userId)
+  const reviewsEnabled = reviewsData !== null
+
   return (
     <main className="min-h-screen bg-[#F5F3E9]">
       <ProductDetailHeader />
-      <ProductDetailContent product={product} />
+      <ProductDetailContent
+        product={product}
+        reviewsData={reviewsData}
+        reviewsEnabled={reviewsEnabled}
+      />
     </main>
   )
 }

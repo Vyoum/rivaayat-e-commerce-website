@@ -15,6 +15,9 @@ export type ProfileOrder = {
   paymentStatus: string
   total: number
   artisanTip: number
+  discountAmount?: number
+  promoCode?: string | null
+  giftMessage?: string | null
   createdAt: string
   items: ProfileOrderItem[]
 }

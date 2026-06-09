@@ -1,42 +1,20 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Star } from "lucide-react"
 import { cn } from "@/lib/utils"
-
-const testimonials = [
-  {
-    title: "The Calendar That Changed Everything",
-    quote:
-      "I bought the seed calendar as a gift for my mother. She planted every seed, and now our balcony is full of marigolds. It reminded us that small acts of care can bloom into something beautiful.",
-    name: "Rahul Mehta",
-    location: "Mumbai",
-    initials: "RM",
-    purchased: "Purchased: Bloom Calendar 2025",
-  },
-  {
-    title: "A Necklace With a Story",
-    quote:
-      "Knowing the artisan who made my necklace made it so much more meaningful. The craftsmanship is extraordinary — I wear it every day and always receive compliments.",
-    name: "Priya Sharma",
-    location: "Delhi",
-    initials: "PS",
-    purchased: "Purchased: Mandala Crochet Earrings",
-  },
-  {
-    title: "Tradition in Our Home",
-    quote:
-      "The handwoven textile we ordered transformed our living room. It carries warmth, history, and the hands that made it — exactly what we wanted for our home.",
-    name: "Ananya Reddy",
-    location: "Hyderabad",
-    initials: "AR",
-    purchased: "Purchased: Heritage Textile Collection",
-  },
-]
+import { MOCK_PRODUCT_TESTIMONIALS } from "@/lib/product-testimonials"
 
 export function LandingTestimonials() {
   const [active, setActive] = useState(0)
-  const current = testimonials[active]
+  const current = MOCK_PRODUCT_TESTIMONIALS[active]
+
+  useEffect(() => {
+    const timer = window.setInterval(() => {
+      setActive((prev) => (prev + 1) % MOCK_PRODUCT_TESTIMONIALS.length)
+    }, 6000)
+    return () => window.clearInterval(timer)
+  }, [])
 
   return (
     <section className="relative overflow-hidden bg-[#ede0d0] px-5 py-14 lg:px-8 lg:py-16">
@@ -90,7 +68,7 @@ export function LandingTestimonials() {
         </div>
 
         <div className="mt-6 flex justify-center gap-2">
-          {testimonials.map((_, i) => (
+          {MOCK_PRODUCT_TESTIMONIALS.map((_, i) => (
             <button
               key={i}
               type="button"

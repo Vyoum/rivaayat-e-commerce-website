@@ -7,6 +7,7 @@ import { cn } from "@/lib/utils"
 const tabs = [
   { label: "Orders", href: "/admin/commerce/orders" },
   { label: "Custom Orders", href: "/admin/commerce/custom-orders" },
+  { label: "Discount Codes", href: "/admin/commerce/discount-codes" },
 ]
 
 export function CommerceSubnav() {

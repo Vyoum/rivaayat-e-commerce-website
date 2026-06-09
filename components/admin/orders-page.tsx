@@ -8,6 +8,7 @@ import {
   ChevronDown,
   Sparkles,
   Loader2,
+  Gift,
 } from "lucide-react"
 import { AdminSidebar } from "./admin-sidebar"
 import { CommerceSubnav } from "./commerce-subnav"
@@ -275,7 +276,15 @@ export function OrdersPage() {
                           }`}
                         >
                           <td className="px-4 py-4 text-[13px] font-medium text-[#2B1B12]">
-                            {order.displayId}
+                            <div className="flex items-center gap-2">
+                              <span>{order.displayId}</span>
+                              {order.giftMessage ? (
+                                <span className="inline-flex items-center gap-1 rounded-full bg-[#FCE4EC] px-2 py-0.5 text-[10px] font-semibold text-[#AD1457]">
+                                  <Gift className="size-3" />
+                                  Gift
+                                </span>
+                              ) : null}
+                            </div>
                           </td>
                           <td className="px-4 py-4">
                             <div className="flex items-center gap-2.5">
@@ -497,6 +506,12 @@ export function OrdersPage() {
                         <span>{formatCurrency(selectedOrder.artisanTip)}</span>
                       </div>
                     )}
+                    {selectedOrder.discountAmount > 0 && selectedOrder.promoCode ? (
+                      <div className="flex justify-between text-[#1E7E34]">
+                        <span>Promo ({selectedOrder.promoCode})</span>
+                        <span>−{formatCurrency(selectedOrder.discountAmount)}</span>
+                      </div>
+                    ) : null}
                     <div className="flex justify-between font-semibold text-[#2B1B12]">
                       <span>Total</span>
                       <span>{formatCurrency(selectedOrder.total)}</span>

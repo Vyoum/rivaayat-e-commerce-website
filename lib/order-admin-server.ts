@@ -51,6 +51,8 @@ function mapDbOrderToAdmin(order: {
   razorpayOrderId: string | null
   subtotal: unknown
   artisanTip: unknown
+  discountAmount: unknown
+  promoCode: string | null
   total: unknown
   giftMessage: string | null
   shippingAddress: string | null
@@ -97,6 +99,8 @@ function mapDbOrderToAdmin(order: {
     paymentLabel: formatAdminPaymentStatus(order.paymentStatus),
     subtotal: Number(order.subtotal),
     artisanTip: Number(order.artisanTip),
+    discountAmount: Number(order.discountAmount ?? 0),
+    promoCode: order.promoCode,
     total: Number(order.total),
     giftMessage: order.giftMessage,
     shippingAddress: order.shippingAddress,

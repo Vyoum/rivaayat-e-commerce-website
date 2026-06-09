@@ -1,10 +1,19 @@
 import { NextRequest, NextResponse } from "next/server"
 import crypto from "crypto"
 
+import { validatePromoCode, incrementPromoUsage } from "@/lib/discount-code-server"
 import { createOrderFromCheckout } from "@/lib/order-server"
 import { buildOrderFromCheckout, type StoredCheckoutItem } from "@/lib/orders-storage"
+import { getPrisma } from "@/lib/prisma"
 import { getRazorpayKeySecret } from "@/lib/razorpay"
 import { createSupabaseApiClient } from "@/lib/supabase/server"
+
+function normalizeGiftMessage(value: unknown): string | null {
+  if (typeof value !== "string") return null
+  const trimmed = value.trim()
+  if (!trimmed) return null
+  return trimmed.slice(0, 500)
+}
 
 export async function POST(req: NextRequest) {
   const response = NextResponse.next()
@@ -27,6 +36,8 @@ export async function POST(req: NextRequest) {
       subtotal,
       artisanTip = 0,
       total,
+      giftMessage,
+      promoCode,
     } = body as {
       razorpay_order_id: string
       razorpay_payment_id: string
@@ -35,6 +46,8 @@ export async function POST(req: NextRequest) {
       subtotal?: number
       artisanTip?: number
       total?: number
+      giftMessage?: string | null
+      promoCode?: string | null
     }
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
@@ -63,13 +76,38 @@ export async function POST(req: NextRequest) {
         ? subtotal
         : checkoutItems.reduce((sum, item) => sum + item.price * item.quantity, 0)
     const orderTip = typeof artisanTip === "number" ? artisanTip : 0
-    const orderTotal =
-      typeof total === "number" ? total : orderSubtotal + orderTip
+    const normalizedGiftMessage = normalizeGiftMessage(giftMessage)
+
+    let discountAmount = 0
+    let appliedPromoCode: string | null = null
+
+    if (typeof promoCode === "string" && promoCode.trim()) {
+      const promoResult = await validatePromoCode(promoCode, orderSubtotal)
+      if (promoResult.valid) {
+        discountAmount = promoResult.promo.discountAmount
+        appliedPromoCode = promoResult.promo.code
+      }
+    }
+
+    const orderTotal = Math.max(1, orderSubtotal + orderTip - discountAmount)
 
     let savedOrder =
       checkoutItems.length > 0
-        ? buildOrderFromCheckout(razorpay_order_id, checkoutItems, orderTotal, orderTip)
+        ? buildOrderFromCheckout(
+            razorpay_order_id,
+            checkoutItems,
+            orderTotal,
+            orderTip,
+            normalizedGiftMessage,
+            appliedPromoCode,
+            discountAmount,
+          )
         : null
+
+    const prisma = getPrisma()
+    const existingOrder = prisma
+      ? await prisma.order.findFirst({ where: { razorpayOrderId: razorpay_order_id } })
+      : null
 
     const supabase = createSupabaseApiClient(req, response)
     if (supabase && checkoutItems.length > 0) {
@@ -85,11 +123,18 @@ export async function POST(req: NextRequest) {
           subtotal: orderSubtotal,
           artisanTip: orderTip,
           total: orderTotal,
+          giftMessage: normalizedGiftMessage,
+          promoCode: appliedPromoCode,
+          discountAmount,
         })
         if (dbOrder) {
           savedOrder = dbOrder
         }
       }
+    }
+
+    if (!existingOrder && appliedPromoCode) {
+      await incrementPromoUsage(appliedPromoCode)
     }
 
     const jsonResponse = NextResponse.json({
