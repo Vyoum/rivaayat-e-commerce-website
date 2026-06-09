@@ -25,6 +25,14 @@ export type CustomOrderCategory = {
   weightOptions: string[]
 }
 
+/** Serializable category data safe to pass from Server → Client Components */
+export type PublicCustomOrderCategory = Omit<CustomOrderCategory, "icon">
+
+export function toPublicCustomOrderCategory(category: CustomOrderCategory): PublicCustomOrderCategory {
+  const { icon: _icon, ...rest } = category
+  return rest
+}
+
 export const CUSTOM_ORDER_CATEGORIES: CustomOrderCategory[] = [
   {
     id: "healthy-laddoos",
@@ -132,7 +140,22 @@ export function buildCustomOrderCategories(
   })
 }
 
-export function getCategoryDefaults(category: CustomOrderCategory) {
+export function buildPublicCustomOrderCategories(
+  settings: Array<{
+    id: CustomOrderCategoryId
+    label: string
+    startingPrice: number | null
+    formTitle?: string
+    fields?: FormFieldGroup[]
+    weightOptions?: string[]
+  }>,
+): PublicCustomOrderCategory[] {
+  return buildCustomOrderCategories(settings).map(toPublicCustomOrderCategory)
+}
+
+export function getCategoryDefaults(
+  category: Pick<CustomOrderCategory, "fields" | "weightOptions">,
+) {
   const selections: Record<string, string> = {}
   for (const field of category.fields) {
     selections[field.id] = field.options[0] ?? ""

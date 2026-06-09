@@ -1,7 +1,10 @@
 import { promises as fs } from "fs"
 import path from "path"
 
-import { buildCustomOrderCategories, type CustomOrderCategory } from "@/lib/custom-orders-config"
+import {
+  buildPublicCustomOrderCategories,
+  type PublicCustomOrderCategory,
+} from "@/lib/custom-orders-config"
 import {
   CUSTOM_ORDER_CATEGORY_IDS,
   DEFAULT_CUSTOM_ORDER_CATEGORY_SETTINGS,
@@ -88,9 +91,9 @@ export async function getCustomOrderCategorySettings(): Promise<CustomOrderCateg
   return categories
 }
 
-export async function getCustomOrderCategoriesForPublic(): Promise<CustomOrderCategory[]> {
+export async function getCustomOrderCategoriesForPublic(): Promise<PublicCustomOrderCategory[]> {
   const settings = await getCustomOrderCategorySettings()
-  return buildCustomOrderCategories(settings)
+  return buildPublicCustomOrderCategories(settings)
 }
 
 function validateFields(fields: FormFieldGroup[]) {

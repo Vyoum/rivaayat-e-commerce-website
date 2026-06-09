@@ -1,7 +1,7 @@
 "use client"
 
 import { useMemo, useState } from "react"
-import { Loader2 } from "lucide-react"
+import { Cookie, Dumbbell, FlaskConical, Loader2, Shirt, type LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
   CUSTOM_ORDER_CATEGORIES,
@@ -9,7 +9,22 @@ import {
   getCategoryDefaults,
   type CustomOrderCategory,
   type CustomOrderCategoryId,
+  type PublicCustomOrderCategory,
 } from "@/lib/custom-orders-config"
+
+const CATEGORY_ICONS: Record<CustomOrderCategoryId, LucideIcon> = {
+  "healthy-laddoos": Cookie,
+  "protein-bars": Dumbbell,
+  "artisan-achaar": FlaskConical,
+  "custom-clothing": Shirt,
+}
+
+function withCategoryIcons(categories: PublicCustomOrderCategory[]): CustomOrderCategory[] {
+  return categories.map((category) => ({
+    ...category,
+    icon: CATEGORY_ICONS[category.id],
+  }))
+}
 
 function BotanicalIcon() {
   return (
@@ -72,12 +87,15 @@ function OptionPills({
 type FormState = ReturnType<typeof getCategoryDefaults>
 
 type CustomOrdersPageProps = {
-  categories?: CustomOrderCategory[]
+  categories?: PublicCustomOrderCategory[]
 }
 
-export function CustomOrdersPage({
-  categories = CUSTOM_ORDER_CATEGORIES,
-}: CustomOrdersPageProps) {
+export function CustomOrdersPage({ categories: categoriesProp }: CustomOrdersPageProps) {
+  const categories = useMemo(
+    () =>
+      categoriesProp ? withCategoryIcons(categoriesProp) : CUSTOM_ORDER_CATEGORIES,
+    [categoriesProp],
+  )
   const [categoryId, setCategoryId] = useState<CustomOrderCategoryId>(DEFAULT_CATEGORY_ID)
   const [formByCategory, setFormByCategory] = useState<Record<string, FormState>>(() => {
     const initial: Record<string, FormState> = {}
