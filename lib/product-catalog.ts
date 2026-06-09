@@ -98,12 +98,16 @@ export function mapDbProductToCatalog(product: {
   location: string | null
   imageUrls: string[]
   badge: string | null
+  handcrafted?: boolean
   subcategory: string | null
   tags: string[]
   artisan?: { name: string } | null
 }): CatalogProduct {
   const artisan = product.artisanName ?? product.artisan?.name ?? "Artisan"
   const location = product.location ?? ""
+  const badge =
+    (product.badge as CatalogProduct["badge"]) ??
+    (product.handcrafted ? "HANDCRAFTED" : undefined)
 
   return {
     id: product.id,
@@ -113,7 +117,7 @@ export function mapDbProductToCatalog(product: {
     artisan,
     location,
     image: product.imageUrls[0] ?? "/placeholder.svg",
-    badge: product.badge as CatalogProduct["badge"],
+    badge,
     subcategory: product.subcategory ?? undefined,
     tags: product.tags.length > 0 ? product.tags : undefined,
     association: location ? [`associated with ${location}`, "and artisan textures"] : undefined,
