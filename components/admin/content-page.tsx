@@ -5,7 +5,7 @@ import { AdminTopbar } from "./admin-topbar"
 import { CategoryCardsManager } from "./category-cards-manager"
 import { HeroSlideshowManager } from "./hero-slideshow-manager"
 import { HomepageStoryManager } from "./homepage-story-manager"
-import { FileText, PenLine } from "lucide-react"
+import { ChevronRight, FileText, PenLine, Sparkles } from "lucide-react"
 
 const otherContentItems = [
   {
@@ -54,6 +54,29 @@ export function ContentPage() {
             <CategoryCardsManager compact />
           </section>
 
+          <section className="rounded-xl border border-[#EDE5D8] bg-[#FAF7F2]/50 p-5 shadow-sm">
+            <Link
+              href="/admin/content/custom-orders"
+              className="group flex items-center justify-between gap-4 rounded-xl border border-[#EDE5D8] bg-white p-5 shadow-sm transition-colors hover:border-[#C4A882] hover:bg-[#FFFCF8]"
+            >
+              <div className="flex items-start gap-4">
+                <div className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-[#F5EDE3]">
+                  <Sparkles className="size-5 text-[#6B5344]" strokeWidth={1.75} />
+                </div>
+                <div>
+                  <h2 className="font-serif text-[20px] font-semibold text-[#2D1E17] group-hover:text-[#5C4332]">
+                    Custom Order
+                  </h2>
+                  <p className="mt-1 max-w-xl text-[13px] leading-relaxed text-[#9A8070]">
+                    Edit category names, starting prices, form sections, and per-option pricing for
+                    the public custom orders page.
+                  </p>
+                </div>
+              </div>
+              <ChevronRight className="size-5 shrink-0 text-[#C4B5A5] transition-transform group-hover:translate-x-0.5 group-hover:text-[#6B5344]" />
+            </Link>
+          </section>
+
           <div>
             <h2 className="font-serif text-[18px] font-semibold text-[#2D1E17]">
               More Content
@@ -99,10 +122,16 @@ export function ContentPage() {
                 Product Catalogue
               </Link>
               <Link
+                href="/admin/content/custom-orders"
+                className="rounded-lg border border-[#EDE5D8] px-4 py-2 text-[13px] font-medium text-[#6B5344] hover:bg-[#FAF7F2]"
+              >
+                Custom Order
+              </Link>
+              <Link
                 href="/admin/commerce/custom-orders"
                 className="rounded-lg border border-[#EDE5D8] px-4 py-2 text-[13px] font-medium text-[#6B5344] hover:bg-[#FAF7F2]"
               >
-                Custom Order Stories
+                Custom Order Inbox
               </Link>
             </div>
           </div>

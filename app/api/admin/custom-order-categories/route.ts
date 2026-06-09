@@ -33,8 +33,12 @@ export async function PATCH(request: Request) {
       label?: string
       startingPrice?: number | null
       formTitle?: string
-      fields?: Array<{ id: string; label: string; options: string[] }>
-      weightOptions?: string[]
+      fields?: Array<{
+        id: string
+        label: string
+        options: Array<{ label: string; price: number | null }>
+      }>
+      weightOptions?: Array<{ label: string; price: number | null }>
     }
 
     if (!body.id || !CUSTOM_ORDER_CATEGORY_IDS.includes(body.id)) {

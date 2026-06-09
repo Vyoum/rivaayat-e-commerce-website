@@ -1,20 +1,24 @@
 "use client"
 
 import { useCallback, useEffect, useState } from "react"
-import { Loader2 } from "lucide-react"
+import { Loader2, Plus, Trash2 } from "lucide-react"
 
 import type { CustomOrderCategorySetting } from "@/lib/custom-order-categories-shared"
 import {
   formatCustomOrderStartingPrice,
-  formatOptionsList,
-  parseOptionsList,
+  pricedOptionsEqual,
 } from "@/lib/custom-order-categories-shared"
 import type { CustomOrderCategoryId } from "@/lib/custom-orders-config"
 import { CUSTOM_ORDER_CATEGORIES } from "@/lib/custom-orders-config"
 
+type OptionDraft = {
+  label: string
+  price: string
+}
+
 type FieldDraft = {
   label: string
-  optionsText: string
+  options: OptionDraft[]
 }
 
 type CategoryDraft = {
@@ -22,7 +26,16 @@ type CategoryDraft = {
   startingPrice: string
   formTitle: string
   fields: Record<string, FieldDraft>
-  weightOptionsText: string
+  weightOptions: OptionDraft[]
+}
+
+function toOptionDrafts(
+  options: Array<{ label: string; price: number | null }>,
+): OptionDraft[] {
+  return options.map((option) => ({
+    label: option.label,
+    price: option.price === null ? "" : String(option.price),
+  }))
 }
 
 function buildDraft(category: CustomOrderCategorySetting): CategoryDraft {
@@ -35,12 +48,21 @@ function buildDraft(category: CustomOrderCategorySetting): CategoryDraft {
         field.id,
         {
           label: field.label,
-          optionsText: formatOptionsList(field.options),
+          options: toOptionDrafts(field.options),
         },
       ]),
     ),
-    weightOptionsText: formatOptionsList(category.weightOptions),
+    weightOptions: toOptionDrafts(category.weightOptions),
   }
+}
+
+function parseOptionDrafts(options: OptionDraft[]) {
+  return options
+    .map((option) => ({
+      label: option.label.trim(),
+      price: option.price.trim() === "" ? null : Number(option.price),
+    }))
+    .filter((option) => option.label)
 }
 
 function draftToPayload(draft: CategoryDraft) {
@@ -51,9 +73,9 @@ function draftToPayload(draft: CategoryDraft) {
     fields: Object.entries(draft.fields).map(([id, field]) => ({
       id,
       label: field.label.trim(),
-      options: parseOptionsList(field.optionsText),
+      options: parseOptionDrafts(field.options),
     })),
-    weightOptions: parseOptionsList(draft.weightOptionsText),
+    weightOptions: parseOptionDrafts(draft.weightOptions),
   }
 }
 
@@ -62,13 +84,13 @@ function draftsEqual(category: CustomOrderCategorySetting, draft: CategoryDraft)
   if (payload.label !== category.label) return false
   if (payload.startingPrice !== category.startingPrice) return false
   if (payload.formTitle !== category.formTitle) return false
-  if (payload.weightOptions.join("|") !== category.weightOptions.join("|")) return false
+  if (!pricedOptionsEqual(payload.weightOptions, category.weightOptions)) return false
 
   return category.fields.every((field) => {
     const draftField = draft.fields[field.id]
     if (!draftField) return false
     if (draftField.label.trim() !== field.label) return false
-    return parseOptionsList(draftField.optionsText).join("|") === field.options.join("|")
+    return pricedOptionsEqual(parseOptionDrafts(draftField.options), field.options)
   })
 }
 
@@ -77,6 +99,96 @@ const FIELD_ADMIN_LABELS: Record<string, string> = {
   sweetener: "Sweetening Agent",
   flavour: "Flavour Profile",
   coating: "Coating",
+}
+
+function ensureOptionDrafts(options: OptionDraft[]) {
+  return options.length > 0 ? options : [{ label: "", price: "" }]
+}
+
+function OptionRowsEditor({
+  options,
+  onChange,
+  addLabel = "Add option",
+}: {
+  options: OptionDraft[]
+  onChange: (next: OptionDraft[]) => void
+  addLabel?: string
+}) {
+  const rows = ensureOptionDrafts(options)
+
+  return (
+    <div className="space-y-2">
+      <div className="grid grid-cols-[1fr_120px_auto] gap-2 px-0.5">
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-[#9A8070]">
+          Option name
+        </span>
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-[#9A8070]">
+          Extra price (₹)
+        </span>
+        <span className="sr-only">Remove</span>
+      </div>
+
+      {rows.map((option, index) => (
+        <div key={index} className="grid grid-cols-[1fr_120px_auto] gap-2">
+          <input
+            value={option.label}
+            onChange={(event) =>
+              onChange(
+                rows.map((entry, entryIndex) =>
+                  entryIndex === index ? { ...entry, label: event.target.value } : entry,
+                ),
+              )
+            }
+            placeholder="e.g. Millets, Honey"
+            className="h-9 rounded-lg border border-[#EDE5D8] bg-white px-3 font-sans text-[12px] text-[#2D1E17] outline-none focus:border-[#C4A882]"
+          />
+          <div className="relative">
+            <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 font-sans text-[12px] text-[#9A8070]">
+              ₹
+            </span>
+            <input
+              value={option.price}
+              onChange={(event) =>
+                onChange(
+                  rows.map((entry, entryIndex) =>
+                    entryIndex === index
+                      ? { ...entry, price: event.target.value.replace(/[^\d]/g, "") }
+                      : entry,
+                  ),
+                )
+              }
+              inputMode="numeric"
+              placeholder="0"
+              aria-label={`Extra price for ${option.label || "option"}`}
+              className="h-9 w-full rounded-lg border border-[#EDE5D8] bg-white pr-3 pl-7 font-sans text-[12px] text-[#2D1E17] outline-none focus:border-[#C4A882]"
+            />
+          </div>
+          <button
+            type="button"
+            onClick={() => onChange(rows.filter((_, entryIndex) => entryIndex !== index))}
+            disabled={rows.length <= 1}
+            className="flex size-9 items-center justify-center rounded-lg border border-[#EDE5D8] text-[#9A8070] hover:text-[#C5221F] disabled:opacity-40"
+            aria-label="Remove option"
+          >
+            <Trash2 className="size-3.5" />
+          </button>
+        </div>
+      ))}
+
+      <p className="text-[10px] leading-relaxed text-[#B5A090]">
+        Leave price blank if there is no extra charge. Customers see this below the selected option.
+      </p>
+
+      <button
+        type="button"
+        onClick={() => onChange([...rows, { label: "", price: "" }])}
+        className="inline-flex items-center gap-1.5 font-sans text-[11px] font-medium text-[#846246] hover:text-[#5C4332]"
+      >
+        <Plus className="size-3.5" />
+        {addLabel}
+      </button>
+    </div>
+  )
 }
 
 export function CustomOrderCategoriesManager() {
@@ -115,9 +227,37 @@ export function CustomOrderCategoriesManager() {
     void loadCategories()
   }, [loadCategories])
 
+  function validateDraftPrices(draft: CategoryDraft) {
+    if (draft.startingPrice.trim() !== "" && !Number.isFinite(Number(draft.startingPrice))) {
+      return "Starting price must be a valid number."
+    }
+
+    for (const field of Object.values(draft.fields)) {
+      for (const option of field.options) {
+        if (option.price.trim() !== "" && !Number.isFinite(Number(option.price))) {
+          return `Enter a valid price for "${option.label || "an option"}" in ${field.label || "a section"}.`
+        }
+      }
+    }
+
+    for (const option of draft.weightOptions) {
+      if (option.price.trim() !== "" && !Number.isFinite(Number(option.price))) {
+        return `Enter a valid price for weight option "${option.label || "an option"}".`
+      }
+    }
+
+    return null
+  }
+
   async function handleSave(id: CustomOrderCategoryId) {
     const draft = drafts[id]
     if (!draft) return
+
+    const validationError = validateDraftPrices(draft)
+    if (validationError) {
+      setError(validationError)
+      return
+    }
 
     const payload = draftToPayload(draft)
     if (payload.startingPrice !== null && !Number.isFinite(payload.startingPrice)) {
@@ -149,10 +289,10 @@ export function CustomOrderCategoriesManager() {
   return (
     <div className="space-y-4">
       <div>
-        <h2 className="font-serif text-[18px] font-semibold text-[#2B1B12]">Category Settings</h2>
+        <h2 className="font-serif text-[18px] font-semibold text-[#2B1B12]">Categories</h2>
         <p className="mt-1 text-[12px] text-[#9A8070]">
-          Edit category names, starting prices, form options, and order details for the public custom
-          orders page.
+          Set the category starting price, then add extra prices for each form choice (Millets,
+          Honey, weight, and so on). Those appear below the option on the public custom orders page.
         </p>
       </div>
 
@@ -177,7 +317,9 @@ export function CustomOrderCategoriesManager() {
                 : Number(draft.startingPrice.replace(/,/g, ""))
             const dirty = !draftsEqual(category, draft)
             const isSaving = savingId === category.id
-            const hasForm = (base?.fields.length ?? 0) > 0
+            const formFields =
+              category.fields.length > 0 ? category.fields : (base?.fields ?? [])
+            const hasForm = formFields.length > 0
 
             return (
               <article
@@ -242,6 +384,16 @@ export function CustomOrderCategoriesManager() {
 
                 {hasForm ? (
                   <div className="mt-5 space-y-4 border-t border-[#F0EAE2] pt-5">
+                    <div className="rounded-lg border border-[#E8DFD2] bg-[#FFF9F2] px-3 py-2.5">
+                      <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#846246]">
+                        Form options & extra pricing
+                      </p>
+                      <p className="mt-1 text-[11px] leading-relaxed text-[#9A8070]">
+                        Each row below is one customer choice. Add an extra ₹ amount for options like
+                        Millets or Honey, or leave the price empty.
+                      </p>
+                    </div>
+
                     <label className="block">
                       <span className="text-[11px] font-medium uppercase tracking-wide text-[#9A8070]">
                         Form title
@@ -260,11 +412,12 @@ export function CustomOrderCategoriesManager() {
                     </label>
 
                     <div className="grid gap-4 lg:grid-cols-2">
-                      {category.fields.map((field) => {
+                      {formFields.map((field) => {
                         const fieldDraft = draft.fields[field.id] ?? {
                           label: field.label,
-                          optionsText: formatOptionsList(field.options),
+                          options: toOptionDrafts(field.options),
                         }
+                        const optionDrafts = ensureOptionDrafts(fieldDraft.options)
 
                         return (
                           <div
@@ -298,56 +451,58 @@ export function CustomOrderCategoriesManager() {
                                 className="mt-1 h-9 w-full rounded-lg border border-[#EDE5D8] bg-white px-3 font-serif text-[13px] text-[#2D1E17] outline-none focus:border-[#C4A882]"
                               />
                             </label>
-                            <label className="mt-3 block">
+                            <div className="mt-3">
                               <span className="text-[10px] font-medium uppercase tracking-wide text-[#9A8070]">
-                                Options (one per line)
+                                Choices & extra prices
                               </span>
-                              <textarea
-                                value={fieldDraft.optionsText}
-                                onChange={(event) =>
-                                  setDrafts((prev) => ({
-                                    ...prev,
-                                    [category.id]: {
-                                      ...draft,
-                                      fields: {
-                                        ...draft.fields,
-                                        [field.id]: {
-                                          ...fieldDraft,
-                                          optionsText: event.target.value,
+                              <div className="mt-1.5">
+                                <OptionRowsEditor
+                                  options={optionDrafts}
+                                  onChange={(next) =>
+                                    setDrafts((prev) => ({
+                                      ...prev,
+                                      [category.id]: {
+                                        ...draft,
+                                        fields: {
+                                          ...draft.fields,
+                                          [field.id]: {
+                                            ...fieldDraft,
+                                            options: next,
+                                          },
                                         },
                                       },
-                                    },
-                                  }))
-                                }
-                                rows={4}
-                                className="mt-1 w-full resize-y rounded-lg border border-[#EDE5D8] bg-white px-3 py-2 font-sans text-[12px] leading-relaxed text-[#2D1E17] outline-none focus:border-[#C4A882]"
-                              />
-                            </label>
+                                    }))
+                                  }
+                                />
+                              </div>
+                            </div>
                           </div>
                         )
                       })}
                     </div>
 
-                    <label className="block">
-                      <span className="text-[11px] font-medium uppercase tracking-wide text-[#9A8070]">
-                        Order details — weight options (one per line)
-                      </span>
-                      <textarea
-                        value={draft.weightOptionsText}
-                        onChange={(event) =>
-                          setDrafts((prev) => ({
-                            ...prev,
-                            [category.id]: {
-                              ...draft,
-                              weightOptionsText: event.target.value,
-                            },
-                          }))
-                        }
-                        rows={3}
-                        placeholder={"250gm\n500gm\n1kg"}
-                        className="mt-1 w-full resize-y rounded-lg border border-[#EDE5D8] px-3 py-2 font-sans text-[12px] leading-relaxed text-[#2D1E17] outline-none focus:border-[#C4A882]"
-                      />
-                    </label>
+                    <div className="rounded-lg border border-[#F0EAE2] bg-[#FAF7F2] p-3">
+                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#846246]">
+                        Order Details
+                      </p>
+                      <div className="mt-3">
+                        <span className="text-[10px] font-medium uppercase tracking-wide text-[#9A8070]">
+                          Weight options & prices
+                        </span>
+                        <div className="mt-1.5">
+                          <OptionRowsEditor
+                            options={ensureOptionDrafts(draft.weightOptions)}
+                            addLabel="Add weight option"
+                            onChange={(next) =>
+                              setDrafts((prev) => ({
+                                ...prev,
+                                [category.id]: { ...draft, weightOptions: next },
+                              }))
+                            }
+                          />
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 ) : (
                   <p className="mt-4 text-[12px] text-[#9A8070]">

@@ -6,7 +6,10 @@ import { cn } from "@/lib/utils"
 import {
   CUSTOM_ORDER_CATEGORIES,
   DEFAULT_CATEGORY_ID,
+  formatPricedOptionPrice,
   getCategoryDefaults,
+  getPricedOptionLabels,
+  getPricedOptionPrice,
   type CustomOrderCategory,
   type CustomOrderCategoryId,
   type PublicCustomOrderCategory,
@@ -272,17 +275,27 @@ export function CustomOrdersPage({ categories: categoriesProp }: CustomOrdersPag
                 <span className="text-[#C4A882]">✦</span> {category.formTitle}
               </h2>
 
-              {category.fields.map((field) => (
-                <div key={field.id}>
-                  <p className="mb-3 font-serif text-[15px] text-[#3D2E24]">{field.label}</p>
-                  <OptionPills
-                    options={field.options}
-                    value={form.selections[field.id] ?? field.options[0]}
-                    onChange={(value) => updateSelection(field.id, value)}
-                    columns={field.options.length <= 3 ? 3 : 4}
-                  />
-                </div>
-              ))}
+              {category.fields.map((field) => {
+                const selected =
+                  form.selections[field.id] ?? field.options[0]?.label ?? ""
+                const selectedPrice = getPricedOptionPrice(field.options, selected)
+                const priceLabel = formatPricedOptionPrice(selectedPrice)
+
+                return (
+                  <div key={field.id}>
+                    <p className="mb-3 font-serif text-[15px] text-[#3D2E24]">{field.label}</p>
+                    <OptionPills
+                      options={getPricedOptionLabels(field.options)}
+                      value={selected}
+                      onChange={(value) => updateSelection(field.id, value)}
+                      columns={field.options.length <= 3 ? 3 : 4}
+                    />
+                    {priceLabel ? (
+                      <p className="mt-2.5 font-sans text-[12px] text-[#8B7355]">{priceLabel}</p>
+                    ) : null}
+                  </div>
+                )
+              })}
 
               <div>
                 <p className="mb-3 font-serif text-[15px] text-[#3D2E24]">Order Details</p>
@@ -292,11 +305,18 @@ export function CustomOrdersPage({ categories: categoriesProp }: CustomOrdersPag
                       Order by Weight
                     </p>
                     <OptionPills
-                      options={category.weightOptions}
+                      options={getPricedOptionLabels(category.weightOptions)}
                       value={form.weight}
                       onChange={(weight) => updateForm({ weight })}
                       columns={3}
                     />
+                    {formatPricedOptionPrice(getPricedOptionPrice(category.weightOptions, form.weight)) ? (
+                      <p className="mt-2.5 font-sans text-[12px] text-[#8B7355]">
+                        {formatPricedOptionPrice(
+                          getPricedOptionPrice(category.weightOptions, form.weight),
+                        )}
+                      </p>
+                    ) : null}
                   </div>
                   <div className="sm:w-[120px]">
                     <label

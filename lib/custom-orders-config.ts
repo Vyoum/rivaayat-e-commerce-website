@@ -7,10 +7,19 @@ export type CustomOrderCategoryId =
   | "artisan-achaar"
   | "custom-clothing"
 
+export type PricedOption = {
+  label: string
+  price: number | null
+}
+
 export type FormFieldGroup = {
   id: string
   label: string
-  options: string[]
+  options: PricedOption[]
+}
+
+function pricedOptions(labels: string[]): PricedOption[] {
+  return labels.map((label) => ({ label, price: null }))
 }
 
 export type CustomOrderCategory = {
@@ -22,7 +31,20 @@ export type CustomOrderCategory = {
   comingSoon?: boolean
   formTitle: string
   fields: FormFieldGroup[]
-  weightOptions: string[]
+  weightOptions: PricedOption[]
+}
+
+export function formatPricedOptionPrice(price: number | null | undefined) {
+  if (price === null || price === undefined || price <= 0) return null
+  return `+ ₹${price.toLocaleString("en-IN")}`
+}
+
+export function getPricedOptionLabels(options: PricedOption[]) {
+  return options.map((option) => option.label)
+}
+
+export function getPricedOptionPrice(options: PricedOption[], label: string) {
+  return options.find((option) => option.label === label)?.price ?? null
 }
 
 /** Serializable category data safe to pass from Server → Client Components */
@@ -42,20 +64,28 @@ export const CUSTOM_ORDER_CATEGORIES: CustomOrderCategory[] = [
     badge: "5-7 DAYS",
     formTitle: "Customise Your Healthy Laddoos",
     fields: [
-      { id: "base", label: "Choose Your Base", options: ["Millets", "Oats", "Mixed Nuts", "Dates"] },
+      {
+        id: "base",
+        label: "Choose Your Base",
+        options: pricedOptions(["Millets", "Oats", "Mixed Nuts", "Dates"]),
+      },
       {
         id: "sweetener",
         label: "Sweetening Agent (Binding)",
-        options: ["Jaggery", "Honey", "Dates Paste"],
+        options: pricedOptions(["Jaggery", "Honey", "Dates Paste"]),
       },
       {
         id: "flavour",
         label: "Flavour Profile",
-        options: ["Cardamom", "Rose", "Saffron", "Plain"],
+        options: pricedOptions(["Cardamom", "Rose", "Saffron", "Plain"]),
       },
-      { id: "coating", label: "Coating", options: ["Coconut", "Sesame", "Pistachios", "None"] },
+      {
+        id: "coating",
+        label: "Coating",
+        options: pricedOptions(["Coconut", "Sesame", "Pistachios", "None"]),
+      },
     ],
-    weightOptions: ["250gm", "500gm", "1kg"],
+    weightOptions: pricedOptions(["250gm", "500gm", "1kg"]),
   },
   {
     id: "protein-bars",
@@ -64,20 +94,28 @@ export const CUSTOM_ORDER_CATEGORIES: CustomOrderCategory[] = [
     badge: "5-7 DAYS",
     formTitle: "Customise Your Protein Bars",
     fields: [
-      { id: "base", label: "Choose Your Base", options: ["Whey", "Plant Protein", "Mixed Nuts", "Oats"] },
+      {
+        id: "base",
+        label: "Choose Your Base",
+        options: pricedOptions(["Whey", "Plant Protein", "Mixed Nuts", "Oats"]),
+      },
       {
         id: "sweetener",
         label: "Sweetening Agent (Binding)",
-        options: ["Jaggery", "Honey", "Dates Paste"],
+        options: pricedOptions(["Jaggery", "Honey", "Dates Paste"]),
       },
       {
         id: "flavour",
         label: "Flavour Profile",
-        options: ["Chocolate", "Peanut Butter", "Vanilla", "Plain"],
+        options: pricedOptions(["Chocolate", "Peanut Butter", "Vanilla", "Plain"]),
       },
-      { id: "coating", label: "Coating", options: ["Dark Chocolate", "Coconut", "Almonds", "None"] },
+      {
+        id: "coating",
+        label: "Coating",
+        options: pricedOptions(["Dark Chocolate", "Coconut", "Almonds", "None"]),
+      },
     ],
-    weightOptions: ["250gm", "500gm", "1kg"],
+    weightOptions: pricedOptions(["250gm", "500gm", "1kg"]),
   },
   {
     id: "artisan-achaar",
@@ -111,7 +149,7 @@ export function buildCustomOrderCategories(
     startingPrice: number | null
     formTitle?: string
     fields?: FormFieldGroup[]
-    weightOptions?: string[]
+    weightOptions?: PricedOption[]
   }>,
 ): CustomOrderCategory[] {
   const settingsMap = new Map(settings.map((entry) => [entry.id, entry]))
@@ -147,7 +185,7 @@ export function buildPublicCustomOrderCategories(
     startingPrice: number | null
     formTitle?: string
     fields?: FormFieldGroup[]
-    weightOptions?: string[]
+    weightOptions?: PricedOption[]
   }>,
 ): PublicCustomOrderCategory[] {
   return buildCustomOrderCategories(settings).map(toPublicCustomOrderCategory)
@@ -158,11 +196,11 @@ export function getCategoryDefaults(
 ) {
   const selections: Record<string, string> = {}
   for (const field of category.fields) {
-    selections[field.id] = field.options[0] ?? ""
+    selections[field.id] = field.options[0]?.label ?? ""
   }
   return {
     selections,
-    weight: category.weightOptions[0] ?? "250gm",
+    weight: category.weightOptions[0]?.label ?? "250gm",
     quantity: "1",
     notes: "",
     fullName: "",

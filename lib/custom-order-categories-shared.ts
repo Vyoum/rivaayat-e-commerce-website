@@ -2,6 +2,7 @@ import {
   CUSTOM_ORDER_CATEGORIES,
   type CustomOrderCategoryId,
   type FormFieldGroup,
+  type PricedOption,
 } from "@/lib/custom-orders-config"
 
 export type CustomOrderCategorySetting = {
@@ -10,7 +11,7 @@ export type CustomOrderCategorySetting = {
   startingPrice: number | null
   formTitle: string
   fields: FormFieldGroup[]
-  weightOptions: string[]
+  weightOptions: PricedOption[]
 }
 
 export const CUSTOM_ORDER_CATEGORY_IDS = CUSTOM_ORDER_CATEGORIES.map((category) => category.id)
@@ -25,15 +26,30 @@ function getBaseCategory(id: CustomOrderCategoryId) {
   return CUSTOM_ORDER_CATEGORIES.find((category) => category.id === id)
 }
 
-export function parseOptionsList(value: string): string[] {
-  return value
-    .split(/[\n,]/)
-    .map((entry) => entry.trim())
-    .filter(Boolean)
+export function normalizePricedOption(option: string | PricedOption): PricedOption {
+  if (typeof option === "string") {
+    return { label: option.trim(), price: null }
+  }
+
+  const price =
+    option.price === null || option.price === undefined ? null : Number(option.price)
+
+  return {
+    label: option.label.trim(),
+    price: Number.isFinite(price) && price >= 0 ? price : null,
+  }
 }
 
-export function formatOptionsList(options: string[]): string {
-  return options.join("\n")
+export function normalizePricedOptions(
+  options: Array<string | PricedOption> | undefined,
+  fallback: PricedOption[],
+): PricedOption[] {
+  const cleaned = (options ?? [])
+    .map(normalizePricedOption)
+    .filter((option) => option.label)
+
+  if (cleaned.length > 0) return cleaned
+  return fallback
 }
 
 export function mergeCategoryFields(
@@ -47,25 +63,21 @@ export function mergeCategoryFields(
 
   return base.fields.map((defaultField) => {
     const saved = savedMap.get(defaultField.id)
-    const options =
-      saved?.options?.map((option) => option.trim()).filter(Boolean) ?? defaultField.options
 
     return {
       id: defaultField.id,
       label: saved?.label?.trim() || defaultField.label,
-      options: options.length > 0 ? options : defaultField.options,
+      options: normalizePricedOptions(saved?.options, defaultField.options),
     }
   })
 }
 
 export function mergeCategoryWeightOptions(
   id: CustomOrderCategoryId,
-  saved?: string[],
-): string[] {
+  saved?: Array<string | PricedOption>,
+): PricedOption[] {
   const base = getBaseCategory(id)
-  const cleaned = (saved ?? []).map((option) => option.trim()).filter(Boolean)
-  if (cleaned.length > 0) return cleaned
-  return base?.weightOptions ?? []
+  return normalizePricedOptions(saved, base?.weightOptions ?? [])
 }
 
 export function buildDefaultCategorySetting(id: CustomOrderCategoryId): CustomOrderCategorySetting {
@@ -82,9 +94,9 @@ export function buildDefaultCategorySetting(id: CustomOrderCategoryId): CustomOr
     fields: base.fields.map((field) => ({
       id: field.id,
       label: field.label,
-      options: [...field.options],
+      options: field.options.map((option) => ({ ...option })),
     })),
-    weightOptions: [...base.weightOptions],
+    weightOptions: base.weightOptions.map((option) => ({ ...option })),
   }
 }
 
@@ -112,4 +124,12 @@ export function mergeCategorySetting(saved: Partial<CustomOrderCategorySetting>)
 export function formatCustomOrderStartingPrice(price: number | null) {
   if (price === null || price <= 0) return null
   return `Starting at ₹${price.toLocaleString("en-IN")}`
+}
+
+export function pricedOptionsEqual(a: PricedOption[], b: PricedOption[]) {
+  if (a.length !== b.length) return false
+  return a.every((option, index) => {
+    const other = b[index]
+    return option.label === other.label && option.price === other.price
+  })
 }

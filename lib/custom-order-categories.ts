@@ -23,8 +23,9 @@ export {
   CUSTOM_ORDER_CATEGORY_IDS,
   DEFAULT_CUSTOM_ORDER_CATEGORY_SETTINGS,
   formatCustomOrderStartingPrice,
-  formatOptionsList,
-  parseOptionsList,
+  normalizePricedOption,
+  normalizePricedOptions,
+  pricedOptionsEqual,
 } from "@/lib/custom-order-categories-shared"
 
 const DATA_FILE = path.join(process.cwd(), "data", "custom-order-categories.json")
@@ -104,6 +105,34 @@ function validateFields(fields: FormFieldGroup[]) {
     if (!field.options.length) {
       throw new Error(`Add at least one option for ${field.label}`)
     }
+    for (const option of field.options) {
+      if (!option.label.trim()) {
+        throw new Error(`Each option in ${field.label} needs a name`)
+      }
+      if (option.price !== null && (!Number.isFinite(option.price) || option.price < 0)) {
+        throw new Error(`Invalid price for ${option.label}`)
+      }
+    }
+  }
+}
+
+function validateWeightOptions(weightOptions: FormFieldGroup["options"]) {
+  const cleaned = weightOptions.map((option) => ({
+    label: option.label.trim(),
+    price: option.price,
+  }))
+
+  if (cleaned.length === 0) {
+    throw new Error("Add at least one weight option")
+  }
+
+  for (const option of cleaned) {
+    if (!option.label) {
+      throw new Error("Each weight option needs a label")
+    }
+    if (option.price !== null && (!Number.isFinite(option.price) || option.price < 0)) {
+      throw new Error(`Invalid price for ${option.label}`)
+    }
   }
 }
 
@@ -141,10 +170,7 @@ export async function updateCustomOrderCategorySetting(
   }
 
   if (patch.weightOptions !== undefined) {
-    const cleaned = patch.weightOptions.map((option) => option.trim()).filter(Boolean)
-    if (cleaned.length === 0) {
-      throw new Error("Add at least one weight option")
-    }
+    validateWeightOptions(patch.weightOptions)
   }
 
   const next = mergeCategorySetting({
