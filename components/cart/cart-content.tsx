@@ -362,63 +362,59 @@ export function CartContent() {
           )}
 
           <CartWishlistTab />
-
-          {items.length > 0 && (
-            <>
-              <div className="pt-2">
-                <p className="font-sans text-[12px] text-[#6B5344]">
-                  Have a promo code?
-                </p>
-                <div className="mt-2.5 flex items-center gap-4">
-                  <input
-                    type="text"
-                    value={promoCode}
-                    onChange={(e) => {
-                      setPromoCode(e.target.value.toUpperCase())
-                      setPromoError(null)
-                    }}
-                    placeholder="ENTER CODE HERE"
-                    disabled={Boolean(appliedPromo)}
-                    className="h-11 flex-1 rounded-lg border border-[#EDE5D8] bg-white px-4 font-sans text-[12px] uppercase tracking-[0.08em] text-[#2B1B12] placeholder:text-[#C4A882]/70 outline-none focus:border-[#C4A882] focus:ring-1 focus:ring-[#C4A882]/30 disabled:opacity-70"
-                  />
-                  {appliedPromo ? (
-                    <button
-                      type="button"
-                      onClick={() => {
-                        setAppliedPromo(null)
-                        setPromoCode("")
-                        setPromoError(null)
-                      }}
-                      className="shrink-0 font-sans text-[12px] font-medium uppercase tracking-[0.12em] text-[#C5221F] transition-colors hover:text-[#9A1B1B]"
-                    >
-                      Remove
-                    </button>
-                  ) : (
-                    <button
-                      type="button"
-                      onClick={() => void handleApplyPromo()}
-                      disabled={promoLoading}
-                      className="shrink-0 font-sans text-[12px] font-medium uppercase tracking-[0.12em] text-[#6B5344] transition-colors hover:text-[#2B1B12] disabled:opacity-60"
-                    >
-                      {promoLoading ? "Checking…" : "Apply"}
-                    </button>
-                  )}
-                </div>
-                {promoError ? (
-                  <p className="mt-2 font-sans text-[12px] text-[#C5221F]">{promoError}</p>
-                ) : null}
-                {appliedPromo ? (
-                  <p className="mt-2 font-sans text-[12px] text-[#1E7E34]">
-                    {appliedPromo.code} applied — {appliedPromo.label} (
-                    {formatCurrency(appliedPromo.discountAmount)} off)
-                  </p>
-                ) : null}
-              </div>
-            </>
-          )}
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-8">
+          {items.length > 0 ? (
+            <div className="rounded-xl border border-[#EDE5D8] bg-[#F5F2EB] p-5 sm:p-6">
+              <p className="font-sans text-[12px] text-[#6B5344]">Have a promo code?</p>
+              <div className="mt-2.5 flex items-center gap-3">
+                <input
+                  type="text"
+                  value={promoCode}
+                  onChange={(e) => {
+                    setPromoCode(e.target.value.toUpperCase())
+                    setPromoError(null)
+                  }}
+                  placeholder="ENTER CODE HERE"
+                  disabled={Boolean(appliedPromo)}
+                  className="h-11 min-w-0 flex-1 rounded-lg border border-[#EDE5D8] bg-white px-4 font-sans text-[12px] uppercase tracking-[0.08em] text-[#2B1B12] placeholder:text-[#C4A882]/70 outline-none focus:border-[#C4A882] focus:ring-1 focus:ring-[#C4A882]/30 disabled:opacity-70"
+                />
+                {appliedPromo ? (
+                  <button
+                    type="button"
+                    onClick={() => {
+                      setAppliedPromo(null)
+                      setPromoCode("")
+                      setPromoError(null)
+                    }}
+                    className="shrink-0 font-sans text-[12px] font-medium uppercase tracking-[0.12em] text-[#C5221F] transition-colors hover:text-[#9A1B1B]"
+                  >
+                    Remove
+                  </button>
+                ) : (
+                  <button
+                    type="button"
+                    onClick={() => void handleApplyPromo()}
+                    disabled={promoLoading}
+                    className="shrink-0 font-sans text-[12px] font-medium uppercase tracking-[0.12em] text-[#6B5344] transition-colors hover:text-[#2B1B12] disabled:opacity-60"
+                  >
+                    {promoLoading ? "Checking…" : "Apply"}
+                  </button>
+                )}
+              </div>
+              {promoError ? (
+                <p className="mt-2 font-sans text-[12px] text-[#C5221F]">{promoError}</p>
+              ) : null}
+              {appliedPromo ? (
+                <p className="mt-2 font-sans text-[12px] text-[#1E7E34]">
+                  {appliedPromo.code} applied — {appliedPromo.label} (
+                  {formatCurrency(appliedPromo.discountAmount)} off)
+                </p>
+              ) : null}
+            </div>
+          ) : null}
+
           {items.length > 0 ? (
             <div className="rounded-xl border border-[#EDE5D8] bg-[#F5F2EB] p-5 sm:p-6">
               <div className="flex items-start gap-3">

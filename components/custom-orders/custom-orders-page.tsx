@@ -4,14 +4,17 @@ import { useMemo, useState } from "react"
 import { Cookie, Dumbbell, FlaskConical, Loader2, Shirt, type LucideIcon } from "lucide-react"
 import { cn } from "@/lib/utils"
 import {
+  calculateCustomOrderTotal,
   CUSTOM_ORDER_CATEGORIES,
   DEFAULT_CATEGORY_ID,
+  formatCustomOrderAmount,
   formatPricedOptionPrice,
   getCategoryDefaults,
   getPricedOptionLabels,
   getPricedOptionPrice,
   type CustomOrderCategory,
   type CustomOrderCategoryId,
+  type CustomOrderTotalBreakdown,
   type PublicCustomOrderCategory,
 } from "@/lib/custom-orders-config"
 
@@ -89,6 +92,71 @@ function OptionPills({
 
 type FormState = ReturnType<typeof getCategoryDefaults>
 
+function CustomOrderTotalSummary({ breakdown }: { breakdown: CustomOrderTotalBreakdown }) {
+  const hasLineItems =
+    breakdown.startingPrice > 0 ||
+    breakdown.optionLines.length > 0 ||
+    breakdown.weightLine !== null
+
+  return (
+    <div className="rounded-xl border border-[#E8E0D4] bg-white p-5 shadow-sm">
+      <h3 className="font-serif text-[18px] text-[#3D2E24]">Estimated Total</h3>
+      <p className="mt-1 font-sans text-[12px] text-[#8B7355]">
+        Based on your selections. Final price may be confirmed by the artisan.
+      </p>
+
+      {hasLineItems ? (
+        <dl className="mt-4 space-y-2 border-b border-[#F0EAE2] pb-4">
+          {breakdown.startingPrice > 0 ? (
+            <div className="flex items-center justify-between gap-4 font-sans text-[13px] text-[#6B5A4E]">
+              <dt>Starting price</dt>
+              <dd>{formatCustomOrderAmount(breakdown.startingPrice)}</dd>
+            </div>
+          ) : null}
+          {breakdown.optionLines.map((line) => (
+            <div
+              key={line.label}
+              className="flex items-center justify-between gap-4 font-sans text-[13px] text-[#6B5A4E]"
+            >
+              <dt>{line.label}</dt>
+              <dd>+ {formatCustomOrderAmount(line.amount)}</dd>
+            </div>
+          ))}
+          {breakdown.weightLine ? (
+            <div className="flex items-center justify-between gap-4 font-sans text-[13px] text-[#6B5A4E]">
+              <dt>{breakdown.weightLine.label}</dt>
+              <dd>+ {formatCustomOrderAmount(breakdown.weightLine.amount)}</dd>
+            </div>
+          ) : null}
+          <div className="flex items-center justify-between gap-4 pt-1 font-sans text-[13px] font-medium text-[#3D2E24]">
+            <dt>Per box</dt>
+            <dd>{formatCustomOrderAmount(breakdown.perUnit)}</dd>
+          </div>
+        </dl>
+      ) : null}
+
+      <div className="mt-4 flex items-end justify-between gap-4">
+        <div>
+          <p className="font-sans text-[11px] uppercase tracking-[0.14em] text-[#8B7355]">
+            Quantity
+          </p>
+          <p className="mt-1 font-serif text-[15px] text-[#3D2E24]">
+            {breakdown.quantity} box{breakdown.quantity === 1 ? "" : "es"}
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="font-sans text-[11px] uppercase tracking-[0.14em] text-[#8B7355]">
+            Estimated total
+          </p>
+          <p className="mt-1 font-serif text-[28px] leading-none text-[#3D2E24]">
+            {formatCustomOrderAmount(breakdown.total)}
+          </p>
+        </div>
+      </div>
+    </div>
+  )
+}
+
 type CustomOrdersPageProps = {
   categories?: PublicCustomOrderCategory[]
 }
@@ -119,6 +187,17 @@ export function CustomOrdersPage({ categories: categoriesProp }: CustomOrdersPag
   )
 
   const form = formByCategory[categoryId] ?? getCategoryDefaults(category)
+
+  const orderTotal = useMemo(
+    () =>
+      calculateCustomOrderTotal(
+        category,
+        form.selections,
+        form.weight,
+        form.quantity,
+      ),
+    [category, form.selections, form.weight, form.quantity],
+  )
 
   function updateForm(patch: Partial<FormState>) {
     setFormByCategory((prev) => ({
@@ -349,6 +428,8 @@ export function CustomOrdersPage({ categories: categoriesProp }: CustomOrdersPag
                   className="w-full resize-y rounded-lg border border-[#E8DCC8] bg-[#F5EDD8]/70 px-4 py-3 font-serif text-[14px] leading-relaxed text-[#3D2E24] placeholder:text-[#A89888] outline-none focus:border-[#C4A882]"
                 />
               </div>
+
+              <CustomOrderTotalSummary breakdown={orderTotal} />
 
               <div className="border-t border-[#E8E0D4] pt-8">
                 <h3 className="font-serif text-[18px] text-[#3D2E24]">Your Contact Information</h3>
