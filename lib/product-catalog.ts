@@ -45,6 +45,13 @@ export function buildCategoryConfig(slug: string, products: CatalogProduct[]): C
   return { ...meta, products }
 }
 
+export function buildCategoryConfigFromMeta(
+  meta: Omit<CategoryConfig, "products">,
+  products: CatalogProduct[],
+): CategoryConfig {
+  return { ...meta, products }
+}
+
 export function dbCategoryToRouteSlug(category: Category) {
   return CATEGORY_ENUM_TO_ROUTE[category]
 }

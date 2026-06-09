@@ -1,7 +1,7 @@
 import { notFound } from "next/navigation"
 
 import { CategoryListingPage } from "@/components/catalog/category-listing-page"
-import { buildCategoryConfig } from "@/lib/product-catalog"
+import { buildCategoryConfigFromMeta } from "@/lib/product-catalog"
 import { getPublishedProductsByCategoryRoute } from "@/lib/product-server"
 
 export const dynamic = "force-dynamic"
@@ -18,10 +18,7 @@ export default async function CategoryPage({ params }: CategoryPageProps) {
     notFound()
   }
 
-  const category = buildCategoryConfig(slug, data.products)
-  if (!category) {
-    notFound()
-  }
+  const category = buildCategoryConfigFromMeta(data.meta, data.products)
 
   return <CategoryListingPage category={category} />
 }

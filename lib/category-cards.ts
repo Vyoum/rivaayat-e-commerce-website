@@ -72,6 +72,24 @@ export async function getAllCategoryCardsAdmin(): Promise<CategoryCard[]> {
   return getCategoryCards()
 }
 
+export async function getCategoryCardByRoute(route: string): Promise<CategoryCard | null> {
+  const cards = await getCategoryCards()
+  if (!CATEGORY_CARD_KEYS.includes(route as CategoryCardKey)) return null
+  return cards.find((card) => card.id === route) ?? null
+}
+
+export function applyCategoryCardToMeta<T extends { breadcrumb: string; subtitle: string }>(
+  meta: T,
+  card: CategoryCard | null,
+): T {
+  if (!card) return meta
+  return {
+    ...meta,
+    breadcrumb: card.title,
+    subtitle: card.description,
+  }
+}
+
 export async function updateCategoryCard(
   id: CategoryCardKey,
   patch: Partial<Pick<CategoryCard, "imageUrl" | "title" | "description">>,
@@ -86,6 +104,14 @@ export async function updateCategoryCard(
 
   if (patch.imageUrl !== undefined && !patch.imageUrl.trim()) {
     throw new Error("Image URL is required")
+  }
+
+  if (patch.title !== undefined && !patch.title.trim()) {
+    throw new Error("Category name is required")
+  }
+
+  if (patch.description !== undefined && !patch.description.trim()) {
+    throw new Error("Tagline is required")
   }
 
   data.cards[index] = {

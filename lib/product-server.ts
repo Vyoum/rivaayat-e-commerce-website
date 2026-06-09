@@ -1,6 +1,7 @@
 import type { Category } from "@prisma/client"
 
 import { getCategoryMeta, mapDbProductToCatalog } from "@/lib/product-catalog"
+import { applyCategoryCardToMeta, getCategoryCardByRoute } from "@/lib/category-cards"
 import { getPrisma } from "@/lib/prisma"
 import type { StoreProductDetail } from "@/types/product"
 import {
@@ -115,8 +116,11 @@ function mapDbProductToDetail(product: {
 }
 
 export async function getPublishedProductsByCategoryRoute(categoryRoute: string) {
-  const meta = getCategoryMeta(categoryRoute)
-  if (!meta) return null
+  const baseMeta = getCategoryMeta(categoryRoute)
+  if (!baseMeta) return null
+
+  const categoryCard = await getCategoryCardByRoute(categoryRoute)
+  const meta = applyCategoryCardToMeta(baseMeta, categoryCard)
 
   const dbCategory = {
     jewellery: "jewellery",
