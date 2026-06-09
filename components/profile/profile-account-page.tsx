@@ -418,6 +418,7 @@ export function ProfileAccountPage({ profile }: { profile: ProfileData }) {
           { id: "wishlist" as SectionId, label: "Wishlist", icon: Heart, badge: wishlist.length ? String(wishlist.length) : null },
           { id: "recently-viewed" as SectionId, label: "Recently Viewed", icon: Eye, badge: null },
           { id: "browse-history" as SectionId, label: "Browse History", icon: History, badge: null },
+          { id: "our-story" as SectionId, label: "Artisans", icon: BookOpen, badge: null },
         ],
       },
       {
@@ -427,7 +428,6 @@ export function ProfileAccountPage({ profile }: { profile: ProfileData }) {
           { id: "payment" as SectionId, label: "Payment", icon: CreditCard, badge: null },
           { id: "notifications" as SectionId, label: "Notifications", icon: Bell, badge: null },
           { id: "help" as SectionId, label: "Help", icon: HelpCircle, badge: null },
-          { id: "our-story" as SectionId, label: "Artisans", icon: BookOpen, badge: null },
         ],
       },
     ],
