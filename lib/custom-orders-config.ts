@@ -96,6 +96,42 @@ export const CUSTOM_ORDER_CATEGORIES: CustomOrderCategory[] = [
 
 export const DEFAULT_CATEGORY_ID: CustomOrderCategoryId = "healthy-laddoos"
 
+export function buildCustomOrderCategories(
+  settings: Array<{
+    id: CustomOrderCategoryId
+    label: string
+    startingPrice: number | null
+    formTitle?: string
+    fields?: FormFieldGroup[]
+    weightOptions?: string[]
+  }>,
+): CustomOrderCategory[] {
+  const settingsMap = new Map(settings.map((entry) => [entry.id, entry]))
+
+  return CUSTOM_ORDER_CATEGORIES.map((category) => {
+    const setting = settingsMap.get(category.id)
+    const label = setting?.label?.trim() || category.label
+    const startingPrice = setting?.startingPrice ?? null
+    const priceHint =
+      startingPrice !== null && startingPrice > 0
+        ? `Starting at ₹${startingPrice.toLocaleString("en-IN")}`
+        : undefined
+
+    return {
+      ...category,
+      label,
+      priceHint,
+      formTitle: setting?.formTitle?.trim() || category.formTitle,
+      fields:
+        setting?.fields && setting.fields.length > 0 ? setting.fields : category.fields,
+      weightOptions:
+        setting?.weightOptions && setting.weightOptions.length > 0
+          ? setting.weightOptions
+          : category.weightOptions,
+    }
+  })
+}
+
 export function getCategoryDefaults(category: CustomOrderCategory) {
   const selections: Record<string, string> = {}
   for (const field of category.fields) {

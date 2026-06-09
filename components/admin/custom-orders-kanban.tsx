@@ -6,6 +6,7 @@ import { Loader2, Search, Sparkles, X } from "lucide-react"
 
 import { AdminSidebar } from "./admin-sidebar"
 import { CommerceSubnav } from "./commerce-subnav"
+import { CustomOrderCategoriesManager } from "./custom-order-categories-manager"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import type {
   CustomOrderKanbanBoard,
@@ -190,6 +191,10 @@ export function CustomOrdersKanban({ initialBoard }: CustomOrdersKanbanProps) {
                 {error}
               </p>
             ) : null}
+
+            <section className="mb-6 rounded-xl border border-[#EDE5D8] bg-white p-5 shadow-sm">
+              <CustomOrderCategoriesManager />
+            </section>
 
             <div className="flex gap-4">
               {board.columns.map((col) => (

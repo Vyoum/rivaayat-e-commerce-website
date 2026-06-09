@@ -7,6 +7,7 @@ import {
   CUSTOM_ORDER_CATEGORIES,
   DEFAULT_CATEGORY_ID,
   getCategoryDefaults,
+  type CustomOrderCategory,
   type CustomOrderCategoryId,
 } from "@/lib/custom-orders-config"
 
@@ -70,11 +71,17 @@ function OptionPills({
 
 type FormState = ReturnType<typeof getCategoryDefaults>
 
-export function CustomOrdersPage() {
+type CustomOrdersPageProps = {
+  categories?: CustomOrderCategory[]
+}
+
+export function CustomOrdersPage({
+  categories = CUSTOM_ORDER_CATEGORIES,
+}: CustomOrdersPageProps) {
   const [categoryId, setCategoryId] = useState<CustomOrderCategoryId>(DEFAULT_CATEGORY_ID)
   const [formByCategory, setFormByCategory] = useState<Record<string, FormState>>(() => {
     const initial: Record<string, FormState> = {}
-    for (const category of CUSTOM_ORDER_CATEGORIES) {
+    for (const category of categories) {
       if (!category.comingSoon) {
         initial[category.id] = getCategoryDefaults(category)
       }
@@ -86,8 +93,8 @@ export function CustomOrdersPage() {
   const [error, setError] = useState<string | null>(null)
 
   const category = useMemo(
-    () => CUSTOM_ORDER_CATEGORIES.find((item) => item.id === categoryId)!,
-    [categoryId],
+    () => categories.find((item) => item.id === categoryId)!,
+    [categories, categoryId],
   )
 
   const form = formByCategory[categoryId] ?? getCategoryDefaults(category)
@@ -160,7 +167,7 @@ export function CustomOrdersPage() {
         <aside className="h-fit rounded-xl bg-[#E8DCC8]/80 p-5 lg:sticky lg:top-24">
           <h2 className="font-serif text-[18px] text-[#3D2E24]">Choose Category</h2>
           <ul className="mt-4 space-y-2">
-            {CUSTOM_ORDER_CATEGORIES.map((item) => {
+            {categories.map((item) => {
               const Icon = item.icon
               const selected = categoryId === item.id
               const disabled = item.comingSoon
