@@ -24,31 +24,9 @@ import {
 } from "@/lib/our-story-page-content"
 import { cn } from "@/lib/utils"
 
-function SessionLabel({
-  children,
-  light = false,
-  align = "center",
-}: {
-  children: string
-  light?: boolean
-  align?: "center" | "left"
-}) {
-  return (
-    <p
-      className={cn(
-        "font-sans text-[10px] font-medium tracking-[0.28em] uppercase",
-        align === "center" ? "text-center" : "text-left",
-        light ? "text-white/75" : "text-[#9A8070]",
-      )}
-    >
-      {children}
-    </p>
-  )
-}
-
 function SectionTitle({ children }: { children: string }) {
   return (
-    <h2 className="mt-3 text-center font-serif text-[clamp(1.75rem,3.2vw,2.35rem)] font-normal leading-[1.2] text-[#2D1A12]">
+    <h2 className="text-center font-serif text-[clamp(1.75rem,3.2vw,2.35rem)] font-normal leading-[1.2] text-[#2D1A12]">
       {children}
     </h2>
   )
@@ -126,8 +104,7 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
 
       {/* SESSION 2 */}
       <section className="mx-auto max-w-[1120px] px-5 pb-20 pt-14 lg:px-8 lg:pb-24 lg:pt-16">
-        <SessionLabel>{content.whyExists.session}</SessionLabel>
-        <div className="mt-10 grid items-center gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
+        <div className="grid items-center gap-10 lg:grid-cols-[1fr_1.05fr] lg:gap-14">
           <div>
             <h1 className="font-serif text-[clamp(2rem,4vw,2.65rem)] font-normal leading-[1.15] text-[#2D1A12]">
               {content.whyExists.title}
@@ -153,7 +130,6 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
 
       {/* SESSION 3 */}
       <section className="mx-auto max-w-[1120px] px-5 py-20 lg:px-8 lg:py-24">
-        <SessionLabel>{content.makers.session}</SessionLabel>
         <SectionTitle>{content.makers.title}</SectionTitle>
 
         <div className="mt-12">
@@ -189,7 +165,6 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
 
       {/* SESSION 4 */}
       <section className="mx-auto max-w-[1120px] px-5 py-20 lg:px-8 lg:py-24">
-        <SessionLabel>{content.journey.session}</SessionLabel>
         <SectionTitle>{content.journey.title}</SectionTitle>
 
         <div className="mt-14 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -222,7 +197,6 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
 
       {/* SESSION 5 */}
       <section className="mx-auto max-w-[1120px] px-5 py-20 lg:px-8 lg:py-24">
-        <SessionLabel>{content.impact.session}</SessionLabel>
         <SectionTitle>{content.impact.title}</SectionTitle>
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
@@ -248,7 +222,6 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
 
       {/* SESSION 6 */}
       <section className="mx-auto max-w-[1120px] px-5 py-20 lg:px-8 lg:py-24">
-        <SessionLabel>{content.heritage.session}</SessionLabel>
         <SectionTitle>{content.heritage.title}</SectionTitle>
 
         <div className="mt-12">
@@ -274,7 +247,6 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
 
       {/* SESSION 7 */}
       <section className="mx-auto max-w-[1120px] px-5 py-20 lg:px-8 lg:py-24">
-        <SessionLabel>{content.collections.session}</SessionLabel>
         <SectionTitle>{content.collections.title}</SectionTitle>
 
         <div className="mt-12 grid grid-cols-2 gap-5 sm:grid-cols-3 lg:grid-cols-5 lg:gap-5">
@@ -303,7 +275,6 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
 
       {/* SESSION 8 */}
       <section className="mx-auto max-w-[1120px] px-5 py-20 lg:px-8 lg:py-24">
-        <SessionLabel>{content.promise.session}</SessionLabel>
         <SectionTitle>{content.promise.title}</SectionTitle>
 
         <div className="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4 lg:gap-5">
@@ -337,10 +308,7 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
         <div className="absolute inset-0 bg-gradient-to-r from-black/70 via-black/50 to-black/25" />
         <div className="relative z-10 mx-auto flex h-full min-h-[360px] max-w-[1120px] items-center px-5 py-16 sm:min-h-[420px] lg:min-h-[480px] lg:px-8">
           <div className="max-w-[540px] text-white">
-            <SessionLabel light align="left">
-              {content.cta.session}
-            </SessionLabel>
-            <h2 className="mt-4 font-serif text-[clamp(1.85rem,3.6vw,2.55rem)] font-normal leading-[1.22] text-white">
+            <h2 className="font-serif text-[clamp(1.85rem,3.6vw,2.55rem)] font-normal leading-[1.22] text-white">
               {content.cta.headline}
             </h2>
             <p className="mt-4 font-serif text-[15px] italic text-white/90">{content.cta.subheadline}</p>
