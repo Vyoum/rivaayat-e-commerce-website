@@ -192,7 +192,7 @@ export function CategoryListingPage({ category }: { category: CategoryConfig }) 
             <p className="font-sans text-[15px] text-[#9A8070]">No pieces match these filters.</p>
           </div>
         ) : (
-          <div className="mt-8 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
+          <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-6 lg:grid-cols-3 lg:gap-8">
             {pageProducts.map((product) => (
               <CatalogProductCard key={product.id} product={product} />
             ))}

@@ -20,7 +20,7 @@ const onlineShoppingLinks = [
 ]
 
 const customerPolicyLinks = [
-  { label: "Contact Us / Concierge", href: "#" },
+  { label: "Contact Us / Concierge", href: "/contact" },
   { label: "Track Orders", href: "/profile" },
   { label: "Shipping & Delivery", href: "#" },
   { label: "Cancellation & Returns", href: "#" },

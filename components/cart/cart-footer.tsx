@@ -8,7 +8,7 @@ const footerLinks = [
   { label: "Artisan Registry", href: "#" },
   { label: "Care Guide", href: "#" },
   { label: "Shipping", href: "#" },
-  { label: "Contact", href: "#" },
+  { label: "Contact", href: "/contact" },
 ]
 
 export function CartFooter() {

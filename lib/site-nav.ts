@@ -8,7 +8,7 @@ export const SITE_NAV_ITEMS: SiteNavItem[] = [
   { label: "Collections", href: "/jewellery" },
   { label: "Custom Orders", href: "/custom-orders" },
   { label: "Artisans", href: "/artisans/devendra-khatri" },
-  { label: "Contact", href: "#" },
+  { label: "Contact", href: "/contact" },
 ]
 
 export function isNavItemActive(pathname: string, href: string) {
@@ -26,6 +26,7 @@ export function isNavItemActive(pathname: string, href: string) {
   }
   if (href === "/outerboxdesign") return pathname === "/outerboxdesign"
   if (href === "/custom-orders") return pathname === "/custom-orders"
+  if (href === "/contact") return pathname === "/contact"
   if (href.startsWith("/artisans")) return pathname.startsWith("/artisans")
   return pathname === href || pathname.startsWith(`${href}/`)
 }

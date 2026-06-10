@@ -61,29 +61,31 @@ export function LandingCategories({
           <span className="h-px flex-1 bg-[#8A6A55]/55" />
         </div>
 
-        <div className="mt-7 grid max-w-[760px] gap-4 sm:mx-auto sm:grid-cols-2 sm:gap-5">
+        <div className="mt-7 grid grid-cols-2 gap-3 sm:mx-auto sm:max-w-[760px] sm:gap-5">
           {cards.map((cat) => (
             <Link
               key={cat.id}
               href={cat.href}
-              className="group overflow-hidden rounded-xl bg-[#E6D6C4] shadow-[0_2px_10px_rgba(94,68,48,0.12)] transition-shadow hover:shadow-[0_3px_16px_rgba(94,68,48,0.15)]"
+              className="group overflow-hidden rounded-lg bg-[#E6D6C4] shadow-[0_2px_10px_rgba(94,68,48,0.12)] transition-shadow hover:shadow-[0_3px_16px_rgba(94,68,48,0.15)] sm:rounded-xl"
             >
-              <div className="relative aspect-[458/178] overflow-hidden bg-[#DCCAB6]">
+              <div className="relative aspect-[4/3] overflow-hidden bg-[#DCCAB6] sm:aspect-[458/178]">
                 <Image
                   src={cat.imageUrl}
                   alt={cat.title}
                   fill
                   className="object-cover object-center"
-                  sizes="(max-width: 640px) 100vw, 360px"
+                  sizes="(max-width: 640px) 50vw, 360px"
                 />
               </div>
-              <div className="bg-[#E6D6C4] px-4 py-4 text-center">
-                <h3 className="landing-display text-[19px] text-[#2D1A12] sm:text-[20px]">{cat.title}</h3>
-                <p className="landing-body mt-1.5 text-[13px] leading-snug text-[#7D5A44]">
+              <div className="bg-[#E6D6C4] px-2.5 py-3 text-center sm:px-4 sm:py-4">
+                <h3 className="landing-display text-[14px] leading-tight text-[#2D1A12] sm:text-[20px]">
+                  {cat.title}
+                </h3>
+                <p className="landing-body mt-1 text-[10px] leading-snug text-[#7D5A44] sm:mt-1.5 sm:text-[13px]">
                   {cat.description}
                 </p>
-                <p className="landing-btn mt-3 text-[#B85A32] transition-colors group-hover:text-[#A04E2A]">
-                  Explore Collection →
+                <p className="landing-btn mt-2 text-[9px] tracking-[0.1em] text-[#B85A32] transition-colors group-hover:text-[#A04E2A] sm:mt-3 sm:text-[10px] sm:tracking-[0.14em]">
+                  Explore →
                 </p>
               </div>
             </Link>
