@@ -48,7 +48,7 @@ function SolidCtaButton({ href, label }: { href: string; label: string }) {
   return (
     <Link
       href={href}
-      className="group inline-flex items-center gap-2.5 bg-white px-7 py-3 font-sans text-[10px] font-semibold tracking-[0.22em] text-[#2D1A12] uppercase transition-colors hover:bg-[#F5F2ED]"
+      className="group inline-flex items-center gap-2.5 bg-[#F5EDE3] px-7 py-3 font-sans text-[10px] font-semibold tracking-[0.22em] text-[#2D1A12] uppercase transition-colors hover:bg-[#EDE0CE]"
     >
       {label}
       <ArrowRight className="size-3 transition-transform group-hover:translate-x-0.5" />
@@ -81,7 +81,7 @@ function HorizontalScroller({
         type="button"
         onClick={scrollNext}
         aria-label="Scroll to see more"
-        className="absolute top-[42%] right-0 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border border-[#D8CFC4] bg-[#F5F2ED] text-[#6B5344] transition-colors hover:border-[#2D1A12] hover:text-[#2D1A12]"
+        className="absolute top-[42%] right-0 flex size-8 -translate-y-1/2 items-center justify-center rounded-full border border-[#C4B5A5] bg-[#F0E6DA] text-[#6B5344] transition-colors hover:border-[#2D1A12] hover:text-[#2D1A12]"
       >
         <ChevronRight className="size-4" />
       </button>
@@ -99,8 +99,8 @@ type OurStoryPageProps = {
 
 export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurStoryPageProps) {
   return (
-    <main className="story-page-root min-h-screen bg-[#F5F2ED] text-[#2D1A12]">
-      <SiteHeader className="!bg-[#F5F2ED]" />
+    <main className="story-page-root min-h-screen text-[#2D1A12]">
+      <SiteHeader className="!border-[#D8CFC4]/60 !bg-[#ede0d0]/90 backdrop-blur-md" />
 
       {/* SESSION 2 */}
       <section className="mx-auto max-w-[1120px] px-5 pb-20 pt-14 lg:px-8 lg:pb-24 lg:pt-16">
@@ -137,7 +137,7 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
             {content.makers.items.map((maker) => (
               <article
                 key={maker.id}
-                className="w-[min(100%,292px)] shrink-0 border border-[#E0D8CC] bg-[#FAF7F2]"
+                className="w-[min(100%,292px)] shrink-0 border border-[#D4C4A8] bg-[#F5EDE3]/90 shadow-sm"
               >
                 <div className="relative aspect-[5/4] overflow-hidden bg-[#EDE8DC]">
                   <Image
@@ -180,7 +180,7 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
                     {index < content.journey.steps.length - 1 ? (
                       <span className="absolute top-1/2 right-0 left-1/2 h-px -translate-y-1/2 bg-[#C4B5A5]" />
                     ) : null}
-                    <div className="relative z-10 flex size-[52px] items-center justify-center rounded-full border border-[#C4B5A5] bg-[#F5F2ED]">
+                    <div className="relative z-10 flex size-[52px] items-center justify-center rounded-full border border-[#C4B5A5] bg-[#F0E6DA]">
                       <Icon className="size-[18px] text-[#6B5344]" strokeWidth={1.25} />
                     </div>
                   </div>
@@ -205,7 +205,7 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
             return (
               <div
                 key={stat.id}
-                className="flex min-h-[190px] flex-col items-center justify-center border border-[#E0D8CC] bg-[#FAF7F2] px-5 py-9 text-center"
+                className="flex min-h-[190px] flex-col items-center justify-center border border-[#D4C4A8] bg-[#F5EDE3]/90 px-5 py-9 text-center shadow-sm"
               >
                 <Icon className="mb-5 size-[18px] text-[#8B7355]" strokeWidth={1.25} />
                 <p className="font-serif text-[clamp(1.65rem,2.8vw,2.1rem)] leading-none text-[#2D1A12]">
@@ -283,7 +283,7 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
             return (
               <div
                 key={item.id}
-                className="flex min-h-[170px] flex-col items-center justify-center border border-[#E0D8CC] bg-[#FAF7F2] px-5 py-8 text-center"
+                className="flex min-h-[170px] flex-col items-center justify-center border border-[#D4C4A8] bg-[#F5EDE3]/90 px-5 py-8 text-center shadow-sm"
               >
                 <Icon className="mb-4 size-[18px] text-[#8B7355]" strokeWidth={1.25} />
                 <h3 className="font-serif text-[14px] leading-snug text-[#2D1A12]">{item.title}</h3>

@@ -313,9 +313,40 @@
   line-height: 1.55;
 }
 
-/* Our Story page — editorial cream layout */
+/* Our Story page — warm brown paper texture (matches homepage) */
 .story-page-root {
+  position: relative;
+  isolation: isolate;
   font-family: var(--font-serif), "Cormorant Garamond", Georgia, serif;
   color: #2d1a12;
+  background-color: #ede0d0;
   -webkit-font-smoothing: antialiased;
+}
+
+.story-page-root::before {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  pointer-events: none;
+  background:
+    radial-gradient(ellipse 100% 45% at 50% 0%, rgba(255, 248, 240, 0.55) 0%, transparent 58%),
+    radial-gradient(ellipse 70% 40% at 0% 60%, rgba(220, 195, 165, 0.35) 0%, transparent 55%),
+    linear-gradient(180deg, #f0e4d4 0%, #ebe0d0 45%, #e0d0bc 100%);
+}
+
+.story-page-root::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  opacity: 0.12;
+  pointer-events: none;
+  background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.72' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  background-size: 240px 240px;
+}
+
+.story-page-root > * {
+  position: relative;
+  z-index: 1;
 }
