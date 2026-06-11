@@ -1,5 +1,6 @@
 import { NextResponse, type NextRequest } from "next/server"
 
+import { buildCustomOrderDescription } from "@/lib/custom-order-description"
 import { getPrisma } from "@/lib/prisma"
 import { createSupabaseApiClient } from "@/lib/supabase/server"
 
@@ -13,31 +14,11 @@ type CustomOrderPayload = {
   fullName: string
   whatsapp: string
   email: string
-}
-
-function buildDescription(payload: CustomOrderPayload) {
-  const lines = [
-    `Category: ${payload.categoryLabel}`,
-    `Weight: ${payload.weight}`,
-    `Quantity: ${payload.quantity} box(es)`,
-    "",
-    "Selections:",
-    ...Object.entries(payload.selections).map(([key, value]) => `- ${key}: ${value}`),
-  ]
-
-  if (payload.notes?.trim()) {
-    lines.push("", `Notes: ${payload.notes.trim()}`)
-  }
-
-  lines.push(
-    "",
-    "Contact:",
-    `- Name: ${payload.fullName}`,
-    `- WhatsApp: ${payload.whatsapp}`,
-    `- Email: ${payload.email}`,
-  )
-
-  return lines.join("\n")
+  addressLine1?: string
+  addressLine2?: string
+  city?: string
+  pinCode?: string
+  state?: string
 }
 
 export async function POST(request: NextRequest) {
@@ -82,7 +63,21 @@ export async function POST(request: NextRequest) {
     const order = await prisma.customOrder.create({
       data: {
         userId,
-        description: buildDescription(body),
+        description: buildCustomOrderDescription({
+          categoryLabel: body.categoryLabel,
+          selections: body.selections,
+          weight: body.weight,
+          quantity: body.quantity,
+          notes: body.notes,
+          fullName: body.fullName.trim(),
+          whatsapp: body.whatsapp.trim(),
+          email: body.email.trim(),
+          addressLine1: body.addressLine1?.trim() ?? "",
+          addressLine2: body.addressLine2?.trim(),
+          city: body.city?.trim() ?? "",
+          pinCode: body.pinCode?.trim() ?? "",
+          state: body.state?.trim() ?? "",
+        }),
         status: "pending",
         estimatedDelivery: "5-7 days",
       },

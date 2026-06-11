@@ -303,6 +303,25 @@ export function CustomOrdersKanban({ initialBoard }: CustomOrdersKanbanProps) {
                   <WhatsAppButton phone={selected.whatsapp} />
                 </section>
 
+                {selected.addressLine1 ? (
+                  <section>
+                    <h3 className="mb-3 text-[11px] font-bold tracking-wide text-[#9A8070] uppercase">
+                      Delivery Address
+                    </h3>
+                    <div className="rounded-lg border border-[#EDE5D8] bg-[#FAF7F2] p-4 text-[12px] leading-relaxed text-[#6B5344]">
+                      <p className="font-semibold text-[#2B1B12]">{selected.addressLine1}</p>
+                      <p className="mt-1">
+                        {[selected.city, selected.state, selected.pinCode]
+                          .filter(Boolean)
+                          .join(", ")}
+                      </p>
+                      {selected.amount ? (
+                        <p className="mt-2 font-medium text-[#2B1B12]">Paid {selected.amount}</p>
+                      ) : null}
+                    </div>
+                  </section>
+                ) : null}
+
                 <section>
                   <h3 className="mb-3 text-[11px] font-bold tracking-wide text-[#9A8070] uppercase">
                     Order Specification

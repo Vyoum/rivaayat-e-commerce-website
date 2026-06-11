@@ -268,8 +268,5 @@ export function getCategoryDefaults(
     weight: category.weightOptions[0]?.label ?? "250gm",
     quantity: "1",
     notes: "",
-    fullName: "",
-    whatsapp: "",
-    email: "",
   }
 }

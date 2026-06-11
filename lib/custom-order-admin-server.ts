@@ -26,6 +26,11 @@ export type CustomOrderKanbanCard = {
   quantity: string
   selections: Record<string, string>
   notes: string
+  addressLine1: string
+  city: string
+  pinCode: string
+  state: string
+  amount: string
   status: OrderStatus
   artisanId: string | null
   artisanName: string | null
@@ -122,6 +127,11 @@ function mapOrderToCard(order: {
     quantity: parsed.quantity,
     selections: parsed.selections,
     notes: parsed.notes,
+    addressLine1: parsed.addressLine1,
+    city: parsed.city,
+    pinCode: parsed.pinCode,
+    state: parsed.state,
+    amount: parsed.amount,
     status: order.status,
     artisanId: order.artisanId,
     artisanName: order.artisan?.name ?? null,

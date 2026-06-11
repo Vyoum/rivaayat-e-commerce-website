@@ -7,6 +7,12 @@ export type ParsedCustomOrderDescription = {
   contactName: string
   whatsapp: string
   email: string
+  addressLine1: string
+  addressLine2: string
+  city: string
+  pinCode: string
+  state: string
+  amount: string
 }
 
 export function parseCustomOrderDescription(description: string): ParsedCustomOrderDescription {
@@ -19,9 +25,15 @@ export function parseCustomOrderDescription(description: string): ParsedCustomOr
     contactName: "",
     whatsapp: "",
     email: "",
+    addressLine1: "",
+    addressLine2: "",
+    city: "",
+    pinCode: "",
+    state: "",
+    amount: "",
   }
 
-  let section: "selections" | "contact" | null = null
+  let section: "selections" | "delivery" | "contact" | null = null
 
   for (const line of description.split("\n")) {
     const trimmed = line.trim()
@@ -29,6 +41,10 @@ export function parseCustomOrderDescription(description: string): ParsedCustomOr
 
     if (trimmed === "Selections:") {
       section = "selections"
+      continue
+    }
+    if (trimmed === "Delivery:") {
+      section = "delivery"
       continue
     }
     if (trimmed === "Contact:") {
@@ -44,12 +60,23 @@ export function parseCustomOrderDescription(description: string): ParsedCustomOr
       result.quantity = trimmed.slice("Quantity: ".length)
     } else if (trimmed.startsWith("Notes: ")) {
       result.notes = trimmed.slice("Notes: ".length)
+    } else if (trimmed.startsWith("Amount: ")) {
+      result.amount = trimmed.slice("Amount: ".length)
     } else if (section === "selections" && trimmed.startsWith("- ")) {
       const body = trimmed.slice(2)
       const colon = body.indexOf(": ")
       if (colon >= 0) {
         result.selections[body.slice(0, colon)] = body.slice(colon + 2)
       }
+    } else if (section === "delivery" && trimmed.startsWith("- ")) {
+      const body = trimmed.slice(2)
+      if (body.startsWith("Name: ")) result.contactName = body.slice(6)
+      else if (body.startsWith("WhatsApp: ")) result.whatsapp = body.slice(10)
+      else if (body.startsWith("Email: ")) result.email = body.slice(7)
+      else if (body.startsWith("Address: ")) result.addressLine1 = body.slice(9)
+      else if (body.startsWith("City: ")) result.city = body.slice(6)
+      else if (body.startsWith("PIN: ")) result.pinCode = body.slice(5)
+      else if (body.startsWith("State: ")) result.state = body.slice(7)
     } else if (section === "contact" && trimmed.startsWith("- ")) {
       const body = trimmed.slice(2)
       if (body.startsWith("Name: ")) result.contactName = body.slice(6)

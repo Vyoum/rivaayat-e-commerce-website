@@ -1,7 +1,15 @@
 "use client"
 
-import { useMemo, useState } from "react"
-import { Cookie, Dumbbell, FlaskConical, Loader2, Shirt, type LucideIcon } from "lucide-react"
+import { useEffect, useMemo, useState } from "react"
+import { Cookie, Dumbbell, FlaskConical, Loader2, Lock, Shirt, type LucideIcon } from "lucide-react"
+import { DeliveryAddressFields } from "@/components/shared/delivery-address-fields"
+import { useAuth } from "@/hooks/use-auth"
+import {
+  INITIAL_DELIVERY_ADDRESS,
+  isDeliveryAddressComplete,
+  type DeliveryAddress,
+} from "@/lib/delivery-address"
+import { openRazorpayPayment } from "@/lib/razorpay-client"
 import { cn } from "@/lib/utils"
 import {
   calculateCustomOrderTotal,
@@ -179,7 +187,10 @@ export function CustomOrdersPage({ categories: categoriesProp }: CustomOrdersPag
   })
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
+  const [paymentMessage, setPaymentMessage] = useState("")
   const [error, setError] = useState<string | null>(null)
+  const [delivery, setDelivery] = useState<DeliveryAddress>(INITIAL_DELIVERY_ADDRESS)
+  const { user } = useAuth()
 
   const category = useMemo(
     () => categories.find((item) => item.id === categoryId)!,
@@ -212,39 +223,91 @@ export function CustomOrdersPage({ categories: categoriesProp }: CustomOrdersPag
     })
   }
 
+  function updateDelivery(patch: Partial<DeliveryAddress>) {
+    setDelivery((prev) => ({ ...prev, ...patch }))
+  }
+
+  useEffect(() => {
+    if (!user) return
+    const metadata = user.user_metadata as { full_name?: string; name?: string; phone?: string } | undefined
+    setDelivery((prev) => ({
+      ...prev,
+      fullName: prev.fullName || metadata?.full_name || metadata?.name || "",
+      email: prev.email || user.email || "",
+      whatsapp: prev.whatsapp || user.phone || metadata?.phone || "",
+    }))
+  }, [user])
+
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
     if (category.comingSoon) return
+    if (!isDeliveryAddressComplete(delivery)) {
+      setError("Please complete all delivery details before paying.")
+      return
+    }
 
     setSubmitting(true)
     setError(null)
+    setPaymentMessage("")
 
-    try {
-      const res = await fetch("/api/custom-orders", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          categoryId,
-          categoryLabel: category.label,
-          selections: form.selections,
-          weight: form.weight,
-          quantity: form.quantity,
-          notes: form.notes,
-          fullName: form.fullName,
-          whatsapp: form.whatsapp,
-          email: form.email,
-        }),
-      })
-
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || "Failed to submit order")
-
-      setSubmitted(true)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong")
-    } finally {
-      setSubmitting(false)
+    const total = Math.max(1, orderTotal.total)
+    const orderPayload = {
+      categoryId,
+      categoryLabel: category.label,
+      selections: form.selections,
+      weight: form.weight,
+      quantity: form.quantity,
+      notes: form.notes,
+      fullName: delivery.fullName.trim(),
+      whatsapp: delivery.whatsapp.trim(),
+      email: delivery.email.trim(),
+      addressLine1: delivery.addressLine1.trim(),
+      addressLine2: delivery.addressLine2.trim(),
+      city: delivery.city.trim(),
+      pinCode: delivery.pinCode.trim(),
+      state: delivery.state.trim(),
+      total,
     }
+
+    await openRazorpayPayment({
+      amount: total,
+      description: `${category.label} custom order`,
+      prefill: {
+        name: orderPayload.fullName,
+        email: orderPayload.email,
+        contact: orderPayload.whatsapp.replace(/\D/g, ""),
+      },
+      onDismiss: () => {
+        setSubmitting(false)
+      },
+      onError: (message) => {
+        setSubmitting(false)
+        setError(message)
+      },
+      onSuccess: async (payment) => {
+        try {
+          const res = await fetch("/api/custom-orders/confirm", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({
+              ...payment,
+              ...orderPayload,
+            }),
+          })
+
+          const data = await res.json()
+          if (!res.ok) throw new Error(data.error || "Failed to confirm custom order")
+
+          setSubmitted(true)
+          setPaymentMessage(`Payment confirmed! ID: ${data.paymentId}`)
+        } catch (err) {
+          setError(err instanceof Error ? err.message : "Something went wrong")
+        } finally {
+          setSubmitting(false)
+        }
+      },
+    })
   }
 
   return (
@@ -336,16 +399,24 @@ export function CustomOrdersPage({ categories: categoriesProp }: CustomOrdersPag
             </div>
           ) : submitted ? (
             <div className="flex min-h-[360px] flex-col items-center justify-center text-center">
-              <p className="font-serif text-[24px] text-[#3D2E24]">Order Submitted</p>
+              <p className="font-serif text-[24px] text-[#3D2E24]">Order Confirmed</p>
               <p className="mt-4 max-w-md font-serif text-[15px] leading-relaxed text-[#6B5A4E]">
-                Thank you! Our artisan will contact you within 24 hours to finalize details.
+                Thank you! Your payment was received and our artisan will begin preparing your
+                custom order.
               </p>
+              {paymentMessage ? (
+                <p className="mt-3 font-sans text-[13px] text-[#8B7355]">{paymentMessage}</p>
+              ) : null}
               <button
                 type="button"
-                onClick={() => setSubmitted(false)}
+                onClick={() => {
+                  setSubmitted(false)
+                  setPaymentMessage("")
+                  setDelivery(INITIAL_DELIVERY_ADDRESS)
+                }}
                 className="mt-8 font-sans text-[11px] uppercase tracking-[0.16em] text-[#3D2E24] underline underline-offset-4"
               >
-                Submit another order
+                Place another order
               </button>
             </div>
           ) : (
@@ -432,62 +503,29 @@ export function CustomOrdersPage({ categories: categoriesProp }: CustomOrdersPag
               <CustomOrderTotalSummary breakdown={orderTotal} />
 
               <div className="border-t border-[#E8E0D4] pt-8">
-                <h3 className="font-serif text-[18px] text-[#3D2E24]">Your Contact Information</h3>
-                <div className="mt-6 space-y-6">
-                  <div>
-                    <label
-                      htmlFor="fullName"
-                      className="mb-2 block font-sans text-[11px] uppercase tracking-[0.14em] text-[#8B7355]"
-                    >
-                      Full Name
-                    </label>
-                    <input
-                      id="fullName"
-                      type="text"
-                      required
-                      value={form.fullName}
-                      onChange={(e) => updateForm({ fullName: e.target.value })}
-                      className="w-full border-b border-[#D8CFC4] bg-transparent py-2 font-serif text-[15px] text-[#3D2E24] outline-none focus:border-[#3D2E24]"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="whatsapp"
-                      className="mb-2 block font-sans text-[11px] uppercase tracking-[0.14em] text-[#8B7355]"
-                    >
-                      WhatsApp Number
-                    </label>
-                    <input
-                      id="whatsapp"
-                      type="tel"
-                      required
-                      value={form.whatsapp}
-                      onChange={(e) => updateForm({ whatsapp: e.target.value })}
-                      className="w-full border-b border-[#D8CFC4] bg-transparent py-2 font-serif text-[15px] text-[#3D2E24] outline-none focus:border-[#3D2E24]"
-                    />
-                  </div>
-                  <div>
-                    <label
-                      htmlFor="email"
-                      className="mb-2 block font-sans text-[11px] uppercase tracking-[0.14em] text-[#8B7355]"
-                    >
-                      Email Address
-                    </label>
-                    <input
-                      id="email"
-                      type="email"
-                      required
-                      value={form.email}
-                      onChange={(e) => updateForm({ email: e.target.value })}
-                      className="w-full border-b border-[#D8CFC4] bg-transparent py-2 font-serif text-[15px] text-[#3D2E24] outline-none focus:border-[#3D2E24]"
-                    />
-                  </div>
-                </div>
+                <DeliveryAddressFields
+                  value={delivery}
+                  onChange={updateDelivery}
+                />
               </div>
 
               {error ? (
                 <p className="text-center font-sans text-[13px] text-[#B42318]">{error}</p>
               ) : null}
+
+              <div className="rounded-lg border border-[#EDE5D8] bg-white/80 px-4 py-3.5">
+                <div className="flex items-start gap-3">
+                  <Lock className="mt-0.5 size-4 shrink-0 text-[#9A8070]" strokeWidth={1.5} />
+                  <div>
+                    <p className="font-sans text-[12px] font-medium text-[#2B1B12]">
+                      Secure Checkout
+                    </p>
+                    <p className="mt-1 font-sans text-[11px] leading-relaxed text-[#9A8070]">
+                      You will be redirected to Razorpay to complete payment safely.
+                    </p>
+                  </div>
+                </div>
+              </div>
 
               <div className="pt-2">
                 <button
@@ -496,16 +534,19 @@ export function CustomOrdersPage({ categories: categoriesProp }: CustomOrdersPag
                   className="flex w-full items-center justify-center gap-2 rounded-lg bg-[#3D2E24] py-3.5 font-sans text-[11px] font-medium uppercase tracking-[0.2em] text-white transition-opacity hover:opacity-90 disabled:opacity-60"
                 >
                   {submitting ? (
-                    <Loader2 className="size-4 animate-spin" />
+                    <>
+                      <Loader2 className="size-4 animate-spin" />
+                      Opening Razorpay…
+                    </>
                   ) : (
                     <>
                       <span className="text-[#C4A882]">✦</span>
-                      Submit Custom Order
+                      Pay {formatCustomOrderAmount(orderTotal.total)}
                     </>
                   )}
                 </button>
                 <p className="mt-4 text-center font-serif text-[13px] italic text-[#8B7355]">
-                  Our artisan will contact you within 24 hours to finalize details.
+                  A personalised artisan note will accompany your order.
                 </p>
               </div>
             </form>

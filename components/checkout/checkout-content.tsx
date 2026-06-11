@@ -14,6 +14,7 @@ import {
 
 import { CheckoutStepper } from "@/components/checkout/checkout-stepper"
 import { SiteHeader } from "@/components/site-header"
+import { DeliveryAddressFields } from "@/components/shared/delivery-address-fields"
 import { useCart } from "@/components/providers/cart-provider"
 import { useAuth } from "@/hooks/use-auth"
 import {
@@ -22,77 +23,17 @@ import {
   loadCheckoutSession,
   type CheckoutSession,
 } from "@/lib/checkout-session"
-import { INDIAN_STATES } from "@/lib/indian-states"
+import {
+  INITIAL_DELIVERY_ADDRESS,
+  type DeliveryAddress,
+} from "@/lib/delivery-address"
 import { openRazorpayCheckout } from "@/lib/razorpay-client"
-import { cn } from "@/lib/utils"
 
 function formatCurrency(amount: number) {
   return `₹ ${amount.toLocaleString("en-IN")}`
 }
 
-type DeliveryForm = {
-  fullName: string
-  email: string
-  whatsapp: string
-  addressLine1: string
-  addressLine2: string
-  city: string
-  pinCode: string
-  state: string
-}
-
-const initialDeliveryForm: DeliveryForm = {
-  fullName: "",
-  email: "",
-  whatsapp: "",
-  addressLine1: "",
-  addressLine2: "",
-  city: "",
-  pinCode: "",
-  state: "",
-}
-
 type PaymentState = "idle" | "loading" | "success" | "error"
-
-function UnderlineField({
-  label,
-  id,
-  type = "text",
-  value,
-  onChange,
-  required,
-  placeholder,
-  className,
-}: {
-  label: string
-  id: string
-  type?: string
-  value: string
-  onChange: (value: string) => void
-  required?: boolean
-  placeholder?: string
-  className?: string
-}) {
-  return (
-    <label className={cn("block", className)}>
-      <span className="font-sans text-[11px] uppercase tracking-[0.12em] text-[#9A8070]">
-        {label}
-        {!required ? (
-          <span className="normal-case tracking-normal text-[#B5A090]"> (Optional)</span>
-        ) : null}
-      </span>
-      <input
-        id={id}
-        type={type}
-        required={required}
-        value={value}
-        placeholder={placeholder}
-        onChange={(event) => onChange(event.target.value)}
-        className="mt-2 w-full border-0 border-b border-[#D8CFC4] bg-transparent py-2.5 font-serif text-[15px] text-[#2B1B12] outline-none transition-colors placeholder:text-[#C4B5A5] focus:border-[#6B5344]"
-      />
-    </label>
-  )
-}
 
 export function CheckoutContent() {
   const router = useRouter()
@@ -100,7 +41,7 @@ export function CheckoutContent() {
   const { userId, user } = useAuth()
   const [session, setSession] = useState<CheckoutSession>(DEFAULT_CHECKOUT_SESSION)
   const [hydrated, setHydrated] = useState(false)
-  const [form, setForm] = useState<DeliveryForm>(initialDeliveryForm)
+  const [form, setForm] = useState<DeliveryAddress>(INITIAL_DELIVERY_ADDRESS)
   const [paymentState, setPaymentState] = useState<PaymentState>("idle")
   const [paymentMessage, setPaymentMessage] = useState("")
 
@@ -136,8 +77,8 @@ export function CheckoutContent() {
   const discountAmount = session.appliedPromo?.discountAmount ?? 0
   const total = Math.max(1, subtotal + session.selectedTip - discountAmount)
 
-  function updateForm<K extends keyof DeliveryForm>(key: K, value: DeliveryForm[K]) {
-    setForm((prev) => ({ ...prev, [key]: value }))
+  function updateForm(patch: Partial<DeliveryAddress>) {
+    setForm((prev) => ({ ...prev, ...patch }))
   }
 
   async function handlePlaceOrder(event: React.FormEvent) {
@@ -215,90 +156,12 @@ export function CheckoutContent() {
       <form onSubmit={(event) => void handlePlaceOrder(event)}>
         <div className="grid items-start gap-10 lg:grid-cols-[minmax(0,1fr)_340px] lg:gap-12 xl:grid-cols-[minmax(0,1fr)_360px]">
           <div>
-            <h1 className="font-serif text-[26px] font-normal text-[#2B1B12] sm:text-[28px]">
-              Delivery Details
-            </h1>
-
-            <div className="mt-8 space-y-6">
-              <UnderlineField
-                label="Full Name"
-                id="fullName"
-                required
-                value={form.fullName}
-                onChange={(value) => updateForm("fullName", value)}
-              />
-
-              <div className="grid gap-6 sm:grid-cols-2">
-                <UnderlineField
-                  label="Email Address"
-                  id="email"
-                  type="email"
-                  required
-                  value={form.email}
-                  onChange={(value) => updateForm("email", value)}
-                />
-                <UnderlineField
-                  label="WhatsApp Number"
-                  id="whatsapp"
-                  type="tel"
-                  required
-                  value={form.whatsapp}
-                  onChange={(value) => updateForm("whatsapp", value)}
-                />
-              </div>
-
-              <UnderlineField
-                label="Address Line 1"
-                id="addressLine1"
-                required
-                value={form.addressLine1}
-                onChange={(value) => updateForm("addressLine1", value)}
-              />
-
-              <UnderlineField
-                label="Address Line 2"
-                id="addressLine2"
-                value={form.addressLine2}
-                onChange={(value) => updateForm("addressLine2", value)}
-              />
-
-              <div className="grid gap-6 sm:grid-cols-2">
-                <UnderlineField
-                  label="City"
-                  id="city"
-                  required
-                  value={form.city}
-                  onChange={(value) => updateForm("city", value)}
-                />
-                <UnderlineField
-                  label="PIN Code"
-                  id="pinCode"
-                  required
-                  value={form.pinCode}
-                  onChange={(value) => updateForm("pinCode", value.replace(/\D/g, "").slice(0, 6))}
-                />
-              </div>
-
-              <label className="block">
-                <span className="font-sans text-[11px] uppercase tracking-[0.12em] text-[#9A8070]">
-                  State
-                </span>
-                <select
-                  id="state"
-                  required
-                  value={form.state}
-                  onChange={(event) => updateForm("state", event.target.value)}
-                  className="mt-2 w-full appearance-none border-0 border-b border-[#D8CFC4] bg-transparent py-2.5 font-serif text-[15px] text-[#2B1B12] outline-none transition-colors focus:border-[#6B5344]"
-                >
-                  <option value="">Select state</option>
-                  {INDIAN_STATES.map((state) => (
-                    <option key={state} value={state}>
-                      {state}
-                    </option>
-                  ))}
-                </select>
-              </label>
-            </div>
+            <DeliveryAddressFields
+              value={form}
+              onChange={updateForm}
+              title="Delivery Details"
+              className="mt-2"
+            />
           </div>
 
           <aside className="lg:sticky lg:top-8">

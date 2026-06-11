@@ -22,27 +22,26 @@ export function loadRazorpayScript(): Promise<boolean> {
   })
 }
 
-export type RazorpayCheckoutInput = {
-  items: CartItem[]
-  subtotal: number
-  artisanTip: number
-  total: number
-  discountAmount: number
-  giftMessage: string | null
-  promoCode: string | null
-  userId: string | null
+export type RazorpayPaymentResponse = {
+  razorpay_order_id: string
+  razorpay_payment_id: string
+  razorpay_signature: string
+}
+
+export type RazorpayPaymentInput = {
+  amount: number
+  description?: string
   prefill?: {
     name?: string
     email?: string
     contact?: string
   }
-  onSuccess: (message: string) => void
+  onSuccess: (response: RazorpayPaymentResponse) => void | Promise<void>
   onError: (message: string) => void
   onDismiss?: () => void
-  clearCart: () => void
 }
 
-export async function openRazorpayCheckout(input: RazorpayCheckoutInput) {
+export async function openRazorpayPayment(input: RazorpayPaymentInput) {
   const razorpayKeyId = process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID
   if (!razorpayKeyId) {
     input.onError(
@@ -61,7 +60,7 @@ export async function openRazorpayCheckout(input: RazorpayCheckoutInput) {
     const res = await fetch("/api/razorpay/create-order", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ amount: input.total, currency: "INR" }),
+      body: JSON.stringify({ amount: input.amount, currency: "INR" }),
     })
 
     let order: { id?: string; amount?: number; currency?: string; error?: string }
@@ -84,50 +83,10 @@ export async function openRazorpayCheckout(input: RazorpayCheckoutInput) {
       amount: order.amount,
       currency: order.currency,
       name: HOUSE_OF_INDIKA,
-      description: "Handcrafted treasures",
+      description: input.description ?? "Handcrafted treasures",
       order_id: order.id,
-      handler: async (response: {
-        razorpay_order_id: string
-        razorpay_payment_id: string
-        razorpay_signature: string
-      }) => {
-        const verify = await fetch("/api/razorpay/verify-payment", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({
-            ...response,
-            items: input.items,
-            subtotal: input.subtotal,
-            artisanTip: input.artisanTip,
-            total: input.total,
-            giftMessage: input.giftMessage,
-            promoCode: input.promoCode,
-          }),
-        })
-        const result = await verify.json()
-        if (result.verified) {
-          const savedOrder: ProfileOrder =
-            result.order ??
-            buildOrderFromCheckout(
-              response.razorpay_order_id,
-              input.items,
-              input.total,
-              input.artisanTip,
-              input.giftMessage,
-              input.promoCode,
-              input.discountAmount,
-            )
-
-          if (input.userId) {
-            saveStoredOrder(input.userId, savedOrder)
-          }
-
-          input.clearCart()
-          input.onSuccess(`Payment confirmed! ID: ${result.paymentId}`)
-        } else {
-          input.onError("Payment verification failed. Please contact support.")
-        }
+      handler: async (response: RazorpayPaymentResponse) => {
+        await input.onSuccess(response)
       },
       prefill: {
         name: input.prefill?.name ?? "",
@@ -150,4 +109,73 @@ export async function openRazorpayCheckout(input: RazorpayCheckoutInput) {
   } catch (err) {
     input.onError(err instanceof Error ? err.message : "Something went wrong.")
   }
+}
+
+export type RazorpayCheckoutInput = {
+  items: CartItem[]
+  subtotal: number
+  artisanTip: number
+  total: number
+  discountAmount: number
+  giftMessage: string | null
+  promoCode: string | null
+  userId: string | null
+  prefill?: {
+    name?: string
+    email?: string
+    contact?: string
+  }
+  onSuccess: (message: string) => void
+  onError: (message: string) => void
+  onDismiss?: () => void
+  clearCart: () => void
+}
+
+export async function openRazorpayCheckout(input: RazorpayCheckoutInput) {
+  await openRazorpayPayment({
+    amount: input.total,
+    description: "Handcrafted treasures",
+    prefill: input.prefill,
+    onDismiss: input.onDismiss,
+    onError: input.onError,
+    onSuccess: async (response) => {
+      const verify = await fetch("/api/razorpay/verify-payment", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        credentials: "include",
+        body: JSON.stringify({
+          ...response,
+          items: input.items,
+          subtotal: input.subtotal,
+          artisanTip: input.artisanTip,
+          total: input.total,
+          giftMessage: input.giftMessage,
+          promoCode: input.promoCode,
+        }),
+      })
+      const result = await verify.json()
+      if (result.verified) {
+        const savedOrder: ProfileOrder =
+          result.order ??
+          buildOrderFromCheckout(
+            response.razorpay_order_id,
+            input.items,
+            input.total,
+            input.artisanTip,
+            input.giftMessage,
+            input.promoCode,
+            input.discountAmount,
+          )
+
+        if (input.userId) {
+          saveStoredOrder(input.userId, savedOrder)
+        }
+
+        input.clearCart()
+        input.onSuccess(`Payment confirmed! ID: ${result.paymentId}`)
+      } else {
+        input.onError("Payment verification failed. Please contact support.")
+      }
+    },
+  })
 }
