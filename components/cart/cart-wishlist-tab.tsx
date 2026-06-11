@@ -3,8 +3,6 @@
 import Image from "next/image"
 import Link from "next/link"
 import { Heart, Plus, Sparkles } from "lucide-react"
-import { toast } from "sonner"
-
 import { useCart } from "@/components/providers/cart-provider"
 import { useWishlist } from "@/components/providers/wishlist-provider"
 import { useAuth } from "@/hooks/use-auth"
@@ -23,12 +21,11 @@ export function CartWishlistTab() {
   const cartProductIds = new Set(cartItems.map((item) => item.id))
   const suggestions = wishlistItems.filter((item) => !cartProductIds.has(item.id))
 
-  function handleAddToCart(productId: string, productName: string) {
+  function handleAddToCart(productId: string) {
     const wishlistItem = wishlistItems.find((item) => item.id === productId)
     if (!wishlistItem) return
 
     addItem(wishlistItemToCatalogProduct(wishlistItem))
-    toast.success(`${productName} added to cart`)
   }
 
   return (
@@ -107,7 +104,7 @@ export function CartWishlistTab() {
 
                 <button
                   type="button"
-                  onClick={() => handleAddToCart(item.id, item.name)}
+                  onClick={() => handleAddToCart(item.id)}
                   className={cn(
                     "inline-flex shrink-0 items-center gap-1 rounded-full border border-[#846246]/25 bg-[#846246] px-3 py-2 font-sans text-[10px] font-medium uppercase tracking-[0.1em] text-white transition-colors hover:bg-[#6B5344] sm:px-3.5 sm:text-[11px]",
                   )}

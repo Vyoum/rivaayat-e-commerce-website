@@ -45,7 +45,6 @@ export function CatalogProductCard({ product }: CatalogProductCardProps) {
 
   function handleAddToCart() {
     addItem(product)
-    toast.success(`${product.name} added to cart`)
   }
 
   function handleToggleWishlist() {

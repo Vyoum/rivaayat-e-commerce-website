@@ -16,6 +16,12 @@ import {
   getCartItemCount,
   type CartItem,
 } from "@/lib/cart"
+import { showAddedToCollectionToast } from "@/lib/cart-toast"
+
+type AddItemOptions = {
+  quantity?: number
+  silent?: boolean
+}
 
 const STORAGE_KEY = "house-of-indika-cart"
 
@@ -51,16 +57,24 @@ export function CartProvider({ children }: { children: ReactNode }) {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(items))
   }, [items, hydrated])
 
-  const addItem = useCallback((product: CatalogProduct) => {
+  const addItem = useCallback((product: CatalogProduct, options?: AddItemOptions) => {
+    const quantity = Math.max(1, options?.quantity ?? 1)
+
     setItems((prev) => {
       const existing = prev.find((item) => item.id === product.id)
       if (existing) {
         return prev.map((item) =>
-          item.id === product.id ? { ...item, quantity: item.quantity + 1 } : item,
+          item.id === product.id
+            ? { ...item, quantity: item.quantity + quantity }
+            : item,
         )
       }
-      return [...prev, catalogProductToCartItem(product)]
+      return [{ ...catalogProductToCartItem(product), quantity }, ...prev]
     })
+
+    if (!options?.silent) {
+      showAddedToCollectionToast(product.name, quantity)
+    }
   }, [])
 
   const updateQuantity = useCallback((id: string, quantity: number) => {

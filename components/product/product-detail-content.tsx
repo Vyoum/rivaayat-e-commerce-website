@@ -103,10 +103,7 @@ export function ProductDetailContent({
       return
     }
 
-    for (let i = 0; i < quantity; i += 1) {
-      addItem(catalogProduct)
-    }
-    toast.success(`${product.name} added to cart`)
+    addItem(catalogProduct, { quantity })
   }
 
   function handleToggleWishlist() {

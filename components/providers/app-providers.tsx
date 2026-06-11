@@ -13,7 +13,16 @@ export function AppProviders({ children }: { children: ReactNode }) {
       <WishlistProvider>
         <AuthUserSync />
         {children}
-        <Toaster position="top-center" richColors closeButton />
+        <Toaster
+          position="bottom-center"
+          richColors
+          closeButton
+          toastOptions={{
+            classNames: {
+              toast: "font-sans",
+            },
+          }}
+        />
       </WishlistProvider>
     </CartProvider>
   )
