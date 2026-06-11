@@ -1,6 +1,11 @@
 import Razorpay from "razorpay"
 
-let razorpayInstance: Razorpay | null = null
+type RazorpayGlobal = typeof globalThis & {
+  _razorpay?: Razorpay
+  _razorpayKeyId?: string
+}
+
+const globalForRazorpay = globalThis as RazorpayGlobal
 
 export function getRazorpay() {
   const keyId =
@@ -11,14 +16,23 @@ export function getRazorpay() {
     return null
   }
 
-  if (!razorpayInstance) {
-    razorpayInstance = new Razorpay({
+  // Recreate the client when keys change (e.g. after updating .env.local).
+  if (
+    !globalForRazorpay._razorpay ||
+    globalForRazorpay._razorpayKeyId !== keyId
+  ) {
+    globalForRazorpay._razorpay = new Razorpay({
       key_id: keyId,
       key_secret: keySecret,
     })
+    globalForRazorpay._razorpayKeyId = keyId
   }
 
-  return razorpayInstance
+  return globalForRazorpay._razorpay
+}
+
+export function getRazorpayPublicKeyId() {
+  return process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID ?? process.env.RAZORPAY_KEY_ID ?? null
 }
 
 export function getRazorpayKeySecret() {

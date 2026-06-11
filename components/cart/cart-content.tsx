@@ -2,34 +2,14 @@
 
 import { useMemo, useState, useCallback, useEffect } from "react"
 import Link from "next/link"
-import { Lock, Minus, Plus, Trash2, CheckCircle, XCircle, Loader2 } from "lucide-react"
+import { Lock, Minus, Plus, Trash2, ArrowRight } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { CartWishlistTab } from "@/components/cart/cart-wishlist-tab"
 import { useCart } from "@/components/providers/cart-provider"
-import { useAuth } from "@/hooks/use-auth"
-import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import type { CartItem } from "@/lib/cart"
-import { buildOrderFromCheckout, saveStoredOrder } from "@/lib/orders-storage"
+import { saveCheckoutSession } from "@/lib/checkout-session"
 import { cn } from "@/lib/utils"
 import type { AppliedPromo } from "@/types/discount-code"
-
-declare global {
-  interface Window {
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    Razorpay: any
-  }
-}
-
-function loadRazorpayScript(): Promise<boolean> {
-  return new Promise((resolve) => {
-    if (window.Razorpay) return resolve(true)
-    const script = document.createElement("script")
-    script.src = "https://checkout.razorpay.com/v1/checkout.js"
-    script.onload = () => resolve(true)
-    script.onerror = () => resolve(false)
-    document.body.appendChild(script)
-  })
-}
 
 function formatCurrency(amount: number) {
   return `₹${amount.toLocaleString("en-IN")}`
@@ -150,11 +130,9 @@ function CartItemCard({
   )
 }
 
-type PaymentState = "idle" | "loading" | "success" | "error"
 
 export function CartContent() {
-  const { items, updateQuantity, removeItem, clearCart } = useCart()
-  const { userId } = useAuth()
+  const { items, updateQuantity, removeItem } = useCart()
   const [selectedTip, setSelectedTip] = useState<number>(20)
   const [promoCode, setPromoCode] = useState("")
   const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null)
@@ -162,8 +140,6 @@ export function CartContent() {
   const [promoLoading, setPromoLoading] = useState(false)
   const [isGift, setIsGift] = useState(false)
   const [giftMessageText, setGiftMessageText] = useState("")
-  const [paymentState, setPaymentState] = useState<PaymentState>("idle")
-  const [paymentMessage, setPaymentMessage] = useState("")
 
   const subtotal = useMemo(
     () => items.reduce((sum, item) => sum + item.price * item.quantity, 0),
@@ -210,113 +186,14 @@ export function CartContent() {
     }
   }, [promoCode, subtotal])
 
-  const handleRazorpayCheckout = useCallback(async () => {
-    setPaymentState("loading")
-    setPaymentMessage("")
-
-    const loaded = await loadRazorpayScript()
-    if (!loaded) {
-      setPaymentState("error")
-      setPaymentMessage("Could not load payment gateway. Please try again.")
-      return
-    }
-
-    try {
-      const giftMessage =
-        isGift && giftMessageText.trim() ? giftMessageText.trim().slice(0, 500) : null
-
-      const res = await fetch("/api/razorpay/create-order", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ amount: total, currency: "INR" }),
-      })
-      const order = await res.json()
-      if (!res.ok) throw new Error(order.error ?? "Order creation failed.")
-
-      const options = {
-        key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
-        amount: order.amount,
-        currency: order.currency,
-        name: HOUSE_OF_INDIKA,
-        description: "Handcrafted treasures",
-        order_id: order.id,
-        handler: async (response: {
-          razorpay_order_id: string
-          razorpay_payment_id: string
-          razorpay_signature: string
-        }) => {
-          const verify = await fetch("/api/razorpay/verify-payment", {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            credentials: "include",
-            body: JSON.stringify({
-              ...response,
-              items,
-              subtotal,
-              artisanTip: selectedTip,
-              total,
-              giftMessage,
-              promoCode: appliedPromo?.code ?? null,
-            }),
-          })
-          const result = await verify.json()
-          if (result.verified) {
-            const order =
-              result.order ??
-              buildOrderFromCheckout(
-                response.razorpay_order_id,
-                items,
-                total,
-                selectedTip,
-                giftMessage,
-                appliedPromo?.code ?? null,
-                discountAmount,
-              )
-
-            if (userId) {
-              saveStoredOrder(userId, order)
-            }
-
-            setPaymentState("success")
-            setPaymentMessage(`Payment confirmed! ID: ${result.paymentId}`)
-            setAppliedPromo(null)
-            clearCart()
-          } else {
-            setPaymentState("error")
-            setPaymentMessage("Payment verification failed. Please contact support.")
-          }
-        },
-        prefill: { name: "Rahul Sharma", email: "rahul.sharma@email.com" },
-        theme: { color: "#5C4332" },
-        modal: {
-          ondismiss: () => {
-            setPaymentState("idle")
-          },
-        },
-      }
-
-      const rzp = new window.Razorpay(options)
-      rzp.on("payment.failed", (resp: { error: { description: string } }) => {
-        setPaymentState("error")
-        setPaymentMessage(resp.error.description ?? "Payment failed.")
-      })
-      rzp.open()
-    } catch (err) {
-      setPaymentState("error")
-      setPaymentMessage(err instanceof Error ? err.message : "Something went wrong.")
-    }
-  }, [
-    total,
-    subtotal,
-    selectedTip,
-    discountAmount,
-    items,
-    userId,
-    clearCart,
-    isGift,
-    giftMessageText,
-    appliedPromo,
-  ])
+  function handleProceedToCheckout() {
+    saveCheckoutSession({
+      selectedTip,
+      appliedPromo,
+      giftMessage:
+        isGift && giftMessageText.trim() ? giftMessageText.trim().slice(0, 500) : null,
+    })
+  }
 
   return (
     <div className="mx-auto max-w-6xl px-6 py-12 sm:py-16">
@@ -522,35 +399,16 @@ export function CartContent() {
               ) : null}
             </div>
 
-            {/* Payment status feedback */}
-            {paymentState === "success" && (
-              <div className="mt-5 flex items-start gap-3 rounded-xl border border-[#A8D5B5] bg-[#EAF4EC] p-4">
-                <CheckCircle className="mt-0.5 h-5 w-5 shrink-0 text-[#3D7A4F]" />
-                <p className="font-sans text-[13px] text-[#3D7A4F]">{paymentMessage}</p>
-              </div>
-            )}
-            {paymentState === "error" && (
-              <div className="mt-5 flex items-start gap-3 rounded-xl border border-[#F5C6C6] bg-[#FEF2F2] p-4">
-                <XCircle className="mt-0.5 h-5 w-5 shrink-0 text-[#B91C1C]" />
-                <p className="font-sans text-[13px] text-[#B91C1C]">{paymentMessage}</p>
-              </div>
-            )}
-
-            <button
-              type="button"
-              onClick={handleRazorpayCheckout}
-              disabled={paymentState === "loading" || items.length === 0}
-              className="mt-6 flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-[#2B1B12] font-sans text-[12px] font-medium uppercase tracking-[0.12em] text-white transition-colors hover:bg-[#3D2B21] disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {paymentState === "loading" ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Processing…
-                </>
-              ) : (
-                "Pay with Razorpay"
-              )}
-            </button>
+            {items.length > 0 ? (
+              <Link
+                href="/checkout"
+                onClick={handleProceedToCheckout}
+                className="mt-6 flex h-12 w-full items-center justify-center gap-2.5 rounded-xl bg-[#2B1B12] font-sans text-[12px] font-medium uppercase tracking-[0.12em] text-white transition-colors hover:bg-[#3D2B21]"
+              >
+                Proceed to Checkout
+                <ArrowRight className="size-4" strokeWidth={1.5} />
+              </Link>
+            ) : null}
 
             <Link
               href="/"
