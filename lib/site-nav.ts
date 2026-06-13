@@ -7,7 +7,7 @@ export const SITE_NAV_ITEMS: SiteNavItem[] = [
   { label: "Our Story", href: "/outerboxdesign" },
   { label: "Collections", href: "/jewellery" },
   { label: "Custom Orders", href: "/custom-orders" },
-  { label: "Artisans", href: "/artisans/devendra-khatri" },
+  { label: "Artisans", href: "/artisans" },
   { label: "Contact", href: "/contact" },
 ]
 

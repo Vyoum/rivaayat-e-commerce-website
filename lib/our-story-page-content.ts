@@ -100,6 +100,7 @@ export const DEFAULT_OUR_STORY_PAGE_CONTENT: OurStoryPageContent = {
     title: `Why ${HOUSE_OF_INDIKA} Exists`,
     paragraphs: [
       `Many traditional Indian crafts are disappearing with time. ${HOUSE_OF_INDIKA} works directly with artisans and craft communities to preserve heritage while creating products that belong in modern homes.`,
+      "We believe that every handmade piece carries a story — of skill passed down through generations, of communities sustained by fair work, and of beauty that cannot be replicated by machines.",
     ],
     imageUrl: "/landing/categories-section-ref.jpg",
   },

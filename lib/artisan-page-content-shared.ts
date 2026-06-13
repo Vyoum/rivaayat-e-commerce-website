@@ -4,6 +4,10 @@ export type ArtisanCredential = {
 }
 
 export type ArtisanPageContent = {
+  id: string
+  slug: string
+  isPublished: boolean
+  sortOrder: number
   heroImageUrl: string
   eyebrow: string
   name: string
@@ -21,7 +25,13 @@ export type ArtisanPageContent = {
   handpickedSubtitle: string
 }
 
-export const DEFAULT_ARTISAN_PAGE_CONTENT: ArtisanPageContent = {
+export const MAX_ARTISAN_PROFILES = 10
+
+export const DEFAULT_ARTISAN_PAGE_CONTENT: Omit<
+  ArtisanPageContent,
+  "id" | "slug" | "sortOrder"
+> = {
+  isPublished: true,
   heroImageUrl: "/indian-artisan-weaving-handloom-fabric.jpg",
   eyebrow: "Master Weaver · Maheshwar",
   name: "Devendra Khatri",
@@ -56,3 +66,12 @@ export const DEFAULT_ARTISAN_PAGE_CONTENT: ArtisanPageContent = {
   handpickedTitle: "Handpicked by Devendra",
   handpickedSubtitle: "Discover the signature weaves that define his legacy…",
 }
+
+export const DEFAULT_ARTISAN_PROFILES: ArtisanPageContent[] = [
+  {
+    id: "default-devendra-khatri",
+    slug: "devendra-khatri",
+    sortOrder: 0,
+    ...DEFAULT_ARTISAN_PAGE_CONTENT,
+  },
+]

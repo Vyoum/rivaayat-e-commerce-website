@@ -5,7 +5,7 @@ import Link from "next/link"
 import { Play, Award, Clock, Sparkles } from "lucide-react"
 
 import type { ArtisanPageContent } from "@/lib/artisan-page-content-shared"
-import { DEFAULT_ARTISAN_PAGE_CONTENT } from "@/lib/artisan-page-content-shared"
+import { DEFAULT_ARTISAN_PROFILES } from "@/lib/artisan-page-content-shared"
 
 const credentialIcons = [Award, Clock, Sparkles]
 
@@ -46,7 +46,7 @@ type ArtisanProfileContentProps = {
 }
 
 export function ArtisanProfileContent({
-  content = DEFAULT_ARTISAN_PAGE_CONTENT,
+  content = DEFAULT_ARTISAN_PROFILES[0],
 }: ArtisanProfileContentProps) {
   const videoHref = content.videoUrl.trim()
 

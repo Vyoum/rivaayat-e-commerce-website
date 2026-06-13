@@ -88,7 +88,7 @@ export const DEFAULT_OUR_STORY_CONTENT: OurStoryContent = {
   symphonyBody:
     "Each creation is the result of patience, precision, and deep respect for the craft.",
   symphonyCtaLabel: "Our Process",
-  symphonyCtaHref: "/artisans/devendra-khatri",
+  symphonyCtaHref: "/artisans",
   values: [
     {
       title: "Timeless Materials",
