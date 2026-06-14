@@ -30,7 +30,7 @@ const customerPolicyLinks = [
 ]
 
 const usefulLinks = [
-  { label: "Our Sourcing Story", href: "/outerboxdesign" },
+  { label: "Our Sourcing Story", href: "/ourstory" },
   { label: "Sustainability & Impact", href: "#" },
   { label: "Custom Orders", href: "/custom-orders" },
   { label: "Careers", href: "#" },

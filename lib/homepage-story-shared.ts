@@ -30,7 +30,7 @@ export const DEFAULT_HOMEPAGE_STORY: HomepageStoryContent = {
   quote:
     "Each purchase you make empowers rural artisans and helps revive the beauty of India's handmade traditions.",
   ctaLabel: "Learn More About Our Journey →",
-  ctaHref: "/outerboxdesign",
+  ctaHref: "/ourstory",
   images: [
     {
       id: "1",

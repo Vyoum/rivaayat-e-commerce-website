@@ -102,7 +102,7 @@ export function LandingHero({ slides: initialSlides }: LandingHeroProps) {
             Explore Collections
           </Link>
           <Link
-            href="/outerboxdesign"
+            href="/ourstory"
             className="landing-btn inline-flex h-9 min-w-[168px] items-center justify-center gap-2 border border-white/75 bg-white/5 px-6 text-white backdrop-blur-[2px] transition-colors hover:bg-white/12"
           >
             <Play className="size-2.5 fill-white text-white" />
