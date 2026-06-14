@@ -113,15 +113,15 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
               {content.makers.items.map((maker) => (
                 <article
                   key={maker.id}
-                  className="border border-[#D4C4A8] bg-[#FAF7F2]/90"
+                  className="overflow-hidden border border-[#D4C4A8] bg-[#FAF7F2]/90"
                 >
-                  <div className="relative aspect-[5/4] min-h-[140px] overflow-hidden bg-[#EDE8DC] lg:min-h-[180px] xl:min-h-[200px]">
+                  <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#EDE8DC]">
                     <Image
                       src={maker.imageUrl}
                       alt={maker.name}
                       fill
-                      className="object-cover"
-                      sizes="(max-width: 1024px) 30vw, 180px"
+                      className="object-cover object-center"
+                      sizes="(max-width: 1024px) 28vw, 220px"
                     />
                   </div>
                   <div className="px-4 py-4 lg:px-5 lg:py-5">
