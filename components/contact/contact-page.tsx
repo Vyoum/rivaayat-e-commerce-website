@@ -393,7 +393,7 @@ export function ContactPage() {
             {[
               { label: "Jewellery", href: "/jewellery" },
               { label: "Custom Orders", href: "/custom-orders" },
-              { label: "Our Story", href: "/ourstory" },
+              { label: "Our Story", href: "/outerboxdesign" },
             ].map((link) => (
               <Link
                 key={link.href}

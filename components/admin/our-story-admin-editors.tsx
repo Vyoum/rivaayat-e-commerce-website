@@ -199,14 +199,14 @@ function OurStoryEditor() {
           <h2 className="font-serif text-[20px] font-semibold text-[#2D1E17]">Our Story Page</h2>
           <p className="mt-1 text-[13px] text-[#9A8070]">
             Edits appear on{" "}
-            <Link href="/ourstory" target="_blank" className="text-[#6B5344] underline">
-              /ourstory
+            <Link href="/outerboxdesign" target="_blank" className="text-[#6B5344] underline">
+              /outerboxdesign
             </Link>
           </p>
         </div>
         <div className="flex items-center gap-2">
           <Link
-            href="/ourstory"
+            href="/outerboxdesign"
             target="_blank"
             className="flex items-center gap-1.5 rounded-lg border border-[#EDE5D8] px-3 py-2 text-[12px] font-medium text-[#6B5344] hover:bg-[#FAF7F2]"
           >

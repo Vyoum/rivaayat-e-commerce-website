@@ -223,7 +223,7 @@ export function HomepageStoryManager({ compact = false }: HomepageStoryManagerPr
             type="text"
             value={content.ctaHref}
             onChange={(e) => setContent({ ...content, ctaHref: e.target.value })}
-            placeholder="/ourstory"
+            placeholder="/outerboxdesign"
             className="mt-1.5 w-full rounded-lg border border-[#EDE5D8] px-3 py-2.5 text-[13px] outline-none focus:border-[#6B5344]"
           />
         </div>

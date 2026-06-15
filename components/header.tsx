@@ -10,7 +10,7 @@ import { CartIconLink } from "@/components/cart/cart-icon-link"
 import { WishlistIconLink } from "@/components/wishlist/wishlist-icon-link"
 
 const navItems = [
-  { label: "Our Story", href: "/ourstory" },
+  { label: "Our Story", href: "/outerboxdesign" },
   { label: "Products", href: "#products" },
   { label: "Artisans", href: "#artisans" },
   { label: "Impact", href: "#impact" },

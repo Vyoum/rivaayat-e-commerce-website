@@ -361,7 +361,7 @@ function OurStoryPanel() {
             &quot;{HOUSE_OF_INDIKA} started with a simple idea — to keep the beauty of handmade Indian crafts alive in a world that moves fast.&quot;
           </p>
           <Link
-            href="/ourstory"
+            href="/outerboxdesign"
             className="inline-block font-sans text-[14px] font-semibold uppercase tracking-[0.16em] text-[#846246] transition-colors hover:text-[#5C4332]"
           >
             Read the full story →

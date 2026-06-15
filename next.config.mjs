@@ -14,6 +14,15 @@ const nextConfig = {
   turbopack: {
     root: __dirname,
   },
+  async redirects() {
+    return [
+      {
+        source: "/ourstory",
+        destination: "/outerboxdesign",
+        permanent: false,
+      },
+    ]
+  },
 }
 
 export default nextConfig
