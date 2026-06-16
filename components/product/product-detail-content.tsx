@@ -7,6 +7,7 @@ import { useRouter } from "next/navigation"
 import { ChevronDown, ChevronRight, Minus, Plus, Sparkles, Truck } from "lucide-react"
 import { toast } from "sonner"
 
+import { ProductCardDeliveryEstimate } from "@/components/catalog/product-card-delivery-estimate"
 import { useCart } from "@/components/providers/cart-provider"
 import { useWishlist } from "@/components/providers/wishlist-provider"
 import { Checkbox } from "@/components/ui/checkbox"
@@ -289,6 +290,8 @@ export function ProductDetailContent({
             >
               {wishlisted ? "Saved to Wishlist" : "Add to Wishlist"}
             </button>
+
+            <ProductCardDeliveryEstimate variant="detail" />
 
             <div className="mt-10 border-t border-[#E8E0D4]">
               {accordionItems.map((item) => {

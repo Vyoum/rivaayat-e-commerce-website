@@ -7,6 +7,7 @@ import { Heart } from "lucide-react"
 import { toast } from "sonner"
 
 import { ProductBarcodeButton } from "@/components/catalog/product-barcode-button"
+import { ProductCardDeliveryEstimate } from "@/components/catalog/product-card-delivery-estimate"
 import { useCart } from "@/components/providers/cart-provider"
 import { useWishlist } from "@/components/providers/wishlist-provider"
 import { getArtisanProfileHref } from "@/lib/artisan-routes"
@@ -123,6 +124,8 @@ export function CatalogProductCard({ product }: CatalogProductCardProps) {
         >
           Add to Cart
         </button>
+
+        <ProductCardDeliveryEstimate />
 
         <div aria-hidden className="mt-2.5 border-t border-dashed border-black/45 sm:mt-4" />
 
