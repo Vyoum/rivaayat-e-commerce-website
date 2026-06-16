@@ -4,8 +4,8 @@ import { useEffect, useState } from "react"
 import Image from "next/image"
 import Link from "next/link"
 import { ChevronDown, Play } from "lucide-react"
-import type { HeroSlide } from "@/lib/hero-slides-shared"
-import { DEFAULT_HERO_SLIDES } from "@/lib/hero-slides-shared"
+import type { HeroCopy, HeroSlide } from "@/lib/hero-slides-shared"
+import { DEFAULT_HERO_COPY, DEFAULT_HERO_SLIDES } from "@/lib/hero-slides-shared"
 
 function TornPaperEdge() {
   return (
@@ -22,11 +22,13 @@ function TornPaperEdge() {
 
 type LandingHeroProps = {
   slides?: HeroSlide[]
+  copy?: HeroCopy
 }
 
-export function LandingHero({ slides: initialSlides }: LandingHeroProps) {
+export function LandingHero({ slides: initialSlides, copy: initialCopy }: LandingHeroProps) {
   const slides =
     initialSlides && initialSlides.length > 0 ? initialSlides : DEFAULT_HERO_SLIDES
+  const copy = initialCopy ?? DEFAULT_HERO_COPY
   const [currentSlide, setCurrentSlide] = useState(0)
 
   useEffect(() => {
@@ -78,20 +80,19 @@ export function LandingHero({ slides: initialSlides }: LandingHeroProps) {
       </div>
 
       <div className="relative z-10 mx-auto max-w-[640px] px-5 pb-24 pt-28 text-center sm:pt-32">
-        <p className="landing-label text-[10px] text-white/88">From Our World, For Yours</p>
+        <p className="landing-label text-[10px] text-white/88">{copy.tagline}</p>
 
         <h1 className="mt-5">
           <span className="landing-display block text-[34px] leading-[1.1] text-white sm:text-[42px] lg:text-[50px]">
-            Discover Stories
+            {copy.titleLine1}
           </span>
           <span className="landing-display-italic mt-1 block text-[34px] leading-[1.1] text-[#E8D0BC] sm:text-[42px] lg:text-[50px]">
-            Crafted by Hand
+            {copy.titleLine2}
           </span>
         </h1>
 
         <p className="landing-body mx-auto mt-5 max-w-[420px] text-[15px] leading-[1.7] text-white/88">
-          Timeless treasures, thoughtfully made and mindfully chosen to bring meaning into
-          your everyday.
+          {copy.subtitle}
         </p>
 
         <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-3.5">

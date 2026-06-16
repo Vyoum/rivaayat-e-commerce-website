@@ -154,7 +154,7 @@ export async function POST(request: NextRequest) {
       state: body.state.trim(),
     }
 
-    await fulfillOrderWithDelhivery({
+    const delhiveryResult = await fulfillOrderWithDelhivery({
       orderId: order.id,
       orderReference: body.razorpay_order_id,
       delivery,
@@ -163,10 +163,19 @@ export async function POST(request: NextRequest) {
       kind: "custom",
     })
 
+    if (!delhiveryResult.ok) {
+      console.error("[api/custom-orders/confirm] Delhivery failed", delhiveryResult.error)
+    }
+
     const jsonResponse = NextResponse.json({
       id: order.id,
       success: true,
       paymentId: body.razorpay_payment_id,
+      shipping: {
+        created: delhiveryResult.ok,
+        waybill: delhiveryResult.waybill ?? null,
+        error: delhiveryResult.error ?? null,
+      },
     })
     response.cookies.getAll().forEach((cookie) => {
       jsonResponse.cookies.set(cookie)

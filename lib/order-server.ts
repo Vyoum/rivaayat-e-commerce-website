@@ -100,6 +100,34 @@ export async function createOrderFromCheckout(
   const dbUser = await getOrCreateDbUser(authUser)
   if (!dbUser) return null
 
+  return createOrderRecord(dbUser.id, input)
+}
+
+export async function createGuestOrderFromCheckout(
+  input: CreateOrderInput,
+): Promise<ProfileOrder | null> {
+  const prisma = getPrisma()
+  if (!prisma) return null
+
+  if (!input.deliveryAddress?.email.trim()) {
+    return null
+  }
+
+  const existingUser = await prisma.user.findUnique({
+    where: { email: input.deliveryAddress.email.trim().toLowerCase() },
+    select: { id: true },
+  })
+
+  return createOrderRecord(existingUser?.id ?? null, input)
+}
+
+async function createOrderRecord(
+  userId: string | null,
+  input: CreateOrderInput,
+): Promise<ProfileOrder | null> {
+  const prisma = getPrisma()
+  if (!prisma) return null
+
   const existing = await prisma.order.findFirst({
     where: { razorpayOrderId: input.razorpayOrderId },
     include: {
@@ -121,7 +149,7 @@ export async function createOrderFromCheckout(
 
   const order = await prisma.order.create({
     data: {
-      userId: dbUser.id,
+      userId,
       status: "confirmed",
       paymentStatus: "paid",
       razorpayOrderId: input.razorpayOrderId,

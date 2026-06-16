@@ -4,7 +4,7 @@ import { Cormorant_Garamond, DM_Sans, Playfair_Display } from "next/font/google"
 import { Analytics } from "@vercel/analytics/next"
 import { AppProviders } from "@/components/providers/app-providers"
 import { SiteFooterGate } from "@/components/site-footer-gate"
-import { HOUSE_OF_INDIKA } from "@/lib/brand"
+import { rootMetadata } from "@/lib/site-metadata"
 import "./globals.css"
 
 const cormorant = Cormorant_Garamond({
@@ -27,11 +27,7 @@ const playfair = Playfair_Display({
   variable: "--font-display",
 })
 
-export const metadata: Metadata = {
-  title: `${HOUSE_OF_INDIKA} — Stories Crafted by Hand`,
-  description:
-    "Discover timeless handcrafted treasures from rural artisans across India. Each purchase tells a story.",
-}
+export const metadata: Metadata = rootMetadata
 
 export default function RootLayout({
   children,

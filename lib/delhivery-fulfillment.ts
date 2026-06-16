@@ -11,6 +11,33 @@ export type FulfillOrderWithDelhiveryInput = {
   kind: "store" | "custom"
 }
 
+function truncateStatus(value: string) {
+  return value.slice(0, 240)
+}
+
+async function saveDelhiveryFailure(
+  kind: "store" | "custom",
+  orderId: string,
+  error: string,
+) {
+  const prisma = getPrisma()
+  if (!prisma) return
+
+  const status = truncateStatus(`failed: ${error}`)
+
+  if (kind === "store") {
+    await prisma.order.update({
+      where: { id: orderId },
+      data: { delhiveryStatus: status },
+    })
+  } else {
+    await prisma.customOrder.update({
+      where: { id: orderId },
+      data: { delhiveryStatus: status },
+    })
+  }
+}
+
 export async function fulfillOrderWithDelhivery(input: FulfillOrderWithDelhiveryInput) {
   const prisma = getPrisma()
   if (!prisma) {
@@ -25,8 +52,10 @@ export async function fulfillOrderWithDelhivery(input: FulfillOrderWithDelhivery
   })
 
   if (!shipment.ok || !shipment.waybill) {
-    console.error("[delhivery/fulfillment]", input.orderReference, shipment.error, shipment.raw)
-    return { ok: false as const, error: shipment.error ?? "Shipment creation failed." }
+    const error = shipment.error ?? "Shipment creation failed."
+    console.error("[delhivery/fulfillment]", input.orderReference, error, shipment.raw)
+    await saveDelhiveryFailure(input.kind, input.orderId, error)
+    return { ok: false as const, error }
   }
 
   if (input.kind === "store") {

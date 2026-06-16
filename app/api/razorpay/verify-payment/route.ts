@@ -5,7 +5,7 @@ import { validatePromoCode, incrementPromoUsage } from "@/lib/discount-code-serv
 import type { DeliveryAddress } from "@/lib/delivery-address"
 import { isDeliveryAddressComplete } from "@/lib/delivery-address"
 import { fulfillOrderWithDelhivery } from "@/lib/delhivery-fulfillment"
-import { createOrderFromCheckout } from "@/lib/order-server"
+import { createGuestOrderFromCheckout, createOrderFromCheckout } from "@/lib/order-server"
 import { buildOrderFromCheckout, type StoredCheckoutItem } from "@/lib/orders-storage"
 import { getPrisma } from "@/lib/prisma"
 import { getRazorpayKeySecret } from "@/lib/razorpay"
@@ -117,38 +117,42 @@ export async function POST(req: NextRequest) {
     let dbOrderId: string | null = existingOrder?.id ?? null
 
     const supabase = createSupabaseApiClient(req, response)
-    if (supabase && checkoutItems.length > 0) {
-      const {
-        data: { user },
-      } = await supabase.auth.getUser()
+    const {
+      data: { user },
+    } = supabase ? await supabase.auth.getUser() : { data: { user: null } }
 
-      if (user) {
-        const dbOrder = await createOrderFromCheckout(user, {
-          razorpayOrderId: razorpay_order_id,
-          razorpayPaymentId: razorpay_payment_id,
-          items: checkoutItems,
-          subtotal: orderSubtotal,
-          artisanTip: orderTip,
-          total: orderTotal,
-          giftMessage: normalizedGiftMessage,
-          promoCode: appliedPromoCode,
-          discountAmount,
-          deliveryAddress:
-            deliveryAddress && isDeliveryAddressComplete(deliveryAddress)
-              ? deliveryAddress
-              : null,
-        })
-        if (dbOrder) {
-          savedOrder = dbOrder
-          dbOrderId = dbOrder.id
-        }
+    const orderPayload = {
+      razorpayOrderId: razorpay_order_id,
+      razorpayPaymentId: razorpay_payment_id,
+      items: checkoutItems,
+      subtotal: orderSubtotal,
+      artisanTip: orderTip,
+      total: orderTotal,
+      giftMessage: normalizedGiftMessage,
+      promoCode: appliedPromoCode,
+      discountAmount,
+      deliveryAddress:
+        deliveryAddress && isDeliveryAddressComplete(deliveryAddress)
+          ? deliveryAddress
+          : null,
+    }
+
+    if (checkoutItems.length > 0 && orderPayload.deliveryAddress) {
+      const dbOrder = user
+        ? await createOrderFromCheckout(user, orderPayload)
+        : await createGuestOrderFromCheckout(orderPayload)
+
+      if (dbOrder) {
+        savedOrder = dbOrder
+        dbOrderId = dbOrder.id
       }
     }
 
+    let delhiveryResult: { ok: boolean; waybill?: string; error?: string } | null = null
+
     if (
       dbOrderId &&
-      deliveryAddress &&
-      isDeliveryAddressComplete(deliveryAddress) &&
+      orderPayload.deliveryAddress &&
       !existingOrder?.delhiveryWaybill
     ) {
       const productsDesc =
@@ -158,14 +162,22 @@ export async function POST(req: NextRequest) {
               .join(", ")
           : "House of Indika order"
 
-      await fulfillOrderWithDelhivery({
+      delhiveryResult = await fulfillOrderWithDelhivery({
         orderId: dbOrderId,
         orderReference: razorpay_order_id,
-        delivery: deliveryAddress,
+        delivery: orderPayload.deliveryAddress,
         productsDesc,
         totalAmount: orderTotal,
         kind: "store",
       })
+
+      if (!delhiveryResult.ok) {
+        console.error(
+          "[razorpay/verify-payment] Delhivery failed for",
+          razorpay_order_id,
+          delhiveryResult.error,
+        )
+      }
     }
 
     if (!existingOrder && appliedPromoCode) {
@@ -177,6 +189,13 @@ export async function POST(req: NextRequest) {
       orderId: razorpay_order_id,
       paymentId: razorpay_payment_id,
       order: savedOrder,
+      shipping: delhiveryResult
+        ? {
+            created: delhiveryResult.ok,
+            waybill: delhiveryResult.waybill ?? null,
+            error: delhiveryResult.error ?? null,
+          }
+        : null,
     })
     response.cookies.getAll().forEach((cookie) => {
       jsonResponse.cookies.set(cookie)

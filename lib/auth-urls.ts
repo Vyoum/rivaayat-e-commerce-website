@@ -21,6 +21,8 @@ export const SUPABASE_REDIRECT_URLS = [
   "http://localhost:3000/**",
   "http://127.0.0.1:3000/**",
   "https://houseofindika.vercel.app/**",
+  "https://houseofindika.com/**",
+  "https://www.houseofindika.com/**",
 ] as const
 
 export const SUPABASE_GOOGLE_REDIRECT_URI =

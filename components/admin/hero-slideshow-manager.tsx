@@ -7,12 +7,13 @@ import {
   ImageIcon,
   Loader2,
   Plus,
+  Save,
   Trash2,
   Upload,
   Video,
 } from "lucide-react"
-import type { HeroSlide } from "@/lib/hero-slides-shared"
-import { MAX_HERO_SLIDES } from "@/lib/hero-slides-shared"
+import type { HeroCopy, HeroSlide } from "@/lib/hero-slides-shared"
+import { DEFAULT_HERO_COPY, MAX_HERO_SLIDES } from "@/lib/hero-slides-shared"
 
 type HeroSlideshowManagerProps = {
   compact?: boolean
@@ -20,8 +21,11 @@ type HeroSlideshowManagerProps = {
 
 export function HeroSlideshowManager({ compact = false }: HeroSlideshowManagerProps) {
   const [slides, setSlides] = useState<HeroSlide[]>([])
+  const [copy, setCopy] = useState<HeroCopy>(DEFAULT_HERO_COPY)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [savingCopy, setSavingCopy] = useState(false)
+  const [copySaved, setCopySaved] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [imageUrl, setImageUrl] = useState("")
   const [mediaType, setMediaType] = useState<"image" | "video">("image")
@@ -36,6 +40,7 @@ export function HeroSlideshowManager({ compact = false }: HeroSlideshowManagerPr
       const data = await res.json()
       if (!res.ok) throw new Error(data.error || "Failed to load slides")
       setSlides(data.slides ?? [])
+      setCopy(data.copy ?? DEFAULT_HERO_COPY)
     } catch (err) {
       setError(err instanceof Error ? err.message : "Failed to load slides")
     } finally {
@@ -65,6 +70,27 @@ export function HeroSlideshowManager({ compact = false }: HeroSlideshowManagerPr
       setError(err instanceof Error ? err.message : "Upload failed")
     } finally {
       setSaving(false)
+    }
+  }
+
+  async function handleSaveCopy() {
+    setSavingCopy(true)
+    setError(null)
+    setCopySaved(false)
+    try {
+      const res = await fetch("/api/admin/hero-slides", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(copy),
+      })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to save hero text")
+      setCopy(data.copy ?? copy)
+      setCopySaved(true)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save hero text")
+    } finally {
+      setSavingCopy(false)
     }
   }
 
@@ -155,6 +181,94 @@ export function HeroSlideshowManager({ compact = false }: HeroSlideshowManagerPr
           {error}
         </div>
       )}
+
+      <section className="rounded-xl border border-[#EDE5D8] bg-white p-5 shadow-sm">
+        <h3 className="text-[14px] font-semibold text-[#2B1B12]">Hero Text</h3>
+        <p className="mt-1 text-[12px] text-[#9A8070]">
+          Tagline and headline shown over the homepage hero slideshow.
+        </p>
+
+        <div className="mt-4 grid gap-4 sm:grid-cols-2">
+          <label className="block sm:col-span-2">
+            <span className="text-[12px] font-semibold tracking-wide text-[#6B5344] uppercase">
+              Tagline
+            </span>
+            <input
+              type="text"
+              value={copy.tagline}
+              onChange={(e) => {
+                setCopy((prev) => ({ ...prev, tagline: e.target.value }))
+                setCopySaved(false)
+              }}
+              placeholder="From Our World, For Yours"
+              className="mt-2 w-full rounded-lg border border-[#EDE5D8] px-3 py-2.5 text-[13px] outline-none focus:border-[#6B5344]"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-[12px] font-semibold tracking-wide text-[#6B5344] uppercase">
+              Headline line 1
+            </span>
+            <input
+              type="text"
+              value={copy.titleLine1}
+              onChange={(e) => {
+                setCopy((prev) => ({ ...prev, titleLine1: e.target.value }))
+                setCopySaved(false)
+              }}
+              placeholder="Discover Stories"
+              className="mt-2 w-full rounded-lg border border-[#EDE5D8] px-3 py-2.5 text-[13px] outline-none focus:border-[#6B5344]"
+            />
+          </label>
+
+          <label className="block">
+            <span className="text-[12px] font-semibold tracking-wide text-[#6B5344] uppercase">
+              Headline line 2
+            </span>
+            <input
+              type="text"
+              value={copy.titleLine2}
+              onChange={(e) => {
+                setCopy((prev) => ({ ...prev, titleLine2: e.target.value }))
+                setCopySaved(false)
+              }}
+              placeholder="Crafted by Hand"
+              className="mt-2 w-full rounded-lg border border-[#EDE5D8] px-3 py-2.5 text-[13px] outline-none focus:border-[#6B5344]"
+            />
+          </label>
+
+          <label className="block sm:col-span-2">
+            <span className="text-[12px] font-semibold tracking-wide text-[#6B5344] uppercase">
+              Subtitle
+            </span>
+            <textarea
+              value={copy.subtitle}
+              onChange={(e) => {
+                setCopy((prev) => ({ ...prev, subtitle: e.target.value }))
+                setCopySaved(false)
+              }}
+              rows={3}
+              placeholder="Timeless treasures, thoughtfully made..."
+              className="mt-2 w-full resize-y rounded-lg border border-[#EDE5D8] px-3 py-2.5 text-[13px] leading-relaxed outline-none focus:border-[#6B5344]"
+            />
+          </label>
+        </div>
+
+        <div className="mt-4 flex items-center gap-3">
+          <button
+            type="button"
+            disabled={savingCopy}
+            onClick={() => void handleSaveCopy()}
+            className="inline-flex items-center gap-2 rounded-xl bg-[#2D1E17] px-4 py-2.5 text-[13px] font-medium text-white hover:bg-[#3D2B21] disabled:opacity-50"
+          >
+            {savingCopy ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}
+            Save Hero Text
+          </button>
+          {copySaved ? (
+            <span className="text-[12px] font-medium text-[#2E7D32]">Saved</span>
+          ) : null}
+        </div>
+      </section>
 
       <div className="grid gap-5 lg:grid-cols-[1fr_1.1fr]">
         <section className="rounded-xl border border-[#EDE5D8] bg-white p-5 shadow-sm">

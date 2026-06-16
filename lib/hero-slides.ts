@@ -2,20 +2,43 @@ import { promises as fs } from "fs"
 import path from "path"
 import { randomUUID } from "crypto"
 import {
+  DEFAULT_HERO_COPY,
   DEFAULT_HERO_SLIDES,
   MAX_HERO_SLIDES,
+  type HeroCopy,
   type HeroSlide,
 } from "@/lib/hero-slides-shared"
 import { readHeroSlidesFromRemote, writeHeroSlidesToRemote } from "@/lib/hero-slides-remote"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
-export type { HeroSlide } from "@/lib/hero-slides-shared"
-export { DEFAULT_HERO_SLIDES, MAX_HERO_SLIDES } from "@/lib/hero-slides-shared"
+export type { HeroCopy, HeroSlide } from "@/lib/hero-slides-shared"
+export {
+  DEFAULT_HERO_COPY,
+  DEFAULT_HERO_SLIDES,
+  MAX_HERO_SLIDES,
+} from "@/lib/hero-slides-shared"
 
 const DATA_FILE = path.join(process.cwd(), "data", "hero-slides.json")
 
 type HeroSlidesFile = {
   slides: HeroSlide[]
+  copy?: Partial<HeroCopy>
+}
+
+function mergeHeroCopy(copy?: Partial<HeroCopy>): HeroCopy {
+  return {
+    tagline: copy?.tagline?.trim() || DEFAULT_HERO_COPY.tagline,
+    titleLine1: copy?.titleLine1?.trim() || DEFAULT_HERO_COPY.titleLine1,
+    titleLine2: copy?.titleLine2?.trim() || DEFAULT_HERO_COPY.titleLine2,
+    subtitle: copy?.subtitle?.trim() || DEFAULT_HERO_COPY.subtitle,
+  }
+}
+
+function normalizeFile(data: HeroSlidesFile): HeroSlidesFile {
+  return {
+    slides: Array.isArray(data.slides) ? data.slides : DEFAULT_HERO_SLIDES,
+    copy: mergeHeroCopy(data.copy),
+  }
 }
 
 async function readFile(): Promise<HeroSlidesFile> {
@@ -23,7 +46,7 @@ async function readFile(): Promise<HeroSlidesFile> {
     const remote = await readHeroSlidesFromRemote()
     if (remote) {
       const parsed = JSON.parse(remote) as HeroSlidesFile
-      if (Array.isArray(parsed.slides)) return parsed
+      if (Array.isArray(parsed.slides)) return normalizeFile(parsed)
     }
   } catch {
     // fall through to local file
@@ -32,15 +55,18 @@ async function readFile(): Promise<HeroSlidesFile> {
   try {
     const raw = await fs.readFile(DATA_FILE, "utf-8")
     const parsed = JSON.parse(raw) as HeroSlidesFile
-    if (!Array.isArray(parsed.slides)) return { slides: DEFAULT_HERO_SLIDES }
-    return parsed
+    if (!Array.isArray(parsed.slides)) {
+      return normalizeFile({ slides: DEFAULT_HERO_SLIDES })
+    }
+    return normalizeFile(parsed)
   } catch {
-    return { slides: DEFAULT_HERO_SLIDES }
+    return normalizeFile({ slides: DEFAULT_HERO_SLIDES })
   }
 }
 
 async function writeFile(data: HeroSlidesFile) {
-  const serialized = JSON.stringify(data, null, 2)
+  const normalized = normalizeFile(data)
+  const serialized = JSON.stringify(normalized, null, 2)
   await writeHeroSlidesToRemote(serialized)
   await fs.mkdir(path.dirname(DATA_FILE), { recursive: true })
   await fs.writeFile(DATA_FILE, serialized, "utf-8")
@@ -48,6 +74,18 @@ async function writeFile(data: HeroSlidesFile) {
 
 function sortSlides(slides: HeroSlide[]) {
   return [...slides].sort((a, b) => a.sortOrder - b.sortOrder)
+}
+
+export async function getHeroCopy(): Promise<HeroCopy> {
+  const { copy } = await readFile()
+  return mergeHeroCopy(copy)
+}
+
+export async function updateHeroCopy(patch: Partial<HeroCopy>): Promise<HeroCopy> {
+  const data = await readFile()
+  data.copy = mergeHeroCopy({ ...data.copy, ...patch })
+  await writeFile(data)
+  return data.copy
 }
 
 export async function getActiveHeroSlides(): Promise<HeroSlide[]> {
