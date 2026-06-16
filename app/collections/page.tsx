@@ -25,7 +25,7 @@ const collectionsMeta = {
 export default async function CollectionsPage({
   searchParams,
 }: {
-  searchParams: Promise<{ category?: string; subcategory?: string }>
+  searchParams: Promise<{ category?: string; subcategory?: string; q?: string }>
 }) {
   const params = await searchParams
   const products = await getAllPublishedProducts()
@@ -37,6 +37,7 @@ export default async function CollectionsPage({
       productFilter="category-and-subcategory"
       initialCategory={params.category ?? ""}
       initialSubcategory={params.subcategory ?? ""}
+      initialQuery={params.q ?? ""}
     />
   )
 }

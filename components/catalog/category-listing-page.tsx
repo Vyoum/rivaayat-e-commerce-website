@@ -7,6 +7,7 @@ import { ChevronLeft, ChevronRight, Settings2, Sparkles } from "lucide-react"
 import { CatalogHeader } from "@/components/catalog/catalog-header"
 import { CatalogProductCard } from "@/components/catalog/catalog-product-card"
 import { cn } from "@/lib/utils"
+import { matchesProductSearch } from "@/lib/product-search"
 import { categoryCatalog, getCatalogSubcategoryOptions, type CatalogProduct, type CategoryConfig } from "@/lib/category-catalog"
 
 const PAGE_SIZE = 6
@@ -33,6 +34,7 @@ type CategoryListingPageProps = {
   productFilter?: ProductFilterMode
   initialCategory?: string
   initialSubcategory?: string
+  initialQuery?: string
 }
 
 function isValidCategoryRoute(value: string) {
@@ -61,6 +63,7 @@ export function CategoryListingPage({
   productFilter = "subcategory",
   initialCategory = "",
   initialSubcategory = "",
+  initialQuery = "",
 }: CategoryListingPageProps) {
   const router = useRouter()
   const pathname = usePathname()
@@ -88,6 +91,7 @@ export function CategoryListingPage({
   const [page, setPage] = useState(1)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([])
+  const [searchQuery, setSearchQuery] = useState(initialQuery.trim())
 
   const subcategoryOptions = useMemo(() => {
     if (productFilter !== "category-and-subcategory") return []
@@ -114,12 +118,13 @@ export function CategoryListingPage({
     return merged
   }, [activeCategory, category.products, productFilter])
 
-  function syncFilterParams(nextCategory: string, nextSubcategory: string) {
+  function syncFilterParams(nextCategory: string, nextSubcategory: string, nextQuery = searchQuery) {
     if (productFilter !== "category-and-subcategory") return
 
     const params = new URLSearchParams()
     if (nextCategory) params.set("category", nextCategory)
     if (nextSubcategory) params.set("subcategory", nextSubcategory)
+    if (nextQuery.trim()) params.set("q", nextQuery.trim())
 
     const query = params.toString()
     router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
@@ -151,6 +156,7 @@ export function CategoryListingPage({
 
   const filteredProducts = useMemo(() => {
     let items = category.products.filter((product) => {
+      if (!matchesProductSearch(product, searchQuery)) return false
       if (productFilter === "category-and-subcategory") {
         if (activeCategory && product.categoryRoute !== activeCategory) return false
         if (activeSubcategory && product.subcategory !== activeSubcategory) return false
@@ -178,6 +184,7 @@ export function CategoryListingPage({
     activeFilters,
     sortBy,
     productFilter,
+    searchQuery,
   ])
 
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE))
@@ -197,10 +204,11 @@ export function CategoryListingPage({
 
   function clearFilters() {
     setActiveFilters([])
+    setSearchQuery("")
     if (productFilter === "category-and-subcategory") {
       setActiveCategory("")
       setActiveSubcategory("")
-      syncFilterParams("", "")
+      syncFilterParams("", "", "")
     }
     setPage(1)
     setVisibleCount(PAGE_SIZE)
@@ -208,6 +216,7 @@ export function CategoryListingPage({
 
   const hasActiveFilters =
     activeFilters.length > 0 ||
+    searchQuery.trim() !== "" ||
     (productFilter === "category-and-subcategory" && (activeCategory !== "" || activeSubcategory !== ""))
 
   return (
@@ -298,6 +307,9 @@ export function CategoryListingPage({
         <div className="flex flex-col gap-4 border-b border-[#E8E0D4] pb-5 sm:flex-row sm:items-center sm:justify-between">
           <p className="font-sans text-[13px] text-[#6B5344]">
             Showing {filteredProducts.length} piece{filteredProducts.length === 1 ? "" : "s"}
+            {searchQuery.trim() ? (
+              <span className="text-[#9A8070]"> for &ldquo;{searchQuery.trim()}&rdquo;</span>
+            ) : null}
           </p>
 
           <div className="flex flex-wrap items-center gap-3">

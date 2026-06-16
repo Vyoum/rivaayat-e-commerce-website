@@ -33,7 +33,7 @@ const homepageJsonLd = {
   description: SITE_DESCRIPTION,
   potentialAction: {
     "@type": "SearchAction",
-    target: `${absoluteUrl("/jewellery")}?q={search_term_string}`,
+    target: `${absoluteUrl("/collections")}?q={search_term_string}`,
     "query-input": "required name=search_term_string",
   },
 }

@@ -10,6 +10,7 @@ import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { isNavItemActive, SITE_NAV_ITEMS } from "@/lib/site-nav"
 import { AccountIconLink } from "@/components/account/account-icon-link"
 import { CartIconLink } from "@/components/cart/cart-icon-link"
+import { SiteSearchPanel } from "@/components/site-search-panel"
 import { useWishlist } from "@/components/providers/wishlist-provider"
 import { WishlistIconLink } from "@/components/wishlist/wishlist-icon-link"
 
@@ -25,6 +26,7 @@ export function SiteHeader({ variant = "solid", className }: SiteHeaderProps) {
   const { isLoggedIn } = useWishlist()
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
+  const [searchOpen, setSearchOpen] = useState(false)
   const isHero = variant === "hero"
   const wishlistHref = isLoggedIn ? "/wishlist" : "/login?next=/wishlist"
 
@@ -39,6 +41,7 @@ export function SiteHeader({ variant = "solid", className }: SiteHeaderProps) {
 
   useEffect(() => {
     setMobileOpen(false)
+    setSearchOpen(false)
   }, [pathname])
 
   useEffect(() => {
@@ -148,7 +151,12 @@ export function SiteHeader({ variant = "solid", className }: SiteHeaderProps) {
             </nav>
 
             <div className="flex items-center justify-end gap-4">
-              <button type="button" aria-label="Search" className={iconClass}>
+              <button
+                type="button"
+                aria-label="Search"
+                onClick={() => setSearchOpen(true)}
+                className={iconClass}
+              >
                 <Search className="size-[15px] stroke-[1.5]" />
               </button>
               <AccountIconLink className={iconClass} iconClassName="size-[15px] stroke-[1.5]" />
@@ -220,7 +228,10 @@ export function SiteHeader({ variant = "solid", className }: SiteHeaderProps) {
             <button
               type="button"
               className={cn(mobileMenuLinkClass, "w-full py-3")}
-              onClick={() => setMobileOpen(false)}
+              onClick={() => {
+                setMobileOpen(false)
+                setSearchOpen(true)
+              }}
             >
               <Search className="size-[16px] stroke-[1.5]" />
               Search
@@ -236,6 +247,8 @@ export function SiteHeader({ variant = "solid", className }: SiteHeaderProps) {
           </div>
         </aside>
       </div>
+
+      <SiteSearchPanel open={searchOpen} onClose={() => setSearchOpen(false)} />
     </>
   )
 }
