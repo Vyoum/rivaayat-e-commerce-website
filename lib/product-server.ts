@@ -1,6 +1,8 @@
 import type { Category } from "@prisma/client"
 
 import { enrichCatalogProduct, getCategoryMeta, mapDbProductToCatalog } from "@/lib/product-catalog"
+import { attachArtisanSlugsToCatalogProducts, getPublishedArtisanProfiles } from "@/lib/artisan-page-content"
+import { resolveArtisanSlugForName } from "@/lib/artisan-routes"
 import { applyCategoryCardToMeta, getCategoryCardByRoute } from "@/lib/category-cards"
 import { getPrisma } from "@/lib/prisma"
 import type { StoreProductDetail } from "@/types/product"
@@ -88,7 +90,7 @@ function mapDbProductToDetail(product: {
   handcrafted: boolean
   inStock: boolean
   artisan?: { name: string } | null
-}): StoreProductDetail {
+}, artisanSlug?: string | null): StoreProductDetail {
   const categoryRoute = CATEGORY_ENUM_TO_ROUTE[product.category]
   const artisanName = product.artisanName ?? product.artisan?.name ?? "Artisan"
 
@@ -107,6 +109,7 @@ function mapDbProductToDetail(product: {
     subcategory: product.subcategory,
     subcategoryLabel: getSubcategoryLabel(categoryRoute, product.subcategory),
     artisanName,
+    artisanSlug: artisanSlug ?? undefined,
     location: product.location ?? "",
     imageUrls: product.imageUrls,
     badge: product.badge,
@@ -146,6 +149,7 @@ export async function getPublishedProductsByCategoryRoute(categoryRoute: string)
       console.error("[product-server] failed to load products:", error)
     }
 
+    products = await attachArtisanSlugsToCatalogProducts(products)
     return { meta, products }
   }
 
@@ -156,14 +160,49 @@ export async function getPublishedProductsByCategoryRoute(categoryRoute: string)
     )
   }
 
+  products = await attachArtisanSlugsToCatalogProducts(products)
+
   return {
     meta,
     products,
   }
 }
 
+export async function getAllPublishedProducts(): Promise<CatalogProduct[]> {
+  const prisma = getPrisma()
+  let products: CatalogProduct[] = []
+
+  if (prisma) {
+    try {
+      const dbProducts = await prisma.product.findMany({
+        where: { isPublished: true },
+        orderBy: { createdAt: "desc" },
+        select: productSelect,
+      })
+      products = dbProducts.map((product) => {
+        const categoryRoute = CATEGORY_ENUM_TO_ROUTE[product.category]
+        return mapDbProductToCatalog(product, categoryRoute)
+      })
+    } catch (error) {
+      console.error("[product-server] failed to load all products:", error)
+    }
+
+    return attachArtisanSlugsToCatalogProducts(products)
+  }
+
+  for (const categoryRoute of Object.keys(categoryCatalog)) {
+    const routeProducts = getCatalogProductsForRoute(categoryRoute).map((product) =>
+      enrichCatalogProduct(product, categoryRoute),
+    )
+    products.push(...routeProducts)
+  }
+
+  return attachArtisanSlugsToCatalogProducts(products)
+}
+
 export async function getPublishedProductBySlug(slug: string) {
   const prisma = getPrisma()
+  const publishedArtisans = await getPublishedArtisanProfiles()
 
   if (prisma) {
     try {
@@ -172,7 +211,11 @@ export async function getPublishedProductBySlug(slug: string) {
         select: productSelect,
       })
 
-      if (product) return mapDbProductToDetail(product)
+      if (product) {
+        const artisanName = product.artisanName ?? product.artisan?.name ?? "Artisan"
+        const artisanSlug = resolveArtisanSlugForName(artisanName, publishedArtisans)
+        return mapDbProductToDetail(product, artisanSlug)
+      }
     } catch (error) {
       console.error("[product-server] failed to load product by slug:", error)
     }
@@ -186,5 +229,7 @@ export async function getPublishedProductBySlug(slug: string) {
   const category = CATEGORY_ROUTE_TO_ENUM[catalogHit.category.slug]
   if (!category) return null
 
-  return mapCatalogProductToDetail(catalogHit.product, catalogHit.category.slug, category)
+  const detail = mapCatalogProductToDetail(catalogHit.product, catalogHit.category.slug, category)
+  const artisanSlug = resolveArtisanSlugForName(detail.artisanName, publishedArtisans)
+  return { ...detail, artisanSlug: artisanSlug ?? undefined }
 }

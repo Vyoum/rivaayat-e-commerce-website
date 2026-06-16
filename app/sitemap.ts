@@ -6,6 +6,7 @@ import { absoluteUrl } from "@/lib/site-metadata"
 
 const STATIC_ROUTES = [
   "",
+  "/collections",
   "/jewellery",
   "/clothing",
   "/decor",

@@ -40,6 +40,7 @@ export type StoreProductDetail = {
   subcategory: string | null
   subcategoryLabel: string | null
   artisanName: string
+  artisanSlug?: string
   location: string
   imageUrls: string[]
   badge: string | null

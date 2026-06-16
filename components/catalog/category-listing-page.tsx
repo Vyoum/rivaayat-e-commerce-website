@@ -2,31 +2,163 @@
 
 import { useMemo, useState } from "react"
 import Link from "next/link"
+import { usePathname, useRouter } from "next/navigation"
 import { ChevronLeft, ChevronRight, Settings2, Sparkles } from "lucide-react"
 import { CatalogHeader } from "@/components/catalog/catalog-header"
 import { CatalogProductCard } from "@/components/catalog/catalog-product-card"
 import { cn } from "@/lib/utils"
-import type { CategoryConfig } from "@/lib/category-catalog"
+import { categoryCatalog, getCatalogSubcategoryOptions, type CatalogProduct, type CategoryConfig } from "@/lib/category-catalog"
 
 const PAGE_SIZE = 6
 
 type ActiveFilter = "under-5000" | "gold-plated"
+
+type ProductFilterMode = "subcategory" | "category" | "category-and-subcategory"
 
 const filterLabels: Record<ActiveFilter, string> = {
   "under-5000": "Under ₹5,000",
   "gold-plated": "Gold Plated",
 }
 
-export function CategoryListingPage({ category }: { category: CategoryConfig }) {
-  const [activeSubcategory, setActiveSubcategory] = useState("")
+const CATEGORY_FILTER_OPTIONS = [
+  { id: "", label: "All Products" },
+  { id: "jewellery", label: "Jewellery" },
+  { id: "clothing", label: "Clothing" },
+  { id: "decor", label: "Décor" },
+  { id: "custom-laddoos", label: "Custom Food" },
+] as const
+
+type CategoryListingPageProps = {
+  category: CategoryConfig
+  productFilter?: ProductFilterMode
+  initialCategory?: string
+  initialSubcategory?: string
+}
+
+function isValidCategoryRoute(value: string) {
+  return value === "" || Boolean(categoryCatalog[value])
+}
+
+function isValidSubcategoryForCategory(
+  categoryRoute: string,
+  subcategoryId: string,
+  products: CatalogProduct[] = [],
+) {
+  if (!subcategoryId) return true
+
+  if (getCatalogSubcategoryOptions(categoryRoute).some((option) => option.id === subcategoryId)) {
+    return true
+  }
+
+  return products.some((product) => {
+    if (product.subcategory !== subcategoryId) return false
+    return !categoryRoute || product.categoryRoute === categoryRoute
+  })
+}
+
+export function CategoryListingPage({
+  category,
+  productFilter = "subcategory",
+  initialCategory = "",
+  initialSubcategory = "",
+}: CategoryListingPageProps) {
+  const router = useRouter()
+  const pathname = usePathname()
+
+  const normalizedInitialCategory = isValidCategoryRoute(initialCategory) ? initialCategory : ""
+  const normalizedInitialSubcategory = isValidSubcategoryForCategory(
+    normalizedInitialCategory,
+    initialSubcategory,
+    category.products,
+  )
+    ? initialSubcategory
+    : ""
+
+  const [activeCategory, setActiveCategory] = useState(
+    productFilter === "category-and-subcategory" ? normalizedInitialCategory : "",
+  )
+  const [activeSubcategory, setActiveSubcategory] = useState(
+    productFilter === "category-and-subcategory"
+      ? normalizedInitialSubcategory
+      : productFilter === "category"
+        ? normalizedInitialCategory
+        : normalizedInitialSubcategory,
+  )
   const [sortBy, setSortBy] = useState("best-selling")
   const [page, setPage] = useState(1)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([])
 
+  const subcategoryOptions = useMemo(() => {
+    if (productFilter !== "category-and-subcategory") return []
+
+    const catalogOptions = getCatalogSubcategoryOptions(activeCategory)
+    const productSubcategories = new Map<string, string>()
+
+    for (const product of category.products) {
+      if (!product.subcategory) continue
+      if (activeCategory && product.categoryRoute !== activeCategory) continue
+      productSubcategories.set(
+        product.subcategory,
+        product.subcategoryLabel ?? product.subcategory,
+      )
+    }
+
+    const merged = [...catalogOptions]
+    for (const [id, label] of productSubcategories) {
+      if (!merged.some((option) => option.id === id)) {
+        merged.push({ id, label })
+      }
+    }
+
+    return merged
+  }, [activeCategory, category.products, productFilter])
+
+  function syncFilterParams(nextCategory: string, nextSubcategory: string) {
+    if (productFilter !== "category-and-subcategory") return
+
+    const params = new URLSearchParams()
+    if (nextCategory) params.set("category", nextCategory)
+    if (nextSubcategory) params.set("subcategory", nextSubcategory)
+
+    const query = params.toString()
+    router.replace(query ? `${pathname}?${query}` : pathname, { scroll: false })
+  }
+
+  function handleCategoryChange(nextCategory: string) {
+    const nextSubcategory =
+      activeSubcategory &&
+      isValidSubcategoryForCategory(nextCategory, activeSubcategory, category.products)
+        ? activeSubcategory
+        : ""
+
+    setActiveCategory(nextCategory)
+    setActiveSubcategory(nextSubcategory)
+    setPage(1)
+    setVisibleCount(PAGE_SIZE)
+    syncFilterParams(nextCategory, nextSubcategory)
+  }
+
+  function handleSubcategoryChange(nextSubcategory: string) {
+    setActiveSubcategory(nextSubcategory)
+    setPage(1)
+    setVisibleCount(PAGE_SIZE)
+
+    if (productFilter === "category-and-subcategory") {
+      syncFilterParams(activeCategory, nextSubcategory)
+    }
+  }
+
   const filteredProducts = useMemo(() => {
     let items = category.products.filter((product) => {
-      if (activeSubcategory && product.subcategory !== activeSubcategory) return false
+      if (productFilter === "category-and-subcategory") {
+        if (activeCategory && product.categoryRoute !== activeCategory) return false
+        if (activeSubcategory && product.subcategory !== activeSubcategory) return false
+      } else if (productFilter === "category") {
+        if (activeSubcategory && product.categoryRoute !== activeSubcategory) return false
+      } else if (activeSubcategory && product.subcategory !== activeSubcategory) {
+        return false
+      }
       if (activeFilters.includes("under-5000") && product.price > 5000) return false
       if (activeFilters.includes("gold-plated") && !product.tags?.includes("gold-plated")) return false
       return true
@@ -39,7 +171,14 @@ export function CategoryListingPage({ category }: { category: CategoryConfig }) 
     }
 
     return items
-  }, [category.products, activeSubcategory, activeFilters, sortBy])
+  }, [
+    category.products,
+    activeCategory,
+    activeSubcategory,
+    activeFilters,
+    sortBy,
+    productFilter,
+  ])
 
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE))
   const currentPage = Math.min(page, totalPages)
@@ -58,9 +197,18 @@ export function CategoryListingPage({ category }: { category: CategoryConfig }) 
 
   function clearFilters() {
     setActiveFilters([])
+    if (productFilter === "category-and-subcategory") {
+      setActiveCategory("")
+      setActiveSubcategory("")
+      syncFilterParams("", "")
+    }
     setPage(1)
     setVisibleCount(PAGE_SIZE)
   }
+
+  const hasActiveFilters =
+    activeFilters.length > 0 ||
+    (productFilter === "category-and-subcategory" && (activeCategory !== "" || activeSubcategory !== ""))
 
   return (
     <main className="min-h-screen bg-[#FCF8F4]">
@@ -85,47 +233,64 @@ export function CategoryListingPage({ category }: { category: CategoryConfig }) 
             {category.subtitle}
           </p>
 
-          <div className="mt-6 flex flex-wrap gap-3">
-            <button
-              type="button"
-              onClick={() => {
-                setActiveSubcategory("")
-                setPage(1)
-                setVisibleCount(PAGE_SIZE)
-              }}
-              className={cn(
-                "inline-flex items-center gap-2 rounded-full px-5 py-2 font-sans text-[12px] font-medium transition-colors",
-                activeSubcategory === ""
-                  ? "bg-[#785D44] text-white"
-                  : "border border-[#C4B5A5] bg-[#FCF8F4] text-[#6B5344] hover:border-[#785D44]",
+          {productFilter === "subcategory" || productFilter === "category" ? (
+            <div className="mt-6 flex flex-wrap gap-3">
+              {productFilter === "category" ? (
+                CATEGORY_FILTER_OPTIONS.map((option) => {
+                  const isActive = activeSubcategory === option.id
+                  return (
+                    <button
+                      key={option.id || "all"}
+                      type="button"
+                      onClick={() => handleSubcategoryChange(option.id)}
+                      className={cn(
+                        "inline-flex items-center gap-2 rounded-full px-5 py-2 font-sans text-[12px] font-medium transition-colors",
+                        isActive
+                          ? "bg-[#785D44] text-white"
+                          : "border border-[#C4B5A5] bg-[#FCF8F4] text-[#6B5344] hover:border-[#785D44]",
+                      )}
+                    >
+                      {option.label}
+                    </button>
+                  )
+                })
+              ) : (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => handleSubcategoryChange("")}
+                    className={cn(
+                      "inline-flex items-center gap-2 rounded-full px-5 py-2 font-sans text-[12px] font-medium transition-colors",
+                      activeSubcategory === ""
+                        ? "bg-[#785D44] text-white"
+                        : "border border-[#C4B5A5] bg-[#FCF8F4] text-[#6B5344] hover:border-[#785D44]",
+                    )}
+                  >
+                    All Pieces
+                  </button>
+                  {category.subcategories.map((sub, index) => {
+                    const isActive = activeSubcategory === sub.id
+                    return (
+                      <button
+                        key={sub.id}
+                        type="button"
+                        onClick={() => handleSubcategoryChange(sub.id)}
+                        className={cn(
+                          "inline-flex items-center gap-2 rounded-full px-5 py-2 font-sans text-[12px] font-medium transition-colors",
+                          isActive
+                            ? "bg-[#785D44] text-white"
+                            : "border border-[#C4B5A5] bg-[#FCF8F4] text-[#6B5344] hover:border-[#785D44]",
+                        )}
+                      >
+                        {index === 0 && sub.icon ? <span className="text-[11px]">{sub.icon}</span> : null}
+                        {sub.label}
+                      </button>
+                    )
+                  })}
+                </>
               )}
-            >
-              All Pieces
-            </button>
-            {category.subcategories.map((sub, index) => {
-              const isActive = activeSubcategory === sub.id
-              return (
-                <button
-                  key={sub.id}
-                  type="button"
-                  onClick={() => {
-                    setActiveSubcategory(sub.id)
-                    setPage(1)
-                    setVisibleCount(PAGE_SIZE)
-                  }}
-                  className={cn(
-                    "inline-flex items-center gap-2 rounded-full px-5 py-2 font-sans text-[12px] font-medium transition-colors",
-                    isActive
-                      ? "bg-[#785D44] text-white"
-                      : "border border-[#C4B5A5] bg-[#FCF8F4] text-[#6B5344] hover:border-[#785D44]",
-                  )}
-                >
-                  {index === 0 && sub.icon ? <span className="text-[11px]">{sub.icon}</span> : null}
-                  {sub.label}
-                </button>
-              )
-            })}
-          </div>
+            </div>
+          ) : null}
         </div>
       </section>
 
@@ -136,6 +301,36 @@ export function CategoryListingPage({ category }: { category: CategoryConfig }) 
           </p>
 
           <div className="flex flex-wrap items-center gap-3">
+            {productFilter === "category-and-subcategory" && (
+              <>
+                <select
+                  value={activeCategory}
+                  onChange={(event) => handleCategoryChange(event.target.value)}
+                  aria-label="Filter by category"
+                  className="h-10 min-w-[140px] border border-[#D9CFC0] bg-white px-3 font-sans text-[12px] text-[#3D2E24] outline-none"
+                >
+                  {CATEGORY_FILTER_OPTIONS.map((option) => (
+                    <option key={option.id || "all"} value={option.id}>
+                      {option.id ? option.label : "All Categories"}
+                    </option>
+                  ))}
+                </select>
+                <select
+                  value={activeSubcategory}
+                  onChange={(event) => handleSubcategoryChange(event.target.value)}
+                  aria-label="Filter by subcategory"
+                  className="h-10 min-w-[160px] border border-[#D9CFC0] bg-white px-3 font-sans text-[12px] text-[#3D2E24] outline-none"
+                >
+                  <option value="">All Subcategories</option>
+                  {subcategoryOptions.map((sub) => (
+                    <option key={`${sub.categoryRoute ?? activeCategory}-${sub.id}`} value={sub.id}>
+                      {sub.label}
+                    </option>
+                  ))}
+                </select>
+              </>
+            )}
+
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
@@ -176,7 +371,7 @@ export function CategoryListingPage({ category }: { category: CategoryConfig }) 
                 </button>
               )
             })}
-            {activeFilters.length > 0 && (
+            {hasActiveFilters && (
               <button
                 type="button"
                 onClick={clearFilters}

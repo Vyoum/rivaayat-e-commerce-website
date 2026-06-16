@@ -16,7 +16,7 @@ const onlineShoppingLinks = [
   { label: "Custom Food", href: "/custom-laddoos" },
   { label: "The Loom Series", href: "/clothing" },
   { label: "Home & Living", href: "/decor" },
-  { label: "New Arrivals", href: "/jewellery" },
+  { label: "New Arrivals", href: "/collections" },
 ]
 
 const customerPolicyLinks = [

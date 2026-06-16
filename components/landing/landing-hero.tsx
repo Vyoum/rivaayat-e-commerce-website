@@ -97,7 +97,7 @@ export function LandingHero({ slides: initialSlides, copy: initialCopy }: Landin
 
         <div className="mt-7 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-3.5">
           <Link
-            href="/jewellery"
+            href="/collections"
             className="landing-btn inline-flex h-9 min-w-[168px] items-center justify-center bg-[#B85A32] px-6 text-white transition-colors hover:bg-[#A04E2A]"
           >
             Explore Collections

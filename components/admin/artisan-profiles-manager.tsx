@@ -562,7 +562,8 @@ export function ArtisanProfilesManager() {
                 <Link href="/artisans" target="_blank" className="underline">
                   /artisans
                 </Link>
-                .
+                . Match the profile name to each product&apos;s artisan field so the barcode
+                opens the right maker.
               </p>
             </div>
             <button

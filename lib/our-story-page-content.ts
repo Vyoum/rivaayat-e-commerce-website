@@ -251,11 +251,11 @@ export const DEFAULT_OUR_STORY_PAGE_CONTENT: OurStoryPageContent = {
         id: "c5",
         name: "New Arrivals",
         imageUrl: "/landing/categories-bg-full.jpg",
-        href: "/jewellery",
+        href: "/collections",
       },
     ],
     ctaLabel: "View All Collections",
-    ctaHref: "/jewellery",
+    ctaHref: "/collections",
   },
   promise: {
     session: "SESSION 8",
@@ -289,6 +289,6 @@ export const DEFAULT_OUR_STORY_PAGE_CONTENT: OurStoryPageContent = {
     headline: "Every purchase helps preserve India's living heritage.",
     subheadline: "Become part of the story.",
     buttonLabel: "Explore Collections",
-    buttonHref: "/jewellery",
+    buttonHref: "/collections",
   },
 }

@@ -25,7 +25,7 @@ export type ArtisanPageContent = {
   handpickedSubtitle: string
 }
 
-export const MAX_ARTISAN_PROFILES = 10
+export const MAX_ARTISAN_PROFILES = 12
 
 export const DEFAULT_ARTISAN_PAGE_CONTENT: Omit<
   ArtisanPageContent,

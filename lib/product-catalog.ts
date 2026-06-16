@@ -88,6 +88,7 @@ export function storeProductDetailToCatalog(product: {
   slug: string
   price: number
   artisanName: string
+  artisanSlug?: string
   location: string
   imageUrls: string[]
   badge: string | null
@@ -104,6 +105,7 @@ export function storeProductDetailToCatalog(product: {
     slug: product.slug,
     price: product.price,
     artisan: product.artisanName,
+    artisanSlug: product.artisanSlug,
     location: product.location,
     image: product.imageUrls[0] ?? "/placeholder.svg",
     badge: product.badge as CatalogProduct["badge"],

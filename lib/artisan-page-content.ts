@@ -12,6 +12,8 @@ import {
   readArtisanPageContentFromRemote,
   writeArtisanPageContentToRemote,
 } from "@/lib/artisan-page-content-remote"
+import { resolveArtisanSlugForName } from "@/lib/artisan-routes"
+import type { CatalogProduct } from "@/lib/category-catalog"
 import { slugify } from "@/lib/product-utils"
 
 export type { ArtisanPageContent, ArtisanCredential } from "@/lib/artisan-page-content-shared"
@@ -154,6 +156,17 @@ export async function getRandomPublishedArtisanProfile(
   }
 
   return pool[Math.floor(Math.random() * pool.length)]
+}
+
+export async function attachArtisanSlugsToCatalogProducts(
+  products: CatalogProduct[],
+): Promise<CatalogProduct[]> {
+  const published = await getPublishedArtisanProfiles()
+
+  return products.map((product) => ({
+    ...product,
+    artisanSlug: resolveArtisanSlugForName(product.artisan, published) ?? undefined,
+  }))
 }
 
 /** @deprecated Use getArtisanProfileBySlug or getAllArtisanProfiles */

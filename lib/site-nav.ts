@@ -5,7 +5,7 @@ export type SiteNavItem = {
 
 export const SITE_NAV_ITEMS: SiteNavItem[] = [
   { label: "Our Story", href: "/outerboxdesign" },
-  { label: "Collections", href: "/jewellery" },
+  { label: "Collections", href: "/collections" },
   { label: "Custom Orders", href: "/custom-orders" },
   { label: "Artisans", href: "/artisans" },
   { label: "Contact", href: "/contact" },
@@ -14,8 +14,9 @@ export const SITE_NAV_ITEMS: SiteNavItem[] = [
 export function isNavItemActive(pathname: string, href: string) {
   if (href === "#") return false
   if (href === "/") return pathname === "/"
-  if (href === "/jewellery") {
+  if (href === "/collections") {
     return (
+      pathname === "/collections" ||
       pathname === "/jewellery" ||
       pathname === "/clothing" ||
       pathname === "/decor" ||

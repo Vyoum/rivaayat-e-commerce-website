@@ -2,6 +2,7 @@
 
 import { Sparkles } from "lucide-react"
 
+import { MAX_ARTISAN_PROFILES } from "@/lib/artisan-page-content-shared"
 import { AdminSidebar } from "./admin-sidebar"
 import { ArtisanProfilesManager } from "./artisan-profiles-manager"
 import { CommunitySubnav } from "./community-subnav"
@@ -26,8 +27,8 @@ export function ArtisansPage() {
                 Artisans
               </h1>
               <p className="text-[12px] text-[#9A8070]">
-                Manage up to 10 public artisan profiles. Published artisans shuffle on the
-                storefront when customers visit Artisans.
+                Manage up to {MAX_ARTISAN_PROFILES} public artisan profiles. Published artisans
+                shuffle on the storefront when customers visit Artisans.
               </p>
             </div>
           </div>

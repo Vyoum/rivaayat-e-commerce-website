@@ -4,6 +4,7 @@ export type CatalogProduct = {
   slug: string
   price: number
   artisan: string
+  artisanSlug?: string
   location: string
   image: string
   badge?: "HANDCRAFTED" | "CUSTOMISABLE"
@@ -375,6 +376,26 @@ export const categoryCatalog: Record<string, CategoryConfig> = {
 
 export function getCategoryConfig(slug: string) {
   return categoryCatalog[slug] ?? null
+}
+
+export type CatalogSubcategoryOption = {
+  id: string
+  label: string
+  icon?: string
+  categoryRoute?: string
+}
+
+export function getCatalogSubcategoryOptions(categoryRoute = ""): CatalogSubcategoryOption[] {
+  if (categoryRoute) {
+    return categoryCatalog[categoryRoute]?.subcategories ?? []
+  }
+
+  return Object.entries(categoryCatalog).flatMap(([route, config]) =>
+    config.subcategories.map((subcategory) => ({
+      ...subcategory,
+      categoryRoute: route,
+    })),
+  )
 }
 
 export function getProductBySlug(slug: string) {
