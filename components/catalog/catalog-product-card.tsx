@@ -11,11 +11,8 @@ import { useCart } from "@/components/providers/cart-provider"
 import { useWishlist } from "@/components/providers/wishlist-provider"
 import { getArtisanProfileHref } from "@/lib/artisan-routes"
 import type { CatalogProduct } from "@/lib/category-catalog"
+import { formatProductPrice } from "@/lib/product-utils"
 import { cn } from "@/lib/utils"
-
-function formatCardPrice(price: number) {
-  return price.toLocaleString("en-IN")
-}
 
 function getAssociationLines(product: CatalogProduct) {
   if (product.association) {
@@ -106,7 +103,7 @@ export function CatalogProductCard({ product }: CatalogProductCardProps) {
             className="mb-[5px] h-0 min-w-0 flex-1 border-t border-solid border-black"
           />
           <span className="shrink-0 pl-1.5 font-serif text-[12px] font-light leading-none tracking-[0.03em] text-black sm:pl-2 sm:text-[15px]">
-            {formatCardPrice(product.price)}
+            {formatProductPrice(product.price)}
           </span>
         </div>
 
