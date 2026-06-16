@@ -2,13 +2,28 @@ import type { Metadata } from "next"
 
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
 
-export const SITE_URL =
-  process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "") || "https://houseofindika.com"
+const PRODUCTION_SITE_URL = "https://houseofindika.com"
+
+function resolveSiteUrl() {
+  const configured = process.env.NEXT_PUBLIC_APP_URL?.replace(/\/$/, "")
+
+  if (configured && !/localhost|127\.0\.0\.1/i.test(configured)) {
+    return configured
+  }
+
+  if (process.env.VERCEL_ENV === "production" || process.env.NODE_ENV === "production") {
+    return PRODUCTION_SITE_URL
+  }
+
+  return configured || PRODUCTION_SITE_URL
+}
+
+export const SITE_URL = resolveSiteUrl()
 
 export const SITE_TITLE = `${HOUSE_OF_INDIKA} — Handcrafted Treasures from Indian Artisans`
 
 export const SITE_DESCRIPTION =
-  "Shop handcrafted jewellery, textiles, décor, and kitchen pieces from rural artisans across India. Ethically sourced, made with care, delivered to your door."
+  "Timeless treasures, thoughtfully made and mindfully chosen to bring meaning into your everyday. Shop handcrafted jewellery, textiles, décor, and food from rural artisans across India."
 
 const OG_IMAGE_PATH = "/indian-artisan-hands-creating-traditional-craft-wi.jpg"
 

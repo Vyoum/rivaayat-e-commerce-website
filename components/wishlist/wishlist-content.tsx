@@ -356,34 +356,44 @@ export function WishlistContent() {
             <div
               key={item.id}
               className={cn(
-                "group rounded-lg border border-[#E8E0D4] bg-white overflow-hidden transition-all hover:shadow-lg hover:border-[#D9CFC0]",
+                "group overflow-hidden rounded-lg border border-[#E8E0D4] bg-white transition-all hover:border-[#D9CFC0] hover:shadow-lg",
                 !item.inStock && "opacity-75",
+                viewMode === "list" ? "flex items-stretch" : undefined,
               )}
             >
               {/* Image Container */}
-              <div className="relative aspect-[4/5] overflow-hidden bg-[#EDE8DC]">
+              <div
+                className={cn(
+                  "relative shrink-0 overflow-hidden bg-[#EDE8DC]",
+                  viewMode === "list"
+                    ? "aspect-square w-[88px] sm:w-[104px]"
+                    : "relative aspect-[4/5] w-full",
+                )}
+              >
                 <Image
                   src={item.image}
                   alt={item.name}
                   fill
                   className="object-cover transition-transform duration-300 group-hover:scale-105"
-                  sizes={viewMode === "grid" ? "(max-width: 768px) 100vw, 33vw" : "120px"}
+                  sizes={viewMode === "grid" ? "(max-width: 768px) 100vw, 33vw" : "104px"}
                 />
 
                 {/* Badge */}
-                <div className="absolute top-4 right-4 space-y-2">
-                  <button
-                    onClick={() => removeItem(item.id)}
-                    className="flex size-10 items-center justify-center rounded-full bg-white/90 backdrop-blur-sm text-[#846246] transition-colors hover:bg-white hover:text-[#5C4332]"
-                    aria-label="Remove from wishlist"
-                  >
-                    <Heart className="size-5 fill-current" />
-                  </button>
-                </div>
+                {viewMode === "grid" ? (
+                  <div className="absolute top-4 right-4 space-y-2">
+                    <button
+                      onClick={() => removeItem(item.id)}
+                      className="flex size-10 items-center justify-center rounded-full bg-white/90 text-[#846246] backdrop-blur-sm transition-colors hover:bg-white hover:text-[#5C4332]"
+                      aria-label="Remove from wishlist"
+                    >
+                      <Heart className="size-5 fill-current" />
+                    </button>
+                  </div>
+                ) : null}
 
                 {!item.inStock && (
-                  <div className="absolute inset-0 bg-black/20 flex items-center justify-center">
-                    <span className="font-sans text-[12px] font-semibold text-white uppercase tracking-wider">
+                  <div className="absolute inset-0 flex items-center justify-center bg-black/20">
+                    <span className="font-sans text-[9px] font-semibold uppercase tracking-wider text-white sm:text-[10px]">
                       Out of Stock
                     </span>
                   </div>
@@ -391,11 +401,13 @@ export function WishlistContent() {
               </div>
 
               {/* Content */}
-              <div className={cn(
-                "p-5",
-                viewMode === "list" && "flex-1 flex items-center justify-between"
-              )}>
-                <div className="space-y-3">
+              <div
+                className={cn(
+                  "min-w-0 flex-1 p-4 sm:p-5",
+                  viewMode === "list" && "flex items-center justify-between gap-4",
+                )}
+              >
+                <div className={cn("space-y-3", viewMode === "list" && "min-w-0 flex-1 space-y-2")}>
                   <div className="flex flex-wrap items-center gap-2">
                     <p className="font-sans text-[11px] font-medium uppercase tracking-wider text-[#9A8070]">
                       {item.category}
@@ -405,7 +417,10 @@ export function WishlistContent() {
                   </div>
                   <Link
                     href={`/products/${item.slug}`}
-                    className="block font-serif text-[16px] font-normal text-[#3D2E24] hover:text-[#846246] transition-colors"
+                    className={cn(
+                      "block font-serif font-normal text-[#3D2E24] transition-colors hover:text-[#846246]",
+                      viewMode === "list" ? "text-[15px] leading-snug sm:text-[16px]" : "text-[16px]",
+                    )}
                   >
                     {item.name}
                   </Link>
@@ -417,18 +432,20 @@ export function WishlistContent() {
                       Added {item.addedDate}
                     </p>
                   </div>
-                  <div className="flex items-center justify-between pt-2">
-                    <p className="font-serif text-[20px] text-[#3D2E24]">
+                  <div className={cn("flex items-center justify-between", viewMode === "list" ? "pt-0" : "pt-2")}>
+                    <p className="font-serif text-[18px] text-[#3D2E24] sm:text-[20px]">
                       ₹{item.price.toLocaleString()}
                     </p>
                   </div>
                 </div>
 
                 {/* Actions */}
-                <div className={cn(
-                  "flex gap-2 mt-4",
-                  viewMode === "list" && "mt-0 ml-4 flex-col"
-                )}>
+                <div
+                  className={cn(
+                    "mt-4 flex gap-2",
+                    viewMode === "list" && "mt-0 shrink-0 flex-col sm:flex-row",
+                  )}
+                >
                   <button
                     disabled={!item.inStock}
                     className={cn(
