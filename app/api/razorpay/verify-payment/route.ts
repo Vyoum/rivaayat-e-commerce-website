@@ -2,6 +2,9 @@ import { NextRequest, NextResponse } from "next/server"
 import crypto from "crypto"
 
 import { validatePromoCode, incrementPromoUsage } from "@/lib/discount-code-server"
+import type { DeliveryAddress } from "@/lib/delivery-address"
+import { isDeliveryAddressComplete } from "@/lib/delivery-address"
+import { fulfillOrderWithDelhivery } from "@/lib/delhivery-fulfillment"
 import { createOrderFromCheckout } from "@/lib/order-server"
 import { buildOrderFromCheckout, type StoredCheckoutItem } from "@/lib/orders-storage"
 import { getPrisma } from "@/lib/prisma"
@@ -38,6 +41,7 @@ export async function POST(req: NextRequest) {
       total,
       giftMessage,
       promoCode,
+      deliveryAddress,
     } = body as {
       razorpay_order_id: string
       razorpay_payment_id: string
@@ -48,6 +52,7 @@ export async function POST(req: NextRequest) {
       total?: number
       giftMessage?: string | null
       promoCode?: string | null
+      deliveryAddress?: DeliveryAddress
     }
 
     if (!razorpay_order_id || !razorpay_payment_id || !razorpay_signature) {
@@ -109,6 +114,8 @@ export async function POST(req: NextRequest) {
       ? await prisma.order.findFirst({ where: { razorpayOrderId: razorpay_order_id } })
       : null
 
+    let dbOrderId: string | null = existingOrder?.id ?? null
+
     const supabase = createSupabaseApiClient(req, response)
     if (supabase && checkoutItems.length > 0) {
       const {
@@ -126,11 +133,39 @@ export async function POST(req: NextRequest) {
           giftMessage: normalizedGiftMessage,
           promoCode: appliedPromoCode,
           discountAmount,
+          deliveryAddress:
+            deliveryAddress && isDeliveryAddressComplete(deliveryAddress)
+              ? deliveryAddress
+              : null,
         })
         if (dbOrder) {
           savedOrder = dbOrder
+          dbOrderId = dbOrder.id
         }
       }
+    }
+
+    if (
+      dbOrderId &&
+      deliveryAddress &&
+      isDeliveryAddressComplete(deliveryAddress) &&
+      !existingOrder?.delhiveryWaybill
+    ) {
+      const productsDesc =
+        checkoutItems.length > 0
+          ? checkoutItems
+              .map((item) => `${item.name}${item.quantity > 1 ? ` x${item.quantity}` : ""}`)
+              .join(", ")
+          : "House of Indika order"
+
+      await fulfillOrderWithDelhivery({
+        orderId: dbOrderId,
+        orderReference: razorpay_order_id,
+        delivery: deliveryAddress,
+        productsDesc,
+        totalAmount: orderTotal,
+        kind: "store",
+      })
     }
 
     if (!existingOrder && appliedPromoCode) {

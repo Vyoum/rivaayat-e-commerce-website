@@ -25,6 +25,7 @@ import {
 } from "@/lib/checkout-session"
 import {
   INITIAL_DELIVERY_ADDRESS,
+  isDeliveryAddressComplete,
   type DeliveryAddress,
 } from "@/lib/delivery-address"
 import { openRazorpayCheckout } from "@/lib/razorpay-client"
@@ -85,6 +86,12 @@ export function CheckoutContent() {
     event.preventDefault()
     if (items.length === 0) return
 
+    if (!isDeliveryAddressComplete(form)) {
+      setPaymentState("error")
+      setPaymentMessage("Please complete all delivery details before paying.")
+      return
+    }
+
     setPaymentState("loading")
     setPaymentMessage("")
 
@@ -97,6 +104,7 @@ export function CheckoutContent() {
       giftMessage: session.giftMessage,
       promoCode: session.appliedPromo?.code ?? null,
       userId,
+      deliveryAddress: form,
       prefill: {
         name: form.fullName.trim(),
         email: form.email.trim(),

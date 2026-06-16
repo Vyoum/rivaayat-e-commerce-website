@@ -3,8 +3,9 @@ import type { User } from "@supabase/supabase-js"
 import { getPrisma } from "@/lib/prisma"
 import { formatOrderStatus, shortId } from "@/lib/profile-utils"
 import type { ProfileOrder } from "@/types/profile"
-import type { StoredCheckoutItem } from "@/lib/orders-storage"
-import { checkoutItemsToOrderItems } from "@/lib/orders-storage"
+import type { DeliveryAddress } from "@/lib/delivery-address"
+import { serializeDeliveryAddress } from "@/lib/delivery-address"
+import { checkoutItemsToOrderItems, type StoredCheckoutItem } from "@/lib/orders-storage"
 
 type CreateOrderInput = {
   razorpayOrderId: string
@@ -16,6 +17,7 @@ type CreateOrderInput = {
   giftMessage?: string | null
   promoCode?: string | null
   discountAmount?: number
+  deliveryAddress?: DeliveryAddress | null
 }
 
 async function getOrCreateDbUser(authUser: User) {
@@ -130,6 +132,9 @@ export async function createOrderFromCheckout(
       giftMessage: input.giftMessage?.trim() || null,
       promoCode: input.promoCode?.trim().toUpperCase() || null,
       discountAmount: input.discountAmount ?? 0,
+      shippingAddress: input.deliveryAddress
+        ? serializeDeliveryAddress(input.deliveryAddress)
+        : null,
       items: {
         create: orderItems.map((item) => ({
           productName: item.productName,

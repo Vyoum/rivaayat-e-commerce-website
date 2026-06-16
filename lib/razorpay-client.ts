@@ -120,6 +120,16 @@ export type RazorpayCheckoutInput = {
   giftMessage: string | null
   promoCode: string | null
   userId: string | null
+  deliveryAddress?: {
+    fullName: string
+    email: string
+    whatsapp: string
+    addressLine1: string
+    addressLine2: string
+    city: string
+    pinCode: string
+    state: string
+  }
   prefill?: {
     name?: string
     email?: string
@@ -151,6 +161,7 @@ export async function openRazorpayCheckout(input: RazorpayCheckoutInput) {
           total: input.total,
           giftMessage: input.giftMessage,
           promoCode: input.promoCode,
+          deliveryAddress: input.deliveryAddress,
         }),
       })
       const result = await verify.json()

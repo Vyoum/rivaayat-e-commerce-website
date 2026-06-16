@@ -1,4 +1,3 @@
-import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { AdminSidebar } from "./admin-sidebar"
 import { AdminTopbar } from "./admin-topbar"
 import { OurStoryAdminEditors } from "./our-story-admin-editors"
@@ -15,7 +14,7 @@ export function OurStoryAdminPage() {
           <div>
             <h1 className="font-serif text-[26px] font-semibold text-[#2D1E17]">Our Story</h1>
             <p className="mt-1 text-[13px] text-[#9A8070]">
-              Edit the Our Story and Artisans pages on {HOUSE_OF_INDIKA}.
+              Edit the Our Story page and artisan profiles — photo, name, biography, and more.
             </p>
           </div>
 

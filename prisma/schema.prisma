@@ -120,6 +120,8 @@ model Order {
   artisanTip        Decimal       @default(0) @db.Decimal(10, 2) @map("artisan_tip")
   total             Decimal       @db.Decimal(10, 2)
   shippingAddress   String?       @map("shipping_address")
+  delhiveryWaybill  String?       @map("delhivery_waybill")
+  delhiveryStatus   String?       @map("delhivery_status")
   giftMessage       String?       @map("gift_message")
   promoCode         String?       @map("promo_code")
   discountAmount    Decimal       @default(0) @db.Decimal(10, 2) @map("discount_amount")
@@ -165,6 +167,8 @@ model CustomOrder {
   artisanId         String?     @map("artisan_id")
   description       String
   status            OrderStatus @default(pending)
+  delhiveryWaybill  String?     @map("delhivery_waybill")
+  delhiveryStatus   String?     @map("delhivery_status")
   estimatedDelivery String?     @map("estimated_delivery")
   createdAt         DateTime    @default(now()) @map("created_at")
   updatedAt         DateTime    @updatedAt @map("updated_at")

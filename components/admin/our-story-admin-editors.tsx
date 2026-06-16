@@ -5,7 +5,11 @@ import Image from "next/image"
 import Link from "next/link"
 import { ExternalLink, Loader2, Save, Upload } from "lucide-react"
 
+import { ArtisanProfilesManager } from "@/components/admin/artisan-profiles-manager"
 import type { OurStoryContent } from "@/lib/our-story-content-shared"
+import { cn } from "@/lib/utils"
+
+type AdminStoryTab = "story" | "artisans"
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
   return (
@@ -445,20 +449,52 @@ function OurStoryEditor() {
 }
 
 export function OurStoryAdminEditors() {
+  const [tab, setTab] = useState<AdminStoryTab>("story")
+
   return (
     <div className="space-y-5">
-      <div className="rounded-xl border border-[#EDE5D8] bg-[#FAF7F2]/70 px-4 py-3 text-[13px] text-[#6B5344]">
-        Artisan profiles are managed in{" "}
-        <Link href="/admin/community/artisans" className="font-medium text-[#2B1B12] underline">
-          Community → Artisans
-        </Link>
-        . Up to 10 published profiles shuffle when customers visit{" "}
-        <Link href="/artisans" target="_blank" className="underline">
-          /artisans
-        </Link>
-        .
+      <div className="flex flex-wrap items-center gap-1 border-b border-[#EDE5D8]">
+        <button
+          type="button"
+          onClick={() => setTab("story")}
+          className={cn(
+            "px-4 py-2.5 text-[13px] font-medium transition-colors",
+            tab === "story"
+              ? "border-b-2 border-[#2B1B12] text-[#2B1B12]"
+              : "text-[#9A8070] hover:text-[#2B1B12]",
+          )}
+        >
+          Our Story Page
+        </button>
+        <button
+          type="button"
+          onClick={() => setTab("artisans")}
+          className={cn(
+            "px-4 py-2.5 text-[13px] font-medium transition-colors",
+            tab === "artisans"
+              ? "border-b-2 border-[#2B1B12] text-[#2B1B12]"
+              : "text-[#9A8070] hover:text-[#2B1B12]",
+          )}
+        >
+          Artisans Page
+        </button>
       </div>
-      <OurStoryEditor />
+
+      {tab === "story" ? (
+        <OurStoryEditor />
+      ) : (
+        <div className="space-y-3">
+          <p className="text-[13px] text-[#9A8070]">
+            Edit each artisan&apos;s photo, name, biography, credentials, and video. Published
+            profiles appear when customers visit{" "}
+            <Link href="/artisans" target="_blank" className="text-[#6B5344] underline">
+              /artisans
+            </Link>
+            .
+          </p>
+          <ArtisanProfilesManager />
+        </div>
+      )}
     </div>
   )
 }

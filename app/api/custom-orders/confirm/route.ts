@@ -2,6 +2,8 @@ import { NextResponse, type NextRequest } from "next/server"
 import crypto from "crypto"
 
 import { buildCustomOrderDescription } from "@/lib/custom-order-description"
+import { fulfillOrderWithDelhivery } from "@/lib/delhivery-fulfillment"
+import type { DeliveryAddress } from "@/lib/delivery-address"
 import { getPrisma } from "@/lib/prisma"
 import { getRazorpayKeySecret } from "@/lib/razorpay"
 import { createSupabaseApiClient } from "@/lib/supabase/server"
@@ -139,6 +141,26 @@ export async function POST(request: NextRequest) {
         status: "confirmed",
         estimatedDelivery: "5-7 days",
       },
+    })
+
+    const delivery: DeliveryAddress = {
+      fullName: body.fullName.trim(),
+      email: body.email.trim(),
+      whatsapp: body.whatsapp.trim(),
+      addressLine1: body.addressLine1.trim(),
+      addressLine2: body.addressLine2?.trim() ?? "",
+      city: body.city.trim(),
+      pinCode: body.pinCode.trim(),
+      state: body.state.trim(),
+    }
+
+    await fulfillOrderWithDelhivery({
+      orderId: order.id,
+      orderReference: body.razorpay_order_id,
+      delivery,
+      productsDesc: `${body.categoryLabel} custom order (${body.weight}, ${body.quantity} box)`,
+      totalAmount: body.total,
+      kind: "custom",
     })
 
     const jsonResponse = NextResponse.json({
