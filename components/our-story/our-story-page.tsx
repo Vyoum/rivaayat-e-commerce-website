@@ -78,9 +78,9 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
     <main className="story-page-root min-h-screen overflow-x-hidden text-[#2D1A12]">
       <SiteHeader className="!border-[#D8CFC4]/60 !bg-[#ede0d0]/90 backdrop-blur-md" />
 
-      {/* SESSION 2 + 3 — Why House of Indika | Meet The Makers (side by side) */}
+      {/* SESSION 2 — Why House of Indika */}
       <section className="story-page-section story-page-section--intro !pt-10 lg:!pt-14">
-        <div className="story-page-inner story-pair-row story-pair-row--intro">
+        <div className="story-page-inner">
           <div className="story-panel story-panel--why">
             <div className="grid items-start gap-5 sm:grid-cols-2 sm:gap-6 lg:gap-8">
               <div className="min-w-0">
@@ -106,7 +106,12 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
               </div>
             </div>
           </div>
+        </div>
+      </section>
 
+      {/* SESSION 3 — Meet The Makers */}
+      <section className="story-page-section">
+        <div className="story-page-inner">
           <div className="story-panel story-panel--makers">
             <SessionHeading title={content.makers.title} />
             <div className="mt-6 grid grid-cols-1 gap-4 min-[480px]:grid-cols-3 min-[480px]:gap-4 lg:mt-8 lg:gap-5">
@@ -178,9 +183,9 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
         </div>
       </section>
 
-      {/* SESSION 5 + 6 — Impact | Heritage side by side */}
+      {/* SESSION 5 — Impact */}
       <section className="story-page-section">
-        <div className="story-page-inner story-pair-row story-pair-row--weighted">
+        <div className="story-page-inner">
           <div className="story-panel">
             <SessionHeading title={content.impact.title} />
             <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4">
@@ -203,12 +208,17 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
               })}
             </div>
           </div>
+        </div>
+      </section>
 
+      {/* SESSION 6 — Heritage */}
+      <section className="story-page-section">
+        <div className="story-page-inner">
           <div className="story-panel min-w-0">
             <SessionHeading title={content.heritage.title} />
-            <div className="mt-8 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:grid md:grid-cols-2 md:gap-4 md:overflow-visible xl:flex xl:gap-3 [&::-webkit-scrollbar]:hidden">
+            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 md:gap-4">
               {content.heritage.regions.map((region) => (
-                <article key={region.id} className="w-[140px] shrink-0 md:w-auto xl:w-[calc(20%-0.6rem)]">
+                <article key={region.id} className="min-w-0">
                   <div className="relative aspect-[4/3] overflow-hidden bg-[#EDE8DC]">
                     <Image
                       src={region.imageUrl}
@@ -229,17 +239,17 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
         </div>
       </section>
 
-      {/* SESSION 7 + 8 — Collections | Promise side by side */}
+      {/* SESSION 7 — Collections */}
       <section className="story-page-section">
-        <div className="story-page-inner story-pair-row">
+        <div className="story-page-inner">
           <div className="story-panel min-w-0">
             <SessionHeading title={content.collections.title} />
-            <div className="mt-8 flex gap-3 overflow-x-auto pb-1 [-ms-overflow-style:none] [scrollbar-width:none] md:grid md:grid-cols-3 md:gap-3 md:overflow-visible lg:grid-cols-2 xl:flex xl:gap-2 [&::-webkit-scrollbar]:hidden">
+            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 md:gap-4">
               {content.collections.items.map((item) => (
                 <Link
                   key={item.id}
                   href={item.href}
-                  className="group w-[100px] shrink-0 text-center md:w-auto xl:w-[calc(20%-0.4rem)]"
+                  className="group min-w-0 text-center"
                 >
                   <div className="relative aspect-square overflow-hidden bg-[#EDE8DC]">
                     <Image
@@ -264,7 +274,12 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
               />
             </div>
           </div>
+        </div>
+      </section>
 
+      {/* SESSION 8 — Promise */}
+      <section className="story-page-section">
+        <div className="story-page-inner">
           <div className="story-panel min-w-0">
             <SessionHeading title={content.promise.title} />
             <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4">
