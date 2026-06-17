@@ -30,7 +30,7 @@ export function clearCheckoutSession() {
 }
 
 export const DEFAULT_CHECKOUT_SESSION: CheckoutSession = {
-  selectedTip: 20,
+  selectedTip: 0,
   appliedPromo: null,
   giftMessage: null,
 }

@@ -133,7 +133,7 @@ function CartItemCard({
 
 export function CartContent() {
   const { items, updateQuantity, removeItem } = useCart()
-  const [selectedTip, setSelectedTip] = useState<number>(20)
+  const [selectedTip, setSelectedTip] = useState<number>(0)
   const [promoCode, setPromoCode] = useState("")
   const [appliedPromo, setAppliedPromo] = useState<AppliedPromo | null>(null)
   const [promoError, setPromoError] = useState<string | null>(null)
@@ -185,6 +185,10 @@ export function CartContent() {
       setPromoLoading(false)
     }
   }, [promoCode, subtotal])
+
+  function handleTipSelect(amount: number) {
+    setSelectedTip((current) => (current === amount ? 0 : amount))
+  }
 
   function handleProceedToCheckout() {
     saveCheckoutSession({
@@ -301,7 +305,7 @@ export function CartContent() {
                     Add a Little Extra Love
                   </h2>
                   <p className="mt-1.5 font-sans text-[12px] leading-relaxed text-[#9A8070]">
-                    Your tip goes directly to the artisan community supporting their craft.
+                    Optional — your tip goes directly to the artisan community supporting their craft.
                   </p>
                 </div>
               </div>
@@ -310,7 +314,8 @@ export function CartContent() {
                   <button
                     key={amount}
                     type="button"
-                    onClick={() => setSelectedTip(amount)}
+                    onClick={() => handleTipSelect(amount)}
+                    aria-pressed={selectedTip === amount}
                     className={cn(
                       "rounded-lg border px-2 py-2.5 font-sans text-[12px] transition-all",
                       selectedTip === amount
@@ -338,7 +343,7 @@ export function CartContent() {
               <div className="flex items-center justify-between font-sans text-[13px]">
                 <span className="text-[#6B5344]">Artisan Tip</span>
                 <span className="text-[#2B1B12]">
-                  {formatCurrency(selectedTip)}
+                  {selectedTip > 0 ? formatCurrency(selectedTip) : "None"}
                 </span>
               </div>
               <div className="flex items-center justify-between font-sans text-[13px]">
