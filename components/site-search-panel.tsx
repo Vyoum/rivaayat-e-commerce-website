@@ -1,10 +1,13 @@
 "use client"
 
 import { useEffect, useId, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import { useRouter } from "next/navigation"
 import { Search, X } from "lucide-react"
 
 import { cn } from "@/lib/utils"
+
+export const SITE_HEADER_ID = "site-header"
 
 type SiteSearchPanelProps = {
   open: boolean
@@ -16,9 +19,21 @@ export function SiteSearchPanel({ open, onClose }: SiteSearchPanelProps) {
   const inputId = useId()
   const inputRef = useRef<HTMLInputElement>(null)
   const [query, setQuery] = useState("")
+  const [mounted, setMounted] = useState(false)
+  const [headerOffset, setHeaderOffset] = useState(64)
 
   useEffect(() => {
-    if (!open) return
+    setMounted(true)
+  }, [])
+
+  useEffect(() => {
+    if (!open) {
+      setQuery("")
+      return
+    }
+
+    const header = document.getElementById(SITE_HEADER_ID)
+    setHeaderOffset(header?.getBoundingClientRect().height ?? 64)
 
     const previousOverflow = document.body.style.overflow
     document.body.style.overflow = "hidden"
@@ -28,12 +43,19 @@ export function SiteSearchPanel({ open, onClose }: SiteSearchPanelProps) {
       if (event.key === "Escape") onClose()
     }
 
+    function handleResize() {
+      const nextHeader = document.getElementById(SITE_HEADER_ID)
+      setHeaderOffset(nextHeader?.getBoundingClientRect().height ?? 64)
+    }
+
     window.addEventListener("keydown", handleKeyDown)
+    window.addEventListener("resize", handleResize)
 
     return () => {
       window.clearTimeout(timer)
       document.body.style.overflow = previousOverflow
       window.removeEventListener("keydown", handleKeyDown)
+      window.removeEventListener("resize", handleResize)
     }
   }, [open, onClose])
 
@@ -47,10 +69,12 @@ export function SiteSearchPanel({ open, onClose }: SiteSearchPanelProps) {
     router.push(`/collections?q=${encodeURIComponent(trimmed)}`)
   }
 
-  return (
+  if (!mounted) return null
+
+  return createPortal(
     <div
       className={cn(
-        "fixed inset-0 z-[70]",
+        "fixed inset-0 z-[80]",
         open ? "pointer-events-auto" : "pointer-events-none",
       )}
       aria-hidden={!open}
@@ -67,9 +91,10 @@ export function SiteSearchPanel({ open, onClose }: SiteSearchPanelProps) {
 
       <div
         className={cn(
-          "absolute inset-x-0 top-0 border-b border-[#E8E0D4] bg-[#FCF8F4] px-5 py-5 shadow-lg transition-transform duration-300 sm:px-8",
+          "absolute inset-x-0 border-b border-[#E8E0D4] bg-[#FCF8F4] px-5 py-4 shadow-lg transition-transform duration-300 sm:px-8",
           open ? "translate-y-0" : "-translate-y-full",
         )}
+        style={{ top: headerOffset }}
       >
         <form onSubmit={handleSubmit} className="mx-auto flex max-w-[720px] items-center gap-3">
           <label htmlFor={inputId} className="sr-only">
@@ -103,6 +128,7 @@ export function SiteSearchPanel({ open, onClose }: SiteSearchPanelProps) {
           </button>
         </form>
       </div>
-    </div>
+    </div>,
+    document.body,
   )
 }

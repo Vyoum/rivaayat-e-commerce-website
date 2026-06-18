@@ -76,7 +76,7 @@ type OurStoryPageProps = {
 export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurStoryPageProps) {
   return (
     <main className="story-page-root min-h-screen overflow-x-hidden text-[#2D1A12]">
-      <SiteHeader className="!border-[#D8CFC4]/60 !bg-[#ede0d0]/90 backdrop-blur-md" />
+      <SiteHeader />
 
       {/* SESSION 2 — Why House of Indika */}
       <section className="story-page-section story-page-section--intro !pt-10 lg:!pt-14">

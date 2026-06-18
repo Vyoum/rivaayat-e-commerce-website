@@ -10,7 +10,7 @@ import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { isNavItemActive, SITE_NAV_ITEMS } from "@/lib/site-nav"
 import { AccountIconLink } from "@/components/account/account-icon-link"
 import { CartIconLink } from "@/components/cart/cart-icon-link"
-import { SiteSearchPanel } from "@/components/site-search-panel"
+import { SiteSearchPanel, SITE_HEADER_ID } from "@/components/site-search-panel"
 import { useWishlist } from "@/components/providers/wishlist-provider"
 import { WishlistIconLink } from "@/components/wishlist/wishlist-icon-link"
 
@@ -55,7 +55,7 @@ export function SiteHeader({ variant = "solid", className }: SiteHeaderProps) {
 
   const brandClass = cn(
     "landing-brand text-[17px] transition-colors duration-300 sm:text-[18px] lg:text-[21px]",
-    onHero ? "text-[#B5C4CE]" : isHero ? "text-[#8A9DAA]" : "text-[#8A9DAA]",
+    onHero ? "text-[#B5C4CE]" : "text-[#8A9DAA]",
   )
 
   const navLinkClass = (active: boolean, mobile = false) =>
@@ -89,14 +89,15 @@ export function SiteHeader({ variant = "solid", className }: SiteHeaderProps) {
   return (
     <>
       <header
+        id={SITE_HEADER_ID}
         className={cn(
           "left-0 right-0 z-50 transition-all duration-500",
           isHero
             ? cn(
                 "fixed top-0",
                 isScrolled
-                  ? "border-b border-[#3D2E24]/10 bg-[#F5EBE0]/60 py-3 shadow-lg backdrop-blur-xl"
-                  : "bg-white/10 py-3 backdrop-blur-md sm:py-4",
+                  ? "border-b border-[#E8E0D4] bg-[#FCF8F4] py-3 shadow-sm sm:py-4"
+                  : "border-b border-transparent bg-white/10 py-3 backdrop-blur-md sm:py-4",
               )
             : "relative border-b border-[#E8E0D4] bg-[#FCF8F4] py-3 sm:py-4",
           className,
@@ -122,7 +123,15 @@ export function SiteHeader({ variant = "solid", className }: SiteHeaderProps) {
               {HOUSE_OF_INDIKA}
             </Link>
 
-            <div className="flex items-center gap-3">
+            <div className="flex items-center gap-2 sm:gap-3">
+              <button
+                type="button"
+                aria-label="Search"
+                onClick={() => setSearchOpen(true)}
+                className={cn("inline-flex size-10 items-center justify-center", iconClass)}
+              >
+                <Search className="size-[17px] stroke-[1.5]" />
+              </button>
               <AccountIconLink className={iconClass} iconClassName="size-[17px] stroke-[1.5]" />
               <CartIconLink
                 className={iconClass}
