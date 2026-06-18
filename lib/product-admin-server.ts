@@ -267,7 +267,16 @@ export async function deleteAdminProduct(id: string) {
   const prisma = getPrisma()
   if (!prisma) throw new Error("Database unavailable")
 
-  await prisma.product.delete({ where: { id } })
+  const existing = await prisma.product.findUnique({ where: { id }, select: { id: true, name: true } })
+  if (!existing) throw new Error("Product not found")
+
+  await prisma.$transaction([
+    prisma.orderItem.updateMany({
+      where: { productId: id },
+      data: { productId: null },
+    }),
+    prisma.product.delete({ where: { id } }),
+  ])
 }
 
 export { ADMIN_CATEGORY_COLORS }

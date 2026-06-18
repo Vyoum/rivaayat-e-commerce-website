@@ -59,6 +59,7 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
   const [uploading, setUploading] = useState(false)
   const [uploadingStoryImage, setUploadingStoryImage] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [deleting, setDeleting] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
   const subcategories = categoryCatalog[categoryRoute]?.subcategories ?? []
@@ -177,6 +178,34 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
     }
   }
 
+  async function handleDelete() {
+    if (!product) return
+
+    const confirmed = window.confirm(
+      `Delete "${product.name}"? This cannot be undone. Past orders will keep the product name but lose the catalogue link.`,
+    )
+    if (!confirmed) return
+
+    setDeleting(true)
+    setError(null)
+
+    try {
+      const res = await fetch(`/api/admin/products/${product.id}`, { method: "DELETE" })
+      const data = await res.json()
+      if (!res.ok) throw new Error(data.error || "Failed to delete product")
+
+      toast.success("Product deleted")
+      router.push("/admin/store/products")
+      router.refresh()
+    } catch (err) {
+      const message = err instanceof Error ? err.message : "Failed to delete product"
+      setError(message)
+      toast.error(message)
+    } finally {
+      setDeleting(false)
+    }
+  }
+
   return (
     <div className="flex min-h-screen">
       <AdminSidebar />
@@ -218,6 +247,17 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
               </h1>
             </div>
             <div className="flex items-center gap-3">
+              {isEditing && (
+                <button
+                  type="button"
+                  disabled={saving || deleting}
+                  onClick={() => void handleDelete()}
+                  className="flex items-center gap-2 rounded-xl border border-[#C5221F] px-4 py-2 text-[12px] font-medium text-[#C5221F] uppercase transition-colors hover:bg-[#C5221F] hover:text-white disabled:opacity-50"
+                >
+                  {deleting ? <Loader2 className="size-3.5 animate-spin" /> : <Trash2 className="size-3.5" />}
+                  Delete
+                </button>
+              )}
               {isEditing && product?.isPublished && (
                 <Link
                   href={`/products/${product.slug}`}
@@ -229,7 +269,7 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
               )}
               <button
                 type="button"
-                disabled={saving}
+                disabled={saving || deleting}
                 onClick={() => handleSave(false)}
                 className="rounded-xl border border-[#2B1B12] px-4 py-2 text-[12px] font-medium text-[#2B1B12] uppercase disabled:opacity-50"
               >
@@ -237,7 +277,7 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
               </button>
               <button
                 type="button"
-                disabled={saving}
+                disabled={saving || deleting}
                 onClick={() => handleSave(true)}
                 className="flex items-center gap-2 rounded-xl bg-[#2B1B12] px-5 py-2 text-[12px] font-medium text-white uppercase disabled:opacity-50"
               >

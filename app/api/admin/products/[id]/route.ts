@@ -62,9 +62,8 @@ export async function DELETE(_request: Request, context: RouteContext) {
     await deleteAdminProduct(id)
     return NextResponse.json({ ok: true })
   } catch (error) {
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : "Failed to delete product" },
-      { status: 500 },
-    )
+    const message = error instanceof Error ? error.message : "Failed to delete product"
+    const status = message === "Product not found" ? 404 : 500
+    return NextResponse.json({ error: message }, { status })
   }
 }
