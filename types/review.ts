@@ -3,6 +3,7 @@ export type ProductReview = {
   rating: number
   title: string | null
   body: string
+  imageUrls: string[]
   createdAt: string
   authorName: string
   authorInitials: string

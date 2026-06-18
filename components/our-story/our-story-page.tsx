@@ -78,12 +78,57 @@ const journeyIcons = [PenLine, Leaf, Hand, Search, Package, Truck]
 const impactIcons = [Users, Sparkles, ShieldCheck, Leaf]
 const promiseIcons = [Sparkles, Leaf, Users, ShieldCheck]
 
-function StoryHeroSection({ content }: { content: OurStoryPageContent["cta"] }) {
-  const headlineParts = content.headline.split(/\s+to\s+/i)
-  const titleLine1 = headlineParts[0]?.trim() ?? content.headline
-  const titleLine2 =
-    headlineParts.length > 1 ? `to ${headlineParts.slice(1).join(" to ").trim()}` : null
+function MakerCard({ maker }: { maker: OurStoryPageContent["makers"]["items"][number] }) {
+  const cardClassName =
+    "overflow-hidden border border-[#D4C4A8] bg-[#FAF7F2]/90 transition-colors hover:border-[#9A8070]"
 
+  const inner = (
+    <>
+      <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#EDE8DC]">
+        <Image
+          src={maker.imageUrl}
+          alt={maker.name}
+          fill
+          className="object-cover object-center transition-transform duration-700 group-hover:scale-[1.02]"
+          sizes="(max-width: 1024px) 28vw, 220px"
+        />
+      </div>
+      <div className="px-4 py-4 lg:px-5 lg:py-5">
+        <h3 className="font-serif text-[14px] font-normal text-[#2D1A12] sm:text-[15px] lg:text-[16px]">
+          {maker.name}
+        </h3>
+        <p className="mt-1 font-sans text-[9px] tracking-[0.08em] text-[#6B5344] uppercase sm:text-[10px] lg:text-[11px]">
+          {maker.role}
+          {maker.location ? `, ${maker.location}` : ""}
+        </p>
+        <p className="mt-2.5 font-serif text-[11px] italic leading-[1.55] text-[#7D5A44] sm:text-[12px] lg:text-[13px]">
+          {maker.quote}
+        </p>
+      </div>
+    </>
+  )
+
+  if (maker.profileSlug) {
+    return (
+      <Link
+        href={`/artisans/${maker.profileSlug}`}
+        className={cn("group block", cardClassName)}
+      >
+        {inner}
+      </Link>
+    )
+  }
+
+  return <article className={cardClassName}>{inner}</article>
+}
+
+function StoryHeroImageSection({
+  content,
+  priority = false,
+}: {
+  content: OurStoryPageContent["cta"]
+  priority?: boolean
+}) {
   return (
     <section className="relative min-h-[360px] overflow-hidden sm:min-h-[420px] lg:min-h-[480px]">
       <Image
@@ -92,22 +137,74 @@ function StoryHeroSection({ content }: { content: OurStoryPageContent["cta"] }) 
         fill
         className="object-cover"
         sizes="100vw"
-        priority
+        priority={priority}
+      />
+    </section>
+  )
+}
+
+function StoryFooterCtaSection({
+  content,
+  className,
+}: {
+  content: OurStoryPageContent["cta"]
+  className?: string
+}) {
+  return (
+    <section
+      className={cn(
+        "relative min-h-[360px] overflow-hidden sm:min-h-[420px] lg:min-h-[480px]",
+        className,
+      )}
+    >
+      <Image
+        src={content.footerImageUrl}
+        alt=""
+        fill
+        className="object-cover"
+        sizes="100vw"
       />
       <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/55 to-black/20" />
       <div className="relative z-10 mx-auto flex h-full min-h-[360px] max-w-[1120px] items-center px-5 py-16 sm:min-h-[420px] lg:min-h-[480px] lg:px-8">
         <div className="max-w-[560px] text-white">
-          <h1 className="text-[clamp(2rem,4.2vw,3.25rem)] leading-[1.12]">
-            <span className="landing-display block text-white">{titleLine1}</span>
-            {titleLine2 ? (
-              <span className="landing-display-italic mt-1 block text-[#E8D0BC]">{titleLine2}</span>
-            ) : null}
-          </h1>
+          <p className="font-serif text-[clamp(1.85rem,3.6vw,2.55rem)] font-normal leading-[1.22] italic text-white/95">
+            {content.subheadline}
+          </p>
           <div className="mt-8">
             <SolidCtaButton href={content.buttonHref} label={content.buttonLabel} />
           </div>
         </div>
       </div>
+    </section>
+  )
+}
+
+function StoryWhyExistsSection({ content }: { content: OurStoryPageContent["whyExists"] }) {
+  return (
+    <div className="story-panel story-panel--why overflow-hidden !p-0">
+      <div className="relative min-h-[360px] sm:min-h-[420px] lg:min-h-[480px]">
+        <Image
+          src={content.imageUrl}
+          alt=""
+          fill
+          className="object-cover"
+          sizes="(max-width: 1280px) 100vw, 1240px"
+        />
+      </div>
+    </div>
+  )
+}
+
+function StoryFoundersSection({ content }: { content: OurStoryPageContent["founders"] }) {
+  return (
+    <section className="relative min-h-[360px] overflow-hidden sm:min-h-[420px] lg:min-h-[480px]">
+      <Image
+        src={content.imageUrl}
+        alt=""
+        fill
+        className="object-cover"
+        sizes="100vw"
+      />
     </section>
   )
 }
@@ -122,37 +219,17 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
       <SiteHeader className="!border-[#D8CFC4]/60 !bg-[#ede0d0]/90 backdrop-blur-md" />
 
       {/* SESSION 1 — hero */}
-      <StoryHeroSection content={content.cta} />
+      <StoryHeroImageSection content={content.cta} priority />
 
       {/* SESSION 2 — Why House of Indika */}
       <section className="story-page-section story-page-section--intro !pt-10 lg:!pt-14">
         <div className="story-page-inner">
-          <div className="story-panel story-panel--why">
-            <div className="grid items-start gap-5 sm:grid-cols-2 sm:gap-6 lg:gap-8">
-              <div className="min-w-0">
-                <SessionHeading
-                  title={content.whyExists.title}
-                  align="left"
-                />
-                <div className="mt-5 space-y-4 font-serif text-[14px] leading-[1.8] text-[#5C4332] sm:text-[15px] lg:text-[16px]">
-                  {content.whyExists.paragraphs.map((paragraph) => (
-                    <p key={paragraph.slice(0, 48)}>{paragraph}</p>
-                  ))}
-                </div>
-              </div>
-              <div className="relative aspect-[4/5] min-h-[240px] w-full overflow-hidden sm:min-h-[300px] lg:min-h-[380px] xl:min-h-[420px]">
-                <Image
-                  src={content.whyExists.imageUrl}
-                  alt={content.whyExists.title}
-                  fill
-                  className="object-cover"
-                  sizes="(max-width: 1024px) 45vw, 280px"
-                />
-              </div>
-            </div>
-          </div>
+          <StoryWhyExistsSection content={content.whyExists} />
         </div>
       </section>
+
+      {/* SESSION 2B — Meet Our Founders */}
+      <StoryFoundersSection content={content.founders} />
 
       {/* SESSION 3 — Meet The Makers */}
       <section className="story-page-section">
@@ -161,31 +238,7 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
             <SessionHeading title={content.makers.title} />
             <div className="mt-6 grid grid-cols-1 gap-4 min-[480px]:grid-cols-3 min-[480px]:gap-4 lg:mt-8 lg:gap-5">
               {content.makers.items.map((maker) => (
-                <article
-                  key={maker.id}
-                  className="overflow-hidden border border-[#D4C4A8] bg-[#FAF7F2]/90"
-                >
-                  <div className="relative aspect-[3/4] w-full overflow-hidden bg-[#EDE8DC]">
-                    <Image
-                      src={maker.imageUrl}
-                      alt={maker.name}
-                      fill
-                      className="object-cover object-center"
-                      sizes="(max-width: 1024px) 28vw, 220px"
-                    />
-                  </div>
-                  <div className="px-4 py-4 lg:px-5 lg:py-5">
-                    <h3 className="font-serif text-[14px] font-normal text-[#2D1A12] sm:text-[15px] lg:text-[16px]">
-                      {maker.name}
-                    </h3>
-                    <p className="mt-1 font-sans text-[9px] tracking-[0.08em] text-[#6B5344] uppercase sm:text-[10px] lg:text-[11px]">
-                      {maker.role}, {maker.location}
-                    </p>
-                    <p className="mt-2.5 font-serif text-[11px] italic leading-[1.55] text-[#7D5A44] sm:text-[12px] lg:text-[13px]">
-                      {maker.quote}
-                    </p>
-                  </div>
-                </article>
+                <MakerCard key={maker.id} maker={maker} />
               ))}
             </div>
           </div>
@@ -232,20 +285,20 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
       <section className="story-page-section">
         <div className="story-page-inner">
           <div className="story-panel">
-            <SessionHeading title={content.impact.title} />
+            <SessionHeading title={content.impact.title} size="large" />
             <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4">
               {content.impact.stats.map((stat, index) => {
                 const Icon = impactIcons[index] ?? Sparkles
                 return (
                   <div
                     key={stat.id}
-                    className="flex min-h-[150px] flex-col items-center justify-center border border-[#D4C4A8] bg-[#F5EDE3]/95 px-3 py-7 text-center shadow-sm sm:min-h-[170px] sm:px-4"
+                    className="flex min-h-[160px] flex-col items-center justify-center border border-[#D4C4A8] bg-[#F5EDE3]/95 px-3 py-8 text-center shadow-sm sm:min-h-[185px] sm:px-4"
                   >
-                    <Icon className="mb-4 size-[18px] text-[#8B7355]" strokeWidth={1.25} />
-                    <p className="font-serif text-[clamp(1.4rem,2.5vw,1.85rem)] leading-none text-[#2D1A12]">
+                    <Icon className="mb-4 size-[22px] text-[#8B7355] sm:size-[24px]" strokeWidth={1.25} />
+                    <p className="font-serif text-[clamp(1.75rem,3.2vw,2.35rem)] leading-none text-[#2D1A12]">
                       {stat.value}
                     </p>
-                    <p className="mt-2.5 font-sans text-[9px] leading-snug tracking-[0.08em] text-[#6B5344] uppercase sm:text-[10px]">
+                    <p className="mt-3 font-sans text-[11px] leading-snug tracking-[0.08em] text-[#6B5344] uppercase sm:text-[12px] lg:text-[13px]">
                       {stat.label}
                     </p>
                   </div>
@@ -349,6 +402,9 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
           </div>
         </div>
       </section>
+
+      {/* SESSION 9 — footer CTA */}
+      <StoryFooterCtaSection content={content.cta} className="mt-2" />
     </main>
   )
 }

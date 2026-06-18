@@ -19,6 +19,8 @@ export type OurStoryContent = {
   whyExistsTitle: string
   whyExistsParagraph1: string
   whyExistsParagraph2: string
+  foundersImageUrl: string
+  foundersTitle: string
   craftsmanshipIntro: string
   craftsmanshipImages: [StoryGalleryImage, StoryGalleryImage, StoryGalleryImage]
   craftsmanshipClosing: string
@@ -66,6 +68,8 @@ export const DEFAULT_OUR_STORY_CONTENT: OurStoryContent = {
     `Many traditional Indian crafts are disappearing with time. ${HOUSE_OF_INDIKA} works directly with artisans and craft communities to preserve heritage while creating products that belong in modern homes.`,
   whyExistsParagraph2:
     "We believe that every handmade piece carries a story — of skill passed down through generations, of communities sustained by fair work, and of beauty that cannot be replicated by machines.",
+  foundersImageUrl: "/group-of-smiling-indian-women-artisans-in-colorful.jpg",
+  foundersTitle: "Meet Our Founders",
   craftsmanshipIntro:
     "We celebrate timeless craftsmanship through pieces made to be cherished for generations.",
   craftsmanshipImages: [
@@ -148,6 +152,8 @@ export function mergeOurStoryContent(content: Partial<OurStoryContent>): OurStor
     content.whyExistsParagraph1 ?? content.bodyParagraphs?.[0] ?? merged.whyExistsParagraph1
   merged.whyExistsParagraph2 =
     content.whyExistsParagraph2 ?? content.bodyParagraphs?.[1] ?? merged.whyExistsParagraph2
+  merged.foundersImageUrl = content.foundersImageUrl ?? merged.foundersImageUrl
+  merged.foundersTitle = content.foundersTitle ?? merged.foundersTitle
 
   if (!content.heroTitleLine1 && content.title) {
     const parts = content.title.replace(/^Our Story\s*[—–-]\s*/i, "").split(/\s+to\s+/i)

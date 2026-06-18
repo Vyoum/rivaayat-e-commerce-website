@@ -69,6 +69,7 @@ export function OurStoryPhotosManager() {
   const [saving, setSaving] = useState(false)
   const [uploadingHero, setUploadingHero] = useState(false)
   const [uploadingWhyExists, setUploadingWhyExists] = useState(false)
+  const [uploadingFounders, setUploadingFounders] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
 
@@ -114,7 +115,7 @@ export function OurStoryPhotosManager() {
 
   async function handleImageUpload(
     file: File,
-    field: "heroImageUrl" | "whyExistsImageUrl",
+    field: "heroImageUrl" | "whyExistsImageUrl" | "foundersImageUrl",
     setUploading: (value: boolean) => void,
   ) {
     if (!content) return
@@ -157,7 +158,7 @@ export function OurStoryPhotosManager() {
       <div className="flex flex-wrap items-start justify-between gap-3">
         <div>
           <p className="text-[13px] text-[#9A8070]">
-            Upload photos for the two frames on{" "}
+            Upload photos for the three frames on{" "}
             <Link href="/outerboxdesign" target="_blank" className="text-[#6B5344] underline">
               Our Story
             </Link>
@@ -186,27 +187,34 @@ export function OurStoryPhotosManager() {
         </div>
       )}
 
-      {saving && !uploadingHero && !uploadingWhyExists ? (
+      {saving && !uploadingHero && !uploadingWhyExists && !uploadingFounders ? (
         <div className="flex items-center gap-2 text-[12px] text-[#9A8070]">
           <Loader2 className="size-3.5 animate-spin" />
           Saving…
         </div>
       ) : null}
 
-      <div className="grid gap-4 lg:grid-cols-2">
+      <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
         <PhotoUploadCard
-          title="Frame 1 — From Craft to Collection"
-          description="Background photo behind the hero headline at the top of Our Story."
+          title="Frame 1 — Hero"
+          description="Full-width photo at the top of Our Story."
           imageUrl={content.heroImageUrl}
           uploading={uploadingHero}
           onUpload={(file) => void handleImageUpload(file, "heroImageUrl", setUploadingHero)}
         />
         <PhotoUploadCard
           title='Frame 2 — Why House of Indika Exists'
-          description="Photo shown beside the intro copy in the first content section."
+          description="Photo fills the full framed box with the heading and copy overlaid on top."
           imageUrl={content.whyExistsImageUrl}
           uploading={uploadingWhyExists}
           onUpload={(file) => void handleImageUpload(file, "whyExistsImageUrl", setUploadingWhyExists)}
+        />
+        <PhotoUploadCard
+          title="Frame 3 — Meet Our Founders"
+          description="Landscape photo with the heading overlaid, shown below Why House of Indika Exists."
+          imageUrl={content.foundersImageUrl}
+          uploading={uploadingFounders}
+          onUpload={(file) => void handleImageUpload(file, "foundersImageUrl", setUploadingFounders)}
         />
       </div>
     </div>

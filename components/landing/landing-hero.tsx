@@ -91,7 +91,10 @@ export function LandingHero({ slides: initialSlides, copy: initialCopy }: Landin
           </span>
         </h1>
 
-        <p className="landing-body mx-auto mt-5 max-w-[420px] text-[15px] leading-[1.7] text-white/88">
+        <p
+          className="landing-body mx-auto mt-5 max-w-[420px] text-[15px] leading-[1.7]"
+          style={{ color: "#FF0000" }}
+        >
           {copy.subtitle}
         </p>
 

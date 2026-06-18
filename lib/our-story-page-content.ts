@@ -7,6 +7,7 @@ export type StoryMaker = {
   location: string
   quote: string
   imageUrl: string
+  profileSlug?: string
 }
 
 export type StoryJourneyStep = {
@@ -48,6 +49,11 @@ export type OurStoryPageContent = {
     paragraphs: string[]
     imageUrl: string
   }
+  founders: {
+    session: string
+    title: string
+    imageUrl: string
+  }
   makers: {
     session: string
     title: string
@@ -83,6 +89,7 @@ export type OurStoryPageContent = {
   cta: {
     session: string
     imageUrl: string
+    footerImageUrl: string
     headline: string
     subheadline: string
     buttonLabel: string
@@ -99,6 +106,11 @@ export const DEFAULT_OUR_STORY_PAGE_CONTENT: OurStoryPageContent = {
       "We believe that every handmade piece carries a story — of skill passed down through generations, of communities sustained by fair work, and of beauty that cannot be replicated by machines.",
     ],
     imageUrl: "/landing/categories-section-ref.jpg",
+  },
+  founders: {
+    session: "SESSION 2B",
+    title: "Meet Our Founders",
+    imageUrl: "/group-of-smiling-indian-women-artisans-in-colorful.jpg",
   },
   makers: {
     session: "SESSION 3",
@@ -282,6 +294,7 @@ export const DEFAULT_OUR_STORY_PAGE_CONTENT: OurStoryPageContent = {
   cta: {
     session: "SESSION 9",
     imageUrl: "/indian-artisan-hands-creating-traditional-craft-wi.jpg",
+    footerImageUrl: "/landing/categories-bg-full.jpg",
     headline: "From Craft to Collection",
     subheadline: "Become part of the story.",
     buttonLabel: "Explore Collections",

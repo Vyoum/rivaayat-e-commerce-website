@@ -1,14 +1,16 @@
 "use client"
 
-import { useState } from "react"
+import { useRef, useState } from "react"
+import Image from "next/image"
 import Link from "next/link"
 import { useRouter } from "next/navigation"
-import { Loader2 } from "lucide-react"
+import { Loader2, Upload, X } from "lucide-react"
 import { toast } from "sonner"
 
 import { ProductReviewsCarousel } from "@/components/product/product-reviews-carousel"
 import { InteractiveStarRating, StarRating } from "@/components/product/star-rating"
 import { useWishlist } from "@/components/providers/wishlist-provider"
+import { MAX_REVIEW_PHOTOS } from "@/lib/review-images"
 import { MOCK_REVIEW_SUMMARY } from "@/lib/product-testimonials"
 import type { ProductReview, ProductReviewsData } from "@/types/review"
 import { createEmptyReviewsData } from "@/types/review"
@@ -40,6 +42,21 @@ function ReviewCard({ review }: { review: ProductReview }) {
         <h4 className="mt-4 font-serif text-[16px] text-[#3D2E24]">{review.title}</h4>
       ) : null}
       <p className="mt-2 font-serif text-[14px] leading-relaxed text-[#6B5344]">{review.body}</p>
+      {review.imageUrls.length > 0 ? (
+        <div className="mt-4 flex flex-wrap gap-2">
+          {review.imageUrls.map((url) => (
+            <a
+              key={url}
+              href={url}
+              target="_blank"
+              rel="noreferrer"
+              className="relative block size-20 overflow-hidden rounded-lg border border-[#E8E0D4] bg-[#FAF7F2]"
+            >
+              <Image src={url} alt="Review photo" fill className="object-cover" />
+            </a>
+          ))}
+        </div>
+      ) : null}
     </article>
   )
 }
@@ -59,14 +76,54 @@ export function ProductReviewsSection({
 }: ProductReviewsSectionProps) {
   const router = useRouter()
   const { isLoggedIn } = useWishlist()
+  const photoInputRef = useRef<HTMLInputElement>(null)
   const [data, setData] = useState<ProductReviewsData>(initialData ?? createEmptyReviewsData())
   const [rating, setRating] = useState(initialData?.userReview?.rating ?? 5)
   const [title, setTitle] = useState(initialData?.userReview?.title ?? "")
   const [body, setBody] = useState(initialData?.userReview?.body ?? "")
+  const [imageUrls, setImageUrls] = useState<string[]>(initialData?.userReview?.imageUrls ?? [])
   const [submitting, setSubmitting] = useState(false)
+  const [uploadingPhoto, setUploadingPhoto] = useState(false)
 
   const hasRealReviews = data.summary.totalCount > 0
   const showMockCarousel = !hasRealReviews
+  const canAddPhotos = imageUrls.length < MAX_REVIEW_PHOTOS
+
+  async function handlePhotoUpload(file: File) {
+    if (!isLoggedIn) {
+      router.push(`/login?next=/products/${slug}`)
+      toast.info("Sign in to upload photos")
+      return
+    }
+
+    if (!canAddPhotos) {
+      toast.error(`You can add up to ${MAX_REVIEW_PHOTOS} photos per review`)
+      return
+    }
+
+    setUploadingPhoto(true)
+    try {
+      const formData = new FormData()
+      formData.append("file", file)
+
+      const res = await fetch(`/api/products/${slug}/reviews/upload`, {
+        method: "POST",
+        body: formData,
+      })
+      const json = await res.json()
+      if (!res.ok) throw new Error(json.error ?? "Failed to upload photo")
+
+      setImageUrls((current) => [...current, json.imageUrl].slice(0, MAX_REVIEW_PHOTOS))
+    } catch (error) {
+      toast.error(error instanceof Error ? error.message : "Failed to upload photo")
+    } finally {
+      setUploadingPhoto(false)
+    }
+  }
+
+  function removePhoto(url: string) {
+    setImageUrls((current) => current.filter((entry) => entry !== url))
+  }
 
   async function handleSubmit(event: React.FormEvent) {
     event.preventDefault()
@@ -87,7 +144,7 @@ export function ProductReviewsSection({
       const res = await fetch(`/api/products/${slug}/reviews`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ rating, title, body }),
+        body: JSON.stringify({ rating, title, body, imageUrls }),
       })
       const json = await res.json()
       if (!res.ok) throw new Error(json.error ?? "Failed to submit review")
@@ -195,6 +252,60 @@ export function ProductReviewsSection({
                     placeholder="Tell others about the craftsmanship, packaging, or how you use this piece..."
                     className="w-full resize-y rounded-lg border border-[#D9CFC0] bg-white px-4 py-3 font-serif text-[14px] leading-relaxed text-[#3D2E24] outline-none focus:border-[#846246]"
                   />
+                </div>
+                <div>
+                  <p className="mb-2 font-sans text-[12px] font-medium text-[#6B5344]">
+                    Photos (optional)
+                  </p>
+                  <p className="mb-3 font-sans text-[11px] text-[#9A8070]">
+                    Add up to {MAX_REVIEW_PHOTOS} photos — JPG, PNG, WebP, or GIF, max 5MB each.
+                  </p>
+                  <input
+                    ref={photoInputRef}
+                    type="file"
+                    accept="image/jpeg,image/png,image/webp,image/gif"
+                    className="hidden"
+                    onChange={(event) => {
+                      const file = event.target.files?.[0]
+                      if (file) void handlePhotoUpload(file)
+                      event.target.value = ""
+                    }}
+                  />
+                  {imageUrls.length > 0 ? (
+                    <div className="mb-3 flex flex-wrap gap-2">
+                      {imageUrls.map((url) => (
+                        <div
+                          key={url}
+                          className="relative size-20 overflow-hidden rounded-lg border border-[#E8E0D4] bg-white"
+                        >
+                          <Image src={url} alt="Review photo preview" fill className="object-cover" />
+                          <button
+                            type="button"
+                            onClick={() => removePhoto(url)}
+                            className="absolute top-1 right-1 flex size-6 items-center justify-center rounded-full bg-black/60 text-white transition-colors hover:bg-black/80"
+                            aria-label="Remove photo"
+                          >
+                            <X className="size-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  ) : null}
+                  {canAddPhotos ? (
+                    <button
+                      type="button"
+                      disabled={uploadingPhoto}
+                      onClick={() => photoInputRef.current?.click()}
+                      className="inline-flex items-center gap-2 rounded-lg border border-[#D9CFC0] bg-white px-4 py-2.5 font-sans text-[12px] font-medium text-[#6B5344] transition-colors hover:border-[#846246] disabled:opacity-60"
+                    >
+                      {uploadingPhoto ? (
+                        <Loader2 className="size-4 animate-spin" />
+                      ) : (
+                        <Upload className="size-4" />
+                      )}
+                      {uploadingPhoto ? "Uploading…" : "Add photo"}
+                    </button>
+                  ) : null}
                 </div>
                 <button
                   type="submit"

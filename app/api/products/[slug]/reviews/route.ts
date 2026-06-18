@@ -5,6 +5,7 @@ import {
   createOrUpdateProductReview,
   getProductReviewsBySlug,
 } from "@/lib/review-server"
+import { normalizeReviewImageUrls } from "@/lib/review-images"
 import { createSupabaseApiClient } from "@/lib/supabase/server"
 
 async function resolveDbUserId(request: NextRequest) {
@@ -74,6 +75,7 @@ export async function POST(
     const rating = Number(body.rating)
     const reviewBody = typeof body.body === "string" ? body.body.trim() : ""
     const title = typeof body.title === "string" ? body.title.trim() : undefined
+    const imageUrls = normalizeReviewImageUrls(body.imageUrls)
 
     if (!Number.isInteger(rating) || rating < 1 || rating > 5) {
       return NextResponse.json({ error: "Rating must be between 1 and 5." }, { status: 400 })
@@ -92,6 +94,7 @@ export async function POST(
       rating,
       title,
       body: reviewBody,
+      imageUrls,
     })
 
     if (!review) {

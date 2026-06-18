@@ -1,5 +1,6 @@
 import { getInitials } from "@/lib/profile-utils"
 import { getPrisma } from "@/lib/prisma"
+import { normalizeReviewImageUrls } from "@/lib/review-images"
 import type { ProductReview, ProductReviewsData } from "@/types/review"
 
 function mapReview(review: {
@@ -7,6 +8,7 @@ function mapReview(review: {
   rating: number
   title: string | null
   body: string
+  imageUrls: string[]
   createdAt: Date
   user: { name: string }
 }): ProductReview {
@@ -15,6 +17,7 @@ function mapReview(review: {
     rating: review.rating,
     title: review.title,
     body: review.body,
+    imageUrls: review.imageUrls ?? [],
     createdAt: review.createdAt.toISOString(),
     authorName: review.user.name,
     authorInitials: getInitials(review.user.name),
@@ -74,6 +77,7 @@ export async function createOrUpdateProductReview(input: {
   rating: number
   title?: string
   body: string
+  imageUrls?: string[]
 }): Promise<ProductReview | null> {
   const prisma = getPrisma()
   if (!prisma) return null
@@ -84,6 +88,8 @@ export async function createOrUpdateProductReview(input: {
   })
 
   if (!product) return null
+
+  const imageUrls = normalizeReviewImageUrls(input.imageUrls)
 
   const review = await prisma.review.upsert({
     where: {
@@ -98,11 +104,13 @@ export async function createOrUpdateProductReview(input: {
       rating: input.rating,
       title: input.title?.trim() || null,
       body: input.body.trim(),
+      imageUrls,
     },
     update: {
       rating: input.rating,
       title: input.title?.trim() || null,
       body: input.body.trim(),
+      imageUrls,
     },
     include: { user: { select: { name: true } } },
   })

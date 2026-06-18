@@ -1,8 +1,8 @@
 "use client"
 
-import { useMemo, useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
-import { usePathname, useRouter } from "next/navigation"
+import { usePathname, useRouter, useSearchParams } from "next/navigation"
 import { ChevronLeft, ChevronRight, Settings2, Sparkles } from "lucide-react"
 import { CatalogHeader } from "@/components/catalog/catalog-header"
 import { CatalogProductCard } from "@/components/catalog/catalog-product-card"
@@ -68,6 +68,10 @@ export function CategoryListingPage({
 }: CategoryListingPageProps) {
   const router = useRouter()
   const pathname = usePathname()
+  const searchParams = useSearchParams()
+  const urlQuery = (searchParams.get("q") ?? "").trim()
+  const urlCategory = searchParams.get("category") ?? ""
+  const urlSubcategory = searchParams.get("subcategory") ?? ""
 
   const normalizedInitialCategory = isValidCategoryRoute(initialCategory) ? initialCategory : ""
   const normalizedInitialSubcategory = isValidSubcategoryForCategory(
@@ -92,7 +96,39 @@ export function CategoryListingPage({
   const [page, setPage] = useState(1)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
   const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([])
+  const [showQuickFilters, setShowQuickFilters] = useState(true)
   const [searchQuery, setSearchQuery] = useState(initialQuery.trim())
+
+  const syncsUrlParams =
+    productFilter === "category-and-subcategory" || productFilter === "subcategory"
+
+  useEffect(() => {
+    if (!syncsUrlParams) return
+
+    const validCategory =
+      productFilter === "category-and-subcategory" && isValidCategoryRoute(urlCategory)
+        ? urlCategory
+        : ""
+
+    const categoryForValidation =
+      productFilter === "category-and-subcategory" ? validCategory : category.slug
+
+    const validSubcategory = isValidSubcategoryForCategory(
+      categoryForValidation,
+      urlSubcategory,
+      category.products,
+    )
+      ? urlSubcategory
+      : ""
+
+    setSearchQuery(urlQuery)
+    if (productFilter === "category-and-subcategory") {
+      setActiveCategory(validCategory)
+    }
+    setActiveSubcategory(validSubcategory)
+    setPage(1)
+    setVisibleCount(PAGE_SIZE)
+  }, [urlQuery, urlCategory, urlSubcategory, productFilter, category.products, category.slug, syncsUrlParams])
 
   const subcategoryOptions = useMemo(() => {
     if (productFilter !== "category-and-subcategory") return []
@@ -120,10 +156,12 @@ export function CategoryListingPage({
   }, [activeCategory, category.products, productFilter])
 
   function syncFilterParams(nextCategory: string, nextSubcategory: string, nextQuery = searchQuery) {
-    if (productFilter !== "category-and-subcategory") return
+    if (!syncsUrlParams) return
 
     const params = new URLSearchParams()
-    if (nextCategory) params.set("category", nextCategory)
+    if (productFilter === "category-and-subcategory" && nextCategory) {
+      params.set("category", nextCategory)
+    }
     if (nextSubcategory) params.set("subcategory", nextSubcategory)
     if (nextQuery.trim()) params.set("q", nextQuery.trim())
 
@@ -150,7 +188,7 @@ export function CategoryListingPage({
     setPage(1)
     setVisibleCount(PAGE_SIZE)
 
-    if (productFilter === "category-and-subcategory") {
+    if (syncsUrlParams) {
       syncFilterParams(activeCategory, nextSubcategory)
     }
   }
@@ -166,8 +204,18 @@ export function CategoryListingPage({
       } else if (activeSubcategory && product.subcategory !== activeSubcategory) {
         return false
       }
-      if (activeFilters.includes("under-5000") && product.price > 5000) return false
-      if (activeFilters.includes("gold-plated") && !product.tags?.includes("gold-plated")) return false
+      if (activeFilters.length > 0) {
+        const matchesQuickFilter = activeFilters.some((filter) => {
+          if (filter === "under-5000") {
+            return product.price <= 5000 || product.tags?.includes("under-5000")
+          }
+          if (filter === "gold-plated") {
+            return product.tags?.includes("gold-plated")
+          }
+          return false
+        })
+        if (!matchesQuickFilter) return false
+      }
       return true
     })
 
@@ -206,9 +254,11 @@ export function CategoryListingPage({
   function clearFilters() {
     setActiveFilters([])
     setSearchQuery("")
+    setActiveSubcategory("")
     if (productFilter === "category-and-subcategory") {
       setActiveCategory("")
-      setActiveSubcategory("")
+      syncFilterParams("", "", "")
+    } else if (productFilter === "subcategory") {
       syncFilterParams("", "", "")
     }
     setPage(1)
@@ -218,7 +268,8 @@ export function CategoryListingPage({
   const hasActiveFilters =
     activeFilters.length > 0 ||
     searchQuery.trim() !== "" ||
-    (productFilter === "category-and-subcategory" && (activeCategory !== "" || activeSubcategory !== ""))
+    (productFilter === "category-and-subcategory" && (activeCategory !== "" || activeSubcategory !== "")) ||
+    (productFilter === "subcategory" && activeSubcategory !== "")
 
   const headerCategoryRoute =
     productFilter === "category-and-subcategory"
@@ -384,7 +435,14 @@ export function CategoryListingPage({
 
             <button
               type="button"
-              className="inline-flex h-10 items-center gap-2 border border-[#D9CFC0] bg-white px-4 font-sans text-[12px] font-medium text-[#3D2E24]"
+              onClick={() => setShowQuickFilters((open) => !open)}
+              aria-expanded={showQuickFilters}
+              className={cn(
+                "inline-flex h-10 items-center gap-2 border px-4 font-sans text-[12px] font-medium",
+                showQuickFilters
+                  ? "border-[#785D44] bg-[#785D44] text-white"
+                  : "border-[#D9CFC0] bg-white text-[#3D2E24]",
+              )}
             >
               <Settings2 className="size-3.5" />
               Filter
@@ -392,6 +450,7 @@ export function CategoryListingPage({
           </div>
         </div>
 
+        {showQuickFilters ? (
           <div className="mt-4 flex flex-wrap items-center gap-2">
             {(Object.keys(filterLabels) as ActiveFilter[]).map((filter) => {
               const isActive = activeFilters.includes(filter)
@@ -422,6 +481,7 @@ export function CategoryListingPage({
               </button>
             )}
           </div>
+        ) : null}
 
         {pageProducts.length === 0 ? (
           <div className="py-20 text-center">

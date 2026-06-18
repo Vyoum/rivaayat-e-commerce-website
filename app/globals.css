@@ -405,6 +405,11 @@
 }
 
 .story-panel--why,
-.story-panel--makers {
+.story-panel--makers,
+.story-panel--founders {
   min-height: auto;
+}
+
+.story-panel--why {
+  background: transparent;
 }

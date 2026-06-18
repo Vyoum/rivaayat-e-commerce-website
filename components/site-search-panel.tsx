@@ -60,10 +60,15 @@ export function SiteSearchPanel({ open, onClose }: SiteSearchPanelProps) {
   function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault()
     const trimmed = query.trim()
-    if (!trimmed) return
 
     onClose()
     setQuery("")
+
+    if (!trimmed) {
+      router.push("/collections")
+      return
+    }
+
     router.push(`/collections?q=${encodeURIComponent(trimmed)}`)
   }
 

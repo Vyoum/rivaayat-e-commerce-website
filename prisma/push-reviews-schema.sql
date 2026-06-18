@@ -14,3 +14,5 @@ CREATE TABLE IF NOT EXISTS reviews (
 
 CREATE INDEX IF NOT EXISTS reviews_product_id_idx ON reviews (product_id);
 CREATE INDEX IF NOT EXISTS reviews_user_id_idx ON reviews (user_id);
+
+ALTER TABLE reviews ADD COLUMN IF NOT EXISTS image_urls TEXT[] NOT NULL DEFAULT '{}';

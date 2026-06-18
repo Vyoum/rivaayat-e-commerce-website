@@ -13,7 +13,9 @@ import { useWishlist } from "@/components/providers/wishlist-provider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { ProductReviewsSection } from "@/components/product/product-reviews-section"
+import { ProductSizeGuide } from "@/components/product/product-size-guide"
 import { StarRating } from "@/components/product/star-rating"
+import { isClothingProduct } from "@/lib/clothing-size-guide"
 import { storeProductDetailToCatalog } from "@/lib/product-catalog"
 import { MOCK_REVIEW_SUMMARY } from "@/lib/product-testimonials"
 import { cn } from "@/lib/utils"
@@ -87,6 +89,7 @@ export function ProductDetailContent({
     storyParagraphs.length > 0 || Boolean(product.storyImageUrl)
 
   const wishlisted = isWishlisted(product.id)
+  const showSizeGuide = isClothingProduct(product.categoryRoute)
 
   const hasRealReviews = (reviewsData?.summary.totalCount ?? 0) > 0
   const headerRating = hasRealReviews
@@ -271,6 +274,8 @@ export function ProductDetailContent({
                 </Label>
               </div>
             </div>
+
+            {showSizeGuide ? <ProductSizeGuide variant="detail" /> : null}
 
             <button
               type="button"

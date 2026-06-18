@@ -52,26 +52,48 @@ function CartItemCard({
   onUpdateQuantity: (id: string, quantity: number) => void
   onRemove: (id: string) => void
 }) {
+  const productHref = item.slug ? `/products/${item.slug}` : null
+
   return (
     <article className="rounded-xl border border-[#EDE5D8] bg-[#F5F2EB] p-5 sm:p-6">
       <div className="flex gap-5 sm:gap-6">
         <div className="shrink-0">
-          <div className="h-[120px] w-[90px] overflow-hidden rounded-t-[45px] rounded-b-md bg-[#EDE5D8] sm:h-[130px] sm:w-[100px]">
-            <img
-              src={item.image}
-              alt={item.name}
-              className="h-full w-full object-cover"
-            />
-          </div>
+          {productHref ? (
+            <Link href={productHref} className="block">
+              <div className="h-[120px] w-[90px] overflow-hidden rounded-t-[45px] rounded-b-md bg-[#EDE5D8] sm:h-[130px] sm:w-[100px]">
+                <img
+                  src={item.image}
+                  alt={item.name}
+                  className="h-full w-full object-cover transition-transform duration-300 hover:scale-[1.02]"
+                />
+              </div>
+            </Link>
+          ) : (
+            <div className="h-[120px] w-[90px] overflow-hidden rounded-t-[45px] rounded-b-md bg-[#EDE5D8] sm:h-[130px] sm:w-[100px]">
+              <img
+                src={item.image}
+                alt={item.name}
+                className="h-full w-full object-cover"
+              />
+            </div>
+          )}
         </div>
 
         <div className="flex min-w-0 flex-1 flex-col">
           <div className="flex items-start justify-between gap-4">
             <div className="min-w-0 space-y-2">
               <div className="flex flex-wrap items-center gap-2.5">
-                <h3 className="font-serif text-[20px] font-normal leading-tight text-[#2B1B12] sm:text-[22px]">
-                  {item.name}
-                </h3>
+                {productHref ? (
+                  <Link href={productHref}>
+                    <h3 className="font-serif text-[20px] font-normal leading-tight text-[#2B1B12] transition-colors hover:text-[#6B5344] sm:text-[22px]">
+                      {item.name}
+                    </h3>
+                  </Link>
+                ) : (
+                  <h3 className="font-serif text-[20px] font-normal leading-tight text-[#2B1B12] sm:text-[22px]">
+                    {item.name}
+                  </h3>
+                )}
                 {item.tag && (
                   <span className="rounded-full bg-[#5C6B58] px-2.5 py-0.5 font-sans text-[9px] font-medium uppercase tracking-[0.1em] text-white">
                     {item.tag}

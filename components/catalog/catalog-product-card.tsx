@@ -7,11 +7,13 @@ import { Heart } from "lucide-react"
 import { toast } from "sonner"
 
 import { ProductBarcodeButton } from "@/components/catalog/product-barcode-button"
+import { ProductSizeGuide } from "@/components/product/product-size-guide"
 import { useCart } from "@/components/providers/cart-provider"
 import { useWishlist } from "@/components/providers/wishlist-provider"
 import { getArtisanProfileHref } from "@/lib/artisan-routes"
 import type { CatalogProduct } from "@/lib/category-catalog"
 import { getProductTicketTheme } from "@/lib/product-category-ticket-theme"
+import { isClothingProduct } from "@/lib/clothing-size-guide"
 import { formatProductPrice } from "@/lib/product-utils"
 import { cn } from "@/lib/utils"
 
@@ -41,6 +43,7 @@ export function CatalogProductCard({ product }: CatalogProductCardProps) {
   const badgeLabel = getProductBadgeLabel(product.badge)
   const wishlisted = isWishlisted(product.id)
   const ticketTheme = getProductTicketTheme(product.categoryRoute)
+  const showSizeGuide = isClothingProduct(product.categoryRoute)
 
   function handleAddToCart() {
     addItem(product)
@@ -133,6 +136,8 @@ export function CatalogProductCard({ product }: CatalogProductCardProps) {
         >
           Add to Cart
         </button>
+
+        {showSizeGuide ? <ProductSizeGuide variant="card" /> : null}
 
         <div
           aria-hidden

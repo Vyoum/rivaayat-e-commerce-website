@@ -1,6 +1,6 @@
 import type { Metadata } from "next"
 
-import { CategoryListingPage } from "@/components/catalog/category-listing-page"
+import { CategoryListingRoute } from "@/components/catalog/category-listing-route"
 import { buildCategoryConfigFromMeta } from "@/lib/product-catalog"
 import { getAllPublishedProducts } from "@/lib/product-server"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
@@ -32,7 +32,7 @@ export default async function CollectionsPage({
   const category = buildCategoryConfigFromMeta(collectionsMeta, products)
 
   return (
-    <CategoryListingPage
+    <CategoryListingRoute
       category={category}
       productFilter="category-and-subcategory"
       initialCategory={params.category ?? ""}
