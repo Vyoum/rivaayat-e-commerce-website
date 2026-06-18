@@ -76,7 +76,7 @@ export function ProductSizeGuide({ variant = "detail" }: ProductSizeGuideProps) 
                 isDetail ? "font-sans text-[13px]" : "font-serif text-[10px] sm:text-[11px]",
               )}
             >
-              Compare your body measurements with the chart below to find your best fit.
+              Compare your body measurements with the chart below to find your best fit for handwoven textiles and garments.
             </p>
 
             <div className="mt-4 overflow-x-auto rounded-xl border border-[#E8E0D4] bg-white">

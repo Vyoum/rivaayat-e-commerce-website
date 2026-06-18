@@ -14,6 +14,8 @@ import type { CatalogProduct } from "@/lib/category-catalog"
 import {
   catalogProductToCartItem,
   getCartItemCount,
+  getCartLineKey,
+  normalizeCartItem,
   type CartItem,
 } from "@/lib/cart"
 import { showAddedToCollectionToast } from "@/lib/cart-toast"
@@ -21,6 +23,7 @@ import { showAddedToCollectionToast } from "@/lib/cart-toast"
 type AddItemOptions = {
   quantity?: number
   silent?: boolean
+  size?: string
 }
 
 const STORAGE_KEY = "house-of-indika-cart"
@@ -28,9 +31,9 @@ const STORAGE_KEY = "house-of-indika-cart"
 type CartContextValue = {
   items: CartItem[]
   itemCount: number
-  addItem: (product: CatalogProduct) => void
-  updateQuantity: (id: string, quantity: number) => void
-  removeItem: (id: string) => void
+  addItem: (product: CatalogProduct, options?: AddItemOptions) => void
+  updateQuantity: (lineKey: string, quantity: number) => void
+  removeItem: (lineKey: string) => void
   clearCart: () => void
 }
 
@@ -44,7 +47,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
     try {
       const stored = localStorage.getItem(STORAGE_KEY)
       if (stored) {
-        setItems(JSON.parse(stored) as CartItem[])
+        const parsed = JSON.parse(stored) as CartItem[]
+        setItems(parsed.map((item) => normalizeCartItem(item)))
       }
     } catch {
       // Ignore invalid stored cart data.
@@ -59,17 +63,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addItem = useCallback((product: CatalogProduct, options?: AddItemOptions) => {
     const quantity = Math.max(1, options?.quantity ?? 1)
+    const size = options?.size?.trim() || undefined
+    const lineKey = getCartLineKey(product.id, size)
 
     setItems((prev) => {
-      const existing = prev.find((item) => item.id === product.id)
+      const existing = prev.find((item) => item.lineKey === lineKey)
       if (existing) {
         return prev.map((item) =>
-          item.id === product.id
+          item.lineKey === lineKey
             ? { ...item, quantity: item.quantity + quantity }
             : item,
         )
       }
-      return [{ ...catalogProductToCartItem(product), quantity }, ...prev]
+      return [
+        normalizeCartItem({ ...catalogProductToCartItem(product, { size }), quantity }),
+        ...prev,
+      ]
     })
 
     if (!options?.silent) {
@@ -77,15 +86,15 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
   }, [])
 
-  const updateQuantity = useCallback((id: string, quantity: number) => {
+  const updateQuantity = useCallback((lineKey: string, quantity: number) => {
     if (quantity < 1) return
     setItems((prev) =>
-      prev.map((item) => (item.id === id ? { ...item, quantity } : item)),
+      prev.map((item) => (item.lineKey === lineKey ? { ...item, quantity } : item)),
     )
   }, [])
 
-  const removeItem = useCallback((id: string) => {
-    setItems((prev) => prev.filter((item) => item.id !== id))
+  const removeItem = useCallback((lineKey: string) => {
+    setItems((prev) => prev.filter((item) => item.lineKey !== lineKey))
   }, [])
 
   const clearCart = useCallback(() => {

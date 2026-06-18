@@ -9,17 +9,25 @@ export type StoredCheckoutItem = {
   price: number
   quantity: number
   image: string
+  size?: string
 }
 
 function getStorageKey(userId: string) {
   return `house-of-indika-orders-${userId}`
 }
 
+function formatOrderVariant(item: StoredCheckoutItem) {
+  if (item.size) {
+    return item.variant ? `${item.variant} · Size ${item.size}` : `Size ${item.size}`
+  }
+  return item.variant
+}
+
 export function checkoutItemsToOrderItems(items: StoredCheckoutItem[]): ProfileOrderItem[] {
   return items.map((item) => ({
     id: item.id,
     productName: item.name,
-    variant: item.variant,
+    variant: formatOrderVariant(item),
     quantity: item.quantity,
     unitPrice: item.price,
     image: item.image,

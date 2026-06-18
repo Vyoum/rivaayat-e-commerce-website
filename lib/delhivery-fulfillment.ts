@@ -53,10 +53,24 @@ export async function fulfillOrderWithDelhivery(input: FulfillOrderWithDelhivery
 
   if (!shipment.ok || !shipment.waybill) {
     const error = shipment.error ?? "Shipment creation failed."
-    console.error("[delhivery/fulfillment]", input.orderReference, error, shipment.raw)
+    console.error("[delhivery/fulfillment] failed", {
+      kind: input.kind,
+      dbOrderId: input.orderId,
+      orderReference: input.orderReference,
+      error,
+      raw: shipment.raw,
+    })
     await saveDelhiveryFailure(input.kind, input.orderId, error)
     return { ok: false as const, error }
   }
+
+  console.info("[delhivery/fulfillment] success", {
+    kind: input.kind,
+    dbOrderId: input.orderId,
+    orderReference: input.orderReference,
+    waybill: shipment.waybill,
+    status: shipment.status ?? "created",
+  })
 
   if (input.kind === "store") {
     await prisma.order.update({

@@ -37,7 +37,7 @@ function SessionHeading({
         className={cn(
           "font-serif font-normal leading-[1.2] text-[#2D1A12]",
           size === "xlarge"
-            ? "text-[clamp(2rem,3.8vw,2.9rem)] lg:text-[clamp(2.35rem,3.4vw,3.35rem)]"
+            ? "text-[clamp(2.5rem,5.5vw,3.5rem)] sm:text-[clamp(2.85rem,5vw,4rem)] lg:text-[clamp(3.25rem,4.5vw,4.75rem)]"
             : size === "large"
               ? "text-[clamp(1.75rem,3.2vw,2.5rem)] lg:text-[clamp(2rem,2.8vw,2.75rem)]"
               : "text-[clamp(1.35rem,2.4vw,1.85rem)] lg:text-[clamp(1.5rem,2.2vw,2rem)]",

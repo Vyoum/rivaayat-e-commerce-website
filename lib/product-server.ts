@@ -30,6 +30,7 @@ const productSelect = {
   badge: true,
   handcrafted: true,
   inStock: true,
+  availableSizes: true,
   tags: true,
   artisan: { select: { name: true } },
 } as const
@@ -65,6 +66,7 @@ function mapCatalogProductToDetail(
     badge: product.badge ?? null,
     handcrafted: product.badge === "HANDCRAFTED",
     inStock: true,
+    availableSizes: [],
   }
 }
 
@@ -89,6 +91,7 @@ function mapDbProductToDetail(product: {
   badge: string | null
   handcrafted: boolean
   inStock: boolean
+  availableSizes: string[]
   artisan?: { name: string } | null
 }, artisanSlug?: string | null): StoreProductDetail {
   const categoryRoute = CATEGORY_ENUM_TO_ROUTE[product.category]
@@ -115,6 +118,7 @@ function mapDbProductToDetail(product: {
     badge: product.badge,
     handcrafted: product.handcrafted,
     inStock: product.inStock,
+    availableSizes: product.availableSizes,
   }
 }
 

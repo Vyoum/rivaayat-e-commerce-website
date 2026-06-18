@@ -13,6 +13,8 @@ import {
 } from "lucide-react"
 
 import { CheckoutStepper } from "@/components/checkout/checkout-stepper"
+import { BestSellingProductsRail } from "@/components/catalog/best-selling-products-rail"
+import { OrderConfirmationDetails } from "@/components/shared/order-confirmation-details"
 import { SiteHeader } from "@/components/site-header"
 import { DeliveryAddressFields } from "@/components/shared/delivery-address-fields"
 import { useCart } from "@/components/providers/cart-provider"
@@ -29,6 +31,7 @@ import {
   type DeliveryAddress,
 } from "@/lib/delivery-address"
 import { openRazorpayCheckout } from "@/lib/razorpay-client"
+import type { PaymentConfirmationDetails } from "@/lib/payment-confirmation"
 
 function formatCurrency(amount: number) {
   return `₹ ${amount.toLocaleString("en-IN")}`
@@ -44,7 +47,8 @@ export function CheckoutContent() {
   const [hydrated, setHydrated] = useState(false)
   const [form, setForm] = useState<DeliveryAddress>(INITIAL_DELIVERY_ADDRESS)
   const [paymentState, setPaymentState] = useState<PaymentState>("idle")
-  const [paymentMessage, setPaymentMessage] = useState("")
+  const [paymentError, setPaymentError] = useState("")
+  const [confirmation, setConfirmation] = useState<PaymentConfirmationDetails | null>(null)
 
   useEffect(() => {
     const saved = loadCheckoutSession()
@@ -88,12 +92,13 @@ export function CheckoutContent() {
 
     if (!isDeliveryAddressComplete(form)) {
       setPaymentState("error")
-      setPaymentMessage("Please complete all delivery details before paying.")
+      setPaymentError("Please complete all delivery details before paying.")
       return
     }
 
     setPaymentState("loading")
-    setPaymentMessage("")
+    setPaymentError("")
+    setConfirmation(null)
 
     await openRazorpayCheckout({
       items,
@@ -114,13 +119,13 @@ export function CheckoutContent() {
         clearCart()
         clearCheckoutSession()
       },
-      onSuccess: (message) => {
+      onSuccess: (details) => {
         setPaymentState("success")
-        setPaymentMessage(message)
+        setConfirmation(details)
       },
       onError: (message) => {
         setPaymentState("error")
-        setPaymentMessage(message)
+        setPaymentError(message)
       },
       onDismiss: () => {
         setPaymentState("idle")
@@ -136,22 +141,31 @@ export function CheckoutContent() {
     )
   }
 
-  if (items.length === 0 && paymentState === "success") {
+  if (items.length === 0 && paymentState === "success" && confirmation) {
     return (
-      <div className="mx-auto max-w-lg px-6 py-20 text-center">
-        <CheckCircle className="mx-auto size-12 text-[#5C6B58]" />
-        <h1 className="mt-6 font-serif text-[28px] text-[#2B1B12]">Thank you</h1>
-        <p className="mt-3 font-serif text-[15px] text-[#6B5344]">{paymentMessage}</p>
-        <p className="mt-2 font-sans text-[13px] text-[#9A8070]">
-          A personalised artisan note will accompany your order.
-        </p>
-        <Link
-          href="/"
-          className="mt-8 inline-block font-sans text-[12px] uppercase tracking-[0.14em] text-[#6B5344] underline underline-offset-4"
-        >
-          Continue shopping
-        </Link>
-      </div>
+      <>
+        <div className="mx-auto max-w-lg px-6 py-20 text-center">
+          <CheckCircle className="mx-auto size-12 text-[#5C6B58]" />
+          <h1 className="mt-6 font-serif text-[28px] text-[#2B1B12]">Thank you</h1>
+          <p className="mt-3 font-serif text-[15px] text-[#6B5344]">
+            Your payment was confirmed. We&apos;ve received your order.
+          </p>
+          <OrderConfirmationDetails
+            orderId={confirmation.orderId}
+            trackingId={confirmation.trackingId}
+          />
+          <p className="mt-4 font-sans text-[13px] text-[#9A8070]">
+            A personalised artisan note will accompany your order.
+          </p>
+          <Link
+            href="/"
+            className="mt-8 inline-block font-sans text-[12px] uppercase tracking-[0.14em] text-[#6B5344] underline underline-offset-4"
+          >
+            Continue shopping
+          </Link>
+        </div>
+        <BestSellingProductsRail title="Best Sellers" />
+      </>
     )
   }
 
@@ -180,7 +194,7 @@ export function CheckoutContent() {
 
               <div className="mt-6 space-y-4">
                 {items.map((item) => (
-                  <div key={item.id} className="flex gap-3">
+                  <div key={item.lineKey} className="flex gap-3">
                     <div className="relative size-14 shrink-0 overflow-hidden rounded-md bg-[#EDE8DC]">
                       <Image
                         src={item.image}
@@ -196,6 +210,7 @@ export function CheckoutContent() {
                       </p>
                       <p className="mt-0.5 font-sans text-[11px] text-[#9A8070]">
                         Qty: {item.quantity}
+                        {item.size ? ` · Size ${item.size}` : ""}
                       </p>
                     </div>
                     <p className="shrink-0 font-serif text-[14px] text-[#2B1B12]">
@@ -260,7 +275,7 @@ export function CheckoutContent() {
         {paymentState === "error" ? (
           <div className="mt-8 flex items-start gap-3 rounded-xl border border-[#F5C6C6] bg-[#FEF2F2] px-4 py-3">
             <XCircle className="mt-0.5 size-5 shrink-0 text-[#B91C1C]" />
-            <p className="font-sans text-[13px] text-[#B91C1C]">{paymentMessage}</p>
+            <p className="font-sans text-[13px] text-[#B91C1C]">{paymentError}</p>
           </div>
         ) : null}
 

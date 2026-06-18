@@ -5,6 +5,7 @@ import { buildCustomOrderDescription } from "@/lib/custom-order-description"
 import { fulfillOrderWithDelhivery } from "@/lib/delhivery-fulfillment"
 import type { DeliveryAddress } from "@/lib/delivery-address"
 import { getPrisma } from "@/lib/prisma"
+import { shortId } from "@/lib/profile-utils"
 import { getRazorpayKeySecret } from "@/lib/razorpay"
 import { createSupabaseApiClient } from "@/lib/supabase/server"
 
@@ -164,16 +165,30 @@ export async function POST(request: NextRequest) {
     })
 
     if (!delhiveryResult.ok) {
-      console.error("[api/custom-orders/confirm] Delhivery failed", delhiveryResult.error)
+      console.error("[api/custom-orders/confirm] Delhivery failed", {
+        customOrderId: order.id,
+        orderReference: body.razorpay_order_id,
+        error: delhiveryResult.error,
+      })
+    } else {
+      console.info("[api/custom-orders/confirm] Delhivery waybill created", {
+        customOrderId: order.id,
+        orderReference: body.razorpay_order_id,
+        waybill: delhiveryResult.waybill,
+      })
     }
+
+    const trackingId = delhiveryResult.waybill?.trim() || null
 
     const jsonResponse = NextResponse.json({
       id: order.id,
+      orderDisplayId: shortId(order.id),
       success: true,
       paymentId: body.razorpay_payment_id,
+      trackingId,
       shipping: {
         created: delhiveryResult.ok,
-        waybill: delhiveryResult.waybill ?? null,
+        waybill: trackingId,
         error: delhiveryResult.error ?? null,
       },
     })

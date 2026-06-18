@@ -17,8 +17,10 @@ import { toast } from "sonner"
 import { AdminSidebar } from "./admin-sidebar"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { categoryCatalog } from "@/lib/category-catalog"
+import { normalizeAvailableSizes, TEXTILE_SIZE_OPTIONS } from "@/lib/clothing-size-guide"
 import { CATEGORY_ROUTE_TO_ENUM, CATEGORY_ENUM_TO_ROUTE } from "@/lib/product-catalog"
 import { parsePriceInput } from "@/lib/product-utils"
+import { cn } from "@/lib/utils"
 import type { AdminProduct } from "@/types/product"
 import type { Category } from "@prisma/client"
 
@@ -56,6 +58,9 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
   const [imageUrls, setImageUrls] = useState<string[]>(product?.imageUrls ?? [])
   const [handcrafted, setHandcrafted] = useState(product?.handcrafted ?? true)
   const [inStock, setInStock] = useState(product?.inStock ?? true)
+  const [availableSizes, setAvailableSizes] = useState<string[]>(
+    product?.availableSizes?.length ? product.availableSizes : [],
+  )
   const [uploading, setUploading] = useState(false)
   const [uploadingStoryImage, setUploadingStoryImage] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -63,6 +68,20 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
   const [error, setError] = useState<string | null>(null)
 
   const subcategories = categoryCatalog[categoryRoute]?.subcategories ?? []
+  const isClothing = categoryRoute === "clothing"
+  const selectedSizes =
+    isClothing && availableSizes.length === 0 ? TEXTILE_SIZE_OPTIONS : availableSizes
+
+  function toggleAvailableSize(size: string) {
+    setAvailableSizes((prev) => {
+      const current = prev.length === 0 && isClothing ? [...TEXTILE_SIZE_OPTIONS] : [...prev]
+      return current.includes(size) ? current.filter((entry) => entry !== size) : [...current, size]
+    })
+  }
+
+  function selectAllSizes() {
+    setAvailableSizes([...TEXTILE_SIZE_OPTIONS])
+  }
 
   async function handleUpload(file: File, target: "gallery" | "story" = "gallery") {
     if (target === "gallery" && imageUrls.length >= 5) {
@@ -130,6 +149,13 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
       return
     }
 
+    const sizesToSave = isClothing ? normalizeAvailableSizes(selectedSizes) : []
+    if (isClothing && sizesToSave.length === 0) {
+      setError("Select at least one available size")
+      setSaving(false)
+      return
+    }
+
     const tags = tagsInput
       .split(",")
       .map((tag) => tag.trim())
@@ -152,6 +178,7 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
       isPublished: publish,
       inStock,
       handcrafted,
+      availableSizes: sizesToSave,
     }
 
     try {
@@ -319,8 +346,12 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
                         <select
                           value={categoryRoute}
                           onChange={(e) => {
-                            setCategoryRoute(e.target.value)
+                            const nextRoute = e.target.value
+                            setCategoryRoute(nextRoute)
                             setSubcategory("")
+                            if (nextRoute !== "clothing") {
+                              setAvailableSizes([])
+                            }
                           }}
                           className="h-10 w-full appearance-none rounded-lg border border-[#EDE5D8] px-3 text-[13px] outline-none"
                         >
@@ -380,6 +411,48 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
                   </div>
                 </div>
               </section>
+
+              {isClothing && (
+                <section className="rounded-xl border border-[#EDE5D8] bg-white p-5">
+                  <div className="mb-4 flex items-start justify-between gap-3">
+                    <div>
+                      <h2 className="text-[14px] font-semibold text-[#2B1B12]">Available Sizes</h2>
+                      <p className="mt-1 text-[11px] leading-relaxed text-[#9A8070]">
+                        Choose which sizes shoppers can select on the product page. At least one
+                        size is required.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={selectAllSizes}
+                      className="shrink-0 text-[11px] font-medium tracking-wide text-[#6B5344] uppercase hover:text-[#2B1B12]"
+                    >
+                      Select all
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {TEXTILE_SIZE_OPTIONS.map((size) => {
+                      const isSelected = selectedSizes.includes(size)
+                      return (
+                        <button
+                          key={size}
+                          type="button"
+                          onClick={() => toggleAvailableSize(size)}
+                          aria-pressed={isSelected}
+                          className={cn(
+                            "min-w-[52px] rounded-lg border px-4 py-2.5 text-[13px] font-medium transition-colors",
+                            isSelected
+                              ? "border-[#846246] bg-[#846246] text-white"
+                              : "border-[#EDE5D8] bg-[#FAF7F2] text-[#6B5344] hover:border-[#C4A882]",
+                          )}
+                        >
+                          {size}
+                        </button>
+                      )
+                    })}
+                  </div>
+                </section>
+              )}
 
               <section className="rounded-xl border border-[#EDE5D8] bg-white p-5">
                 <h2 className="mb-4 text-[14px] font-semibold text-[#2B1B12]">

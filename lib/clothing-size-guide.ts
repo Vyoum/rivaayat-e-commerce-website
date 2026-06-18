@@ -23,8 +23,56 @@ export const CLOTHING_SIZE_GUIDE_MEASURE_TIPS = [
 ]
 
 export const CLOTHING_SIZE_GUIDE_NOTE =
-  "Measurements are in inches. Handcrafted garments may vary slightly — this chart reflects typical finished sizing. For a relaxed fit, consider sizing up."
+  "Measurements are in inches. Handcrafted textiles may vary slightly — this chart reflects typical finished sizing. For a relaxed fit, consider sizing up."
 
+export const TEXTILE_SIZE_OPTIONS = CLOTHING_SIZE_GUIDE_ROWS.map((row) => row.size)
+
+export function normalizeAvailableSizes(sizes: string[]): string[] {
+  const selected = new Set(sizes.map((size) => size.trim().toUpperCase()))
+  return TEXTILE_SIZE_OPTIONS.filter((size) => selected.has(size))
+}
+
+/** Product-specific sizes in chart order; empty config falls back to the full range. */
+export function resolveProductSizes(availableSizes: string[] | null | undefined): string[] {
+  const normalized = normalizeAvailableSizes(availableSizes ?? [])
+  return normalized.length > 0 ? normalized : [...TEXTILE_SIZE_OPTIONS]
+}
+
+const TEXTILE_SUBCATEGORIES = new Set(["loom", "textiles"])
+const TEXTILE_TAGS = new Set(["textile", "textiles", "clothing", "handloom", "handloom-textile"])
+
+export function isTextileProduct(input: {
+  categoryRoute?: string | null
+  category?: string | null
+  subcategory?: string | null
+  tags?: string[]
+  categoryLabel?: string | null
+}) {
+  const route = input.categoryRoute?.trim().toLowerCase()
+  if (route === "clothing") return true
+
+  const category = input.category?.trim().toLowerCase()
+  if (category === "clothing") return true
+
+  const subcategory = input.subcategory?.trim().toLowerCase()
+  if (subcategory && TEXTILE_SUBCATEGORIES.has(subcategory)) return true
+
+  if (input.tags?.some((tag) => TEXTILE_TAGS.has(tag.trim().toLowerCase()))) return true
+
+  const label = input.categoryLabel?.trim().toLowerCase() ?? ""
+  if (
+    label.includes("textile") ||
+    label.includes("loom") ||
+    label === "clothing" ||
+    label === "the loom series"
+  ) {
+    return true
+  }
+
+  return false
+}
+
+/** @deprecated use isTextileProduct */
 export function isClothingProduct(categoryRoute: string) {
-  return categoryRoute === "clothing"
+  return isTextileProduct({ categoryRoute })
 }

@@ -164,11 +164,16 @@ async function createOrderRecord(
         ? serializeDeliveryAddress(input.deliveryAddress)
         : null,
       items: {
-        create: orderItems.map((item) => ({
-          productName: item.productName,
-          variant: item.variant,
+        create: input.items.map((item) => ({
+          productId: item.id,
+          productName: item.name,
+          variant: item.size
+            ? item.variant
+              ? `${item.variant} · Size ${item.size}`
+              : `Size ${item.size}`
+            : item.variant,
           quantity: item.quantity,
-          unitPrice: item.unitPrice,
+          unitPrice: item.price,
         })),
       },
     },

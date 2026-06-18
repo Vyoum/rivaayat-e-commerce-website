@@ -49,7 +49,10 @@ export async function ensureDelhiveryPickupWarehouse(
 
   const payload = getWarehousePayload(config)
   if (!payload) {
-    // Warehouse may already exist in Delhivery (registered manually or earlier).
+    console.warn(
+      "[delhivery/warehouse] pickup env incomplete — skipping auto-registration; ensure warehouse exists in Delhivery with name:",
+      config.pickupLocation,
+    )
     return { ok: true, created: false }
   }
 

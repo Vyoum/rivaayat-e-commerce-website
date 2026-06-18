@@ -3,7 +3,9 @@ import { notFound } from "next/navigation"
 
 import { ProductDetailHeader } from "@/components/product/product-detail-header"
 import { ProductDetailContent } from "@/components/product/product-detail-content"
+import { BestSellingProductsRail } from "@/components/catalog/best-selling-products-rail"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
+import { getBestSellingProducts } from "@/lib/best-selling-products"
 import { getPrisma } from "@/lib/prisma"
 import { getPublishedProductBySlug } from "@/lib/product-server"
 import { getProductReviewsBySlug } from "@/lib/review-server"
@@ -61,6 +63,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
   const userId = await resolveDbUserId()
   const reviewsData = await getProductReviewsBySlug(slug, userId)
   const reviewsEnabled = reviewsData !== null
+  const bestSellingProducts = await getBestSellingProducts({
+    limit: 12,
+    excludeIds: [product.id],
+    excludeSlugs: [product.slug],
+    categoryRoute: product.categoryRoute,
+  })
 
   return (
     <main className="min-h-screen bg-[#F5F3E9]">
@@ -69,6 +77,12 @@ export default async function ProductPage({ params }: ProductPageProps) {
         product={product}
         reviewsData={reviewsData}
         reviewsEnabled={reviewsEnabled}
+      />
+      <BestSellingProductsRail
+        initialProducts={bestSellingProducts}
+        categoryRoute={product.categoryRoute}
+        excludeIds={[product.id]}
+        excludeSlugs={[product.slug]}
       />
     </main>
   )

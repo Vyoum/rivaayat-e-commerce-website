@@ -98,6 +98,7 @@ model Product {
   inStock       Boolean    @default(true) @map("in_stock")
   isPublished   Boolean    @default(false) @map("is_published")
   handcrafted   Boolean    @default(true)
+  availableSizes String[]  @default([]) @map("available_sizes")
   createdAt     DateTime   @default(now()) @map("created_at")
   updatedAt     DateTime   @updatedAt @map("updated_at")
 

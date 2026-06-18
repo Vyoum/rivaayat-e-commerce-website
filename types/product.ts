@@ -21,6 +21,7 @@ export type AdminProduct = {
   inStock: boolean
   isPublished: boolean
   handcrafted: boolean
+  availableSizes: string[]
   createdAt: string
   updatedAt: string
 }
@@ -46,6 +47,7 @@ export type StoreProductDetail = {
   badge: string | null
   handcrafted: boolean
   inStock: boolean
+  availableSizes: string[]
 }
 
 export type CreateProductInput = {
@@ -66,6 +68,7 @@ export type CreateProductInput = {
   inStock?: boolean
   isPublished?: boolean
   handcrafted?: boolean
+  availableSizes?: string[]
 }
 
 export type UpdateProductInput = Partial<CreateProductInput>

@@ -1,6 +1,10 @@
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import type { CartItem } from "@/lib/cart"
 import { buildOrderFromCheckout, saveStoredOrder } from "@/lib/orders-storage"
+import {
+  buildPaymentConfirmationDetails,
+  type PaymentConfirmationDetails,
+} from "@/lib/payment-confirmation"
 import type { ProfileOrder } from "@/types/profile"
 
 declare global {
@@ -135,7 +139,7 @@ export type RazorpayCheckoutInput = {
     email?: string
     contact?: string
   }
-  onSuccess: (message: string) => void
+  onSuccess: (details: PaymentConfirmationDetails) => void
   onError: (message: string) => void
   onDismiss?: () => void
   clearCart: () => void
@@ -183,7 +187,15 @@ export async function openRazorpayCheckout(input: RazorpayCheckoutInput) {
         }
 
         input.clearCart()
-        input.onSuccess(`Payment confirmed! ID: ${result.paymentId}`)
+        input.onSuccess(
+          buildPaymentConfirmationDetails({
+            order: savedOrder,
+            orderId: result.orderId,
+            orderDisplayId: savedOrder.displayId,
+            trackingId: result.trackingId,
+            shipping: result.shipping,
+          }),
+        )
       } else {
         input.onError("Payment verification failed. Please contact support.")
       }

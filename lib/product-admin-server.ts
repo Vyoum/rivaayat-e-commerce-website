@@ -5,6 +5,7 @@ import {
   CATEGORY_ENUM_TO_ROUTE,
   CATEGORY_LABELS,
 } from "@/lib/product-catalog"
+import { normalizeAvailableSizes } from "@/lib/clothing-size-guide"
 import { getPrisma } from "@/lib/prisma"
 import { slugify } from "@/lib/product-utils"
 import type {
@@ -33,6 +34,7 @@ const productSelect = {
   inStock: true,
   isPublished: true,
   handcrafted: true,
+  availableSizes: true,
   createdAt: true,
   updatedAt: true,
 } as const
@@ -56,6 +58,7 @@ function mapDbProductToAdmin(product: {
   inStock: boolean
   isPublished: boolean
   handcrafted: boolean
+  availableSizes: string[]
   createdAt: Date
   updatedAt: Date
 }): AdminProduct {
@@ -80,6 +83,7 @@ function mapDbProductToAdmin(product: {
     inStock: product.inStock,
     isPublished: product.isPublished,
     handcrafted: product.handcrafted,
+    availableSizes: product.availableSizes,
     createdAt: product.createdAt.toISOString(),
     updatedAt: product.updatedAt.toISOString(),
   }
@@ -208,6 +212,10 @@ export async function createAdminProduct(input: CreateProductInput) {
       inStock: input.inStock ?? true,
       isPublished: input.isPublished ?? false,
       handcrafted: input.handcrafted ?? true,
+      availableSizes:
+        input.category === "clothing"
+          ? normalizeAvailableSizes(input.availableSizes ?? [])
+          : [],
     },
     select: productSelect,
   })
@@ -218,7 +226,10 @@ export async function createAdminProduct(input: CreateProductInput) {
 export async function updateAdminProduct(id: string, input: UpdateProductInput) {
   const prisma = getPrisma()
   if (!prisma) throw new Error("Database unavailable")
-  const existing = await prisma.product.findUnique({ where: { id }, select: { id: true, slug: true } })
+  const existing = await prisma.product.findUnique({
+    where: { id },
+    select: { id: true, slug: true, category: true },
+  })
   if (!existing) throw new Error("Product not found")
 
   let slug = existing.slug
@@ -230,6 +241,14 @@ export async function updateAdminProduct(id: string, input: UpdateProductInput) 
 
   if (input.imageUrls !== undefined && input.imageUrls.length === 0) {
     throw new Error("At least one product image is required")
+  }
+
+  let resolvedSizes: string[] | undefined
+
+  if (input.availableSizes !== undefined) {
+    resolvedSizes = normalizeAvailableSizes(input.availableSizes)
+  } else if (input.category !== undefined && input.category !== "clothing") {
+    resolvedSizes = []
   }
 
   const product = await prisma.product.update({
@@ -256,6 +275,7 @@ export async function updateAdminProduct(id: string, input: UpdateProductInput) 
       ...(input.inStock !== undefined ? { inStock: input.inStock } : {}),
       ...(input.isPublished !== undefined ? { isPublished: input.isPublished } : {}),
       ...(input.handcrafted !== undefined ? { handcrafted: input.handcrafted } : {}),
+      ...(resolvedSizes !== undefined ? { availableSizes: resolvedSizes } : {}),
     },
     select: productSelect,
   })

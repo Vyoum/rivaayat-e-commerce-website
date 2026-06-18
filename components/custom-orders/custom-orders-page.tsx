@@ -3,6 +3,8 @@
 import { useEffect, useMemo, useState } from "react"
 import { Cookie, Dumbbell, FlaskConical, Loader2, Lock, Shirt, type LucideIcon } from "lucide-react"
 import { DeliveryAddressFields } from "@/components/shared/delivery-address-fields"
+import { BestSellingProductsRail } from "@/components/catalog/best-selling-products-rail"
+import { OrderConfirmationDetails } from "@/components/shared/order-confirmation-details"
 import { useAuth } from "@/hooks/use-auth"
 import {
   INITIAL_DELIVERY_ADDRESS,
@@ -10,6 +12,7 @@ import {
   type DeliveryAddress,
 } from "@/lib/delivery-address"
 import { openRazorpayPayment } from "@/lib/razorpay-client"
+import { buildPaymentConfirmationDetails, type PaymentConfirmationDetails } from "@/lib/payment-confirmation"
 import { cn } from "@/lib/utils"
 import {
   calculateCustomOrderTotal,
@@ -187,7 +190,7 @@ export function CustomOrdersPage({ categories: categoriesProp }: CustomOrdersPag
   })
   const [submitting, setSubmitting] = useState(false)
   const [submitted, setSubmitted] = useState(false)
-  const [paymentMessage, setPaymentMessage] = useState("")
+  const [confirmation, setConfirmation] = useState<PaymentConfirmationDetails | null>(null)
   const [error, setError] = useState<string | null>(null)
   const [delivery, setDelivery] = useState<DeliveryAddress>(INITIAL_DELIVERY_ADDRESS)
   const { user } = useAuth()
@@ -248,7 +251,7 @@ export function CustomOrdersPage({ categories: categoriesProp }: CustomOrdersPag
 
     setSubmitting(true)
     setError(null)
-    setPaymentMessage("")
+    setConfirmation(null)
 
     const total = Math.max(1, orderTotal.total)
     const orderPayload = {
@@ -300,7 +303,14 @@ export function CustomOrdersPage({ categories: categoriesProp }: CustomOrdersPag
           if (!res.ok) throw new Error(data.error || "Failed to confirm custom order")
 
           setSubmitted(true)
-          setPaymentMessage(`Payment confirmed! ID: ${data.paymentId}`)
+          setConfirmation(
+            buildPaymentConfirmationDetails({
+              orderId: data.id,
+              orderDisplayId: data.orderDisplayId,
+              trackingId: data.trackingId,
+              shipping: data.shipping,
+            }),
+          )
         } catch (err) {
           setError(err instanceof Error ? err.message : "Something went wrong")
         } finally {
@@ -311,7 +321,8 @@ export function CustomOrdersPage({ categories: categoriesProp }: CustomOrdersPag
   }
 
   return (
-    <div className="mx-auto max-w-[1060px] px-5 pb-20 pt-10 lg:px-8 lg:pt-14">
+    <>
+      <div className="mx-auto max-w-[1060px] px-5 pb-20 pt-10 lg:px-8 lg:pt-14">
       <header className="text-center">
         <h1 className="font-serif text-[clamp(2rem,4vw,2.75rem)] font-normal text-[#3D2E24]">
           Custom Orders
@@ -404,14 +415,18 @@ export function CustomOrdersPage({ categories: categoriesProp }: CustomOrdersPag
                 Thank you! Your payment was received and our artisan will begin preparing your
                 custom order.
               </p>
-              {paymentMessage ? (
-                <p className="mt-3 font-sans text-[13px] text-[#8B7355]">{paymentMessage}</p>
+              {confirmation ? (
+                <OrderConfirmationDetails
+                  orderId={confirmation.orderId}
+                  trackingId={confirmation.trackingId}
+                  className="w-full max-w-md"
+                />
               ) : null}
               <button
                 type="button"
                 onClick={() => {
                   setSubmitted(false)
-                  setPaymentMessage("")
+                  setConfirmation(null)
                   setDelivery(INITIAL_DELIVERY_ADDRESS)
                 }}
                 className="mt-8 font-sans text-[11px] uppercase tracking-[0.16em] text-[#3D2E24] underline underline-offset-4"
@@ -553,6 +568,8 @@ export function CustomOrdersPage({ categories: categoriesProp }: CustomOrdersPag
           )}
         </div>
       </div>
-    </div>
+      </div>
+      {submitted ? <BestSellingProductsRail title="Best Sellers" className="mt-2" /> : null}
+    </>
   )
 }

@@ -49,8 +49,8 @@ function CartItemCard({
   onRemove,
 }: {
   item: CartItem
-  onUpdateQuantity: (id: string, quantity: number) => void
-  onRemove: (id: string) => void
+  onUpdateQuantity: (lineKey: string, quantity: number) => void
+  onRemove: (lineKey: string) => void
 }) {
   const productHref = item.slug ? `/products/${item.slug}` : null
 
@@ -103,6 +103,11 @@ function CartItemCard({
               <p className="font-sans text-[12px] text-[#9A8070]">
                 <span className="text-[#6B5344]">Variant:</span> {item.variant}
               </p>
+              {item.size ? (
+                <p className="font-sans text-[12px] text-[#9A8070]">
+                  <span className="text-[#6B5344]">Size:</span> {item.size}
+                </p>
+              ) : null}
               <p className="font-sans text-[12px] text-[#9A8070]">
                 <span className="text-[#6B5344]">Artisan:</span> {item.artisan}
               </p>
@@ -116,7 +121,7 @@ function CartItemCard({
               <div className="flex items-center rounded-md border border-[#EDE5D8] bg-white">
                 <button
                   type="button"
-                  onClick={() => onUpdateQuantity(item.id, item.quantity - 1)}
+                  onClick={() => onUpdateQuantity(item.lineKey, item.quantity - 1)}
                   disabled={item.quantity <= 1}
                   className="flex h-8 w-8 items-center justify-center text-[#6B5344] transition-colors hover:text-[#2B1B12] disabled:opacity-40"
                   aria-label="Decrease quantity"
@@ -128,7 +133,7 @@ function CartItemCard({
                 </span>
                 <button
                   type="button"
-                  onClick={() => onUpdateQuantity(item.id, item.quantity + 1)}
+                  onClick={() => onUpdateQuantity(item.lineKey, item.quantity + 1)}
                   className="flex h-8 w-8 items-center justify-center text-[#6B5344] transition-colors hover:text-[#2B1B12]"
                   aria-label="Increase quantity"
                 >
@@ -138,7 +143,7 @@ function CartItemCard({
 
               <button
                 type="button"
-                onClick={() => onRemove(item.id)}
+                onClick={() => onRemove(item.lineKey)}
                 className="flex items-center gap-1.5 font-sans text-[11px] text-[#9A8070] underline underline-offset-2 transition-colors hover:text-[#2B1B12]"
               >
                 <Trash2 className="h-3 w-3" strokeWidth={1.5} />
@@ -256,7 +261,7 @@ export function CartContent() {
           ) : (
             items.map((item) => (
               <CartItemCard
-                key={item.id}
+                key={item.lineKey}
                 item={item}
                 onUpdateQuantity={updateQuantity}
                 onRemove={removeItem}

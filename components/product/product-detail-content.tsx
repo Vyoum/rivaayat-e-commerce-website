@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useMemo, useState } from "react"
 import Link from "next/link"
 import Image from "next/image"
 import { useRouter } from "next/navigation"
@@ -14,8 +14,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { ProductReviewsSection } from "@/components/product/product-reviews-section"
 import { ProductSizeGuide } from "@/components/product/product-size-guide"
+import { ProductSizeSelector } from "@/components/product/product-size-selector"
 import { StarRating } from "@/components/product/star-rating"
-import { isClothingProduct } from "@/lib/clothing-size-guide"
+import { isTextileProduct, resolveProductSizes } from "@/lib/clothing-size-guide"
 import { storeProductDetailToCatalog } from "@/lib/product-catalog"
 import { MOCK_REVIEW_SUMMARY } from "@/lib/product-testimonials"
 import { cn } from "@/lib/utils"
@@ -43,6 +44,7 @@ export function ProductDetailContent({
 
   const [activeImage, setActiveImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
+  const [selectedSize, setSelectedSize] = useState<string | null>(null)
   const [isGift, setIsGift] = useState(false)
   const [openAccordion, setOpenAccordion] = useState<string | null>(null)
 
@@ -89,7 +91,23 @@ export function ProductDetailContent({
     storyParagraphs.length > 0 || Boolean(product.storyImageUrl)
 
   const wishlisted = isWishlisted(product.id)
-  const showSizeGuide = isClothingProduct(product.categoryRoute)
+  const productSizes = useMemo(
+    () => resolveProductSizes(product.availableSizes),
+    [product.availableSizes],
+  )
+  const showSizeGuide =
+    isTextileProduct({
+      categoryRoute: product.categoryRoute,
+      category: product.category,
+      subcategory: product.subcategory,
+      categoryLabel: product.categoryLabel,
+    }) && productSizes.length > 0
+
+  useEffect(() => {
+    if (selectedSize && !productSizes.includes(selectedSize)) {
+      setSelectedSize(null)
+    }
+  }, [product.availableSizes, selectedSize, productSizes])
 
   const hasRealReviews = (reviewsData?.summary.totalCount ?? 0) > 0
   const headerRating = hasRealReviews
@@ -107,7 +125,15 @@ export function ProductDetailContent({
       return
     }
 
-    addItem(catalogProduct, { quantity })
+    if (showSizeGuide && !selectedSize) {
+      toast.error("Please select a size")
+      return
+    }
+
+    addItem(catalogProduct, {
+      quantity,
+      size: selectedSize ?? undefined,
+    })
   }
 
   function handleToggleWishlist() {
@@ -275,7 +301,18 @@ export function ProductDetailContent({
               </div>
             </div>
 
-            {showSizeGuide ? <ProductSizeGuide variant="detail" /> : null}
+            {showSizeGuide ? (
+              <>
+                <ProductSizeSelector
+                  sizes={productSizes}
+                  value={selectedSize}
+                  onChange={setSelectedSize}
+                />
+                <div className="mt-4">
+                  <ProductSizeGuide variant="detail" />
+                </div>
+              </>
+            ) : null}
 
             <button
               type="button"

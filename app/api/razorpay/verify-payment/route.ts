@@ -172,11 +172,17 @@ export async function POST(req: NextRequest) {
       })
 
       if (!delhiveryResult.ok) {
-        console.error(
-          "[razorpay/verify-payment] Delhivery failed for",
-          razorpay_order_id,
-          delhiveryResult.error,
-        )
+        console.error("[razorpay/verify-payment] Delhivery failed", {
+          razorpayOrderId: razorpay_order_id,
+          dbOrderId,
+          error: delhiveryResult.error,
+        })
+      } else {
+        console.info("[razorpay/verify-payment] Delhivery waybill created", {
+          razorpayOrderId: razorpay_order_id,
+          dbOrderId,
+          waybill: delhiveryResult.waybill,
+        })
       }
     }
 
@@ -184,10 +190,17 @@ export async function POST(req: NextRequest) {
       await incrementPromoUsage(appliedPromoCode)
     }
 
+    const trackingId =
+      delhiveryResult?.waybill?.trim() ||
+      existingOrder?.delhiveryWaybill?.trim() ||
+      null
+
     const jsonResponse = NextResponse.json({
       verified: true,
-      orderId: razorpay_order_id,
+      orderId: savedOrder?.id ?? dbOrderId,
+      orderDisplayId: savedOrder?.displayId ?? dbOrderId,
       paymentId: razorpay_payment_id,
+      trackingId,
       order: savedOrder,
       shipping: delhiveryResult
         ? {
@@ -195,7 +208,13 @@ export async function POST(req: NextRequest) {
             waybill: delhiveryResult.waybill ?? null,
             error: delhiveryResult.error ?? null,
           }
-        : null,
+        : trackingId
+          ? {
+              created: true,
+              waybill: trackingId,
+              error: null,
+            }
+          : null,
     })
     response.cookies.getAll().forEach((cookie) => {
       jsonResponse.cookies.set(cookie)
