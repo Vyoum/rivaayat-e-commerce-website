@@ -78,6 +78,40 @@ const journeyIcons = [PenLine, Leaf, Hand, Search, Package, Truck]
 const impactIcons = [Users, Sparkles, ShieldCheck, Leaf]
 const promiseIcons = [Sparkles, Leaf, Users, ShieldCheck]
 
+function StoryHeroSection({ content }: { content: OurStoryPageContent["cta"] }) {
+  const headlineParts = content.headline.split(/\s+to\s+/i)
+  const titleLine1 = headlineParts[0]?.trim() ?? content.headline
+  const titleLine2 =
+    headlineParts.length > 1 ? `to ${headlineParts.slice(1).join(" to ").trim()}` : null
+
+  return (
+    <section className="relative min-h-[360px] overflow-hidden sm:min-h-[420px] lg:min-h-[480px]">
+      <Image
+        src={content.imageUrl}
+        alt=""
+        fill
+        className="object-cover"
+        sizes="100vw"
+        priority
+      />
+      <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/55 to-black/20" />
+      <div className="relative z-10 mx-auto flex h-full min-h-[360px] max-w-[1120px] items-center px-5 py-16 sm:min-h-[420px] lg:min-h-[480px] lg:px-8">
+        <div className="max-w-[560px] text-white">
+          <h1 className="text-[clamp(2rem,4.2vw,3.25rem)] leading-[1.12]">
+            <span className="landing-display block text-white">{titleLine1}</span>
+            {titleLine2 ? (
+              <span className="landing-display-italic mt-1 block text-[#E8D0BC]">{titleLine2}</span>
+            ) : null}
+          </h1>
+          <div className="mt-8">
+            <SolidCtaButton href={content.buttonHref} label={content.buttonLabel} />
+          </div>
+        </div>
+      </div>
+    </section>
+  )
+}
+
 type OurStoryPageProps = {
   content?: OurStoryPageContent
 }
@@ -86,6 +120,9 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
   return (
     <main className="story-page-root min-h-screen overflow-x-hidden text-[#2D1A12]">
       <SiteHeader className="!border-[#D8CFC4]/60 !bg-[#ede0d0]/90 backdrop-blur-md" />
+
+      {/* SESSION 1 — hero */}
+      <StoryHeroSection content={content.cta} />
 
       {/* SESSION 2 — Why House of Indika */}
       <section className="story-page-section story-page-section--intro !pt-10 lg:!pt-14">
@@ -106,11 +143,10 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
               <div className="relative aspect-[4/5] min-h-[240px] w-full overflow-hidden sm:min-h-[300px] lg:min-h-[380px] xl:min-h-[420px]">
                 <Image
                   src={content.whyExists.imageUrl}
-                  alt=""
+                  alt={content.whyExists.title}
                   fill
                   className="object-cover"
                   sizes="(max-width: 1024px) 45vw, 280px"
-                  priority
                 />
               </div>
             </div>
@@ -309,31 +345,6 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
                   </div>
                 )
               })}
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* SESSION 9 — full-width CTA */}
-      <section className="relative mt-2 min-h-[360px] overflow-hidden sm:min-h-[420px] lg:min-h-[480px]">
-        <Image
-          src={content.cta.imageUrl}
-          alt=""
-          fill
-          className="object-cover"
-          sizes="100vw"
-        />
-        <div className="absolute inset-0 bg-gradient-to-r from-black/75 via-black/55 to-black/20" />
-        <div className="relative z-10 mx-auto flex h-full min-h-[360px] max-w-[1120px] items-center px-5 py-16 sm:min-h-[420px] lg:min-h-[480px] lg:px-8">
-          <div className="max-w-[560px] text-white">
-            <h2 className="font-serif text-[clamp(1.85rem,3.6vw,2.55rem)] font-normal leading-[1.22] text-white">
-              {content.cta.headline}
-            </h2>
-            <p className="mt-4 font-serif text-[15px] italic text-white/90">
-              {content.cta.subheadline}
-            </p>
-            <div className="mt-8">
-              <SolidCtaButton href={content.cta.buttonHref} label={content.cta.buttonLabel} />
             </div>
           </div>
         </div>

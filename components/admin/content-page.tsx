@@ -110,6 +110,12 @@ export function ContentPage() {
             </h2>
             <div className="mt-4 flex flex-wrap gap-3">
               <Link
+                href="/admin/our-story"
+                className="rounded-lg border border-[#EDE5D8] px-4 py-2 text-[13px] font-medium text-[#6B5344] hover:bg-[#FAF7F2]"
+              >
+                Our Story Page
+              </Link>
+              <Link
                 href="/admin/community/artisans"
                 className="rounded-lg border border-[#EDE5D8] px-4 py-2 text-[13px] font-medium text-[#6B5344] hover:bg-[#FAF7F2]"
               >

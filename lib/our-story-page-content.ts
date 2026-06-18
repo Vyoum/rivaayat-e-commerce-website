@@ -90,10 +90,6 @@ export type OurStoryPageContent = {
   }
 }
 
-export async function getOurStoryPageContent(): Promise<OurStoryPageContent> {
-  return DEFAULT_OUR_STORY_PAGE_CONTENT
-}
-
 export const DEFAULT_OUR_STORY_PAGE_CONTENT: OurStoryPageContent = {
   whyExists: {
     session: "SESSION 2",
@@ -286,7 +282,7 @@ export const DEFAULT_OUR_STORY_PAGE_CONTENT: OurStoryPageContent = {
   cta: {
     session: "SESSION 9",
     imageUrl: "/indian-artisan-hands-creating-traditional-craft-wi.jpg",
-    headline: "Every purchase helps preserve India's living heritage.",
+    headline: "From Craft to Collection",
     subheadline: "Become part of the story.",
     buttonLabel: "Explore Collections",
     buttonHref: "/collections",

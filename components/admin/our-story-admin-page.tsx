@@ -14,7 +14,7 @@ export function OurStoryAdminPage() {
           <div>
             <h1 className="font-serif text-[26px] font-semibold text-[#2D1E17]">Our Story</h1>
             <p className="mt-1 text-[13px] text-[#9A8070]">
-              Edit the Our Story page and artisan profiles — photo, name, biography, and more.
+              Edit Our Story page photos and artisan profiles shown on the public site.
             </p>
           </div>
 
