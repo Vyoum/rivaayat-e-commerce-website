@@ -5,7 +5,6 @@ import { LandingHero } from "@/components/landing/landing-hero"
 import { LandingStory } from "@/components/landing/landing-story"
 import { LandingCategories } from "@/components/landing/landing-categories"
 import { LandingFooter } from "@/components/landing/landing-footer"
-import { LandingTextureBg } from "@/components/landing/landing-texture-bg"
 import { getCategoryCardsContent } from "@/lib/category-cards"
 import { getActiveHeroSlides, getHeroCopy } from "@/lib/hero-slides"
 import { getHomepageStory } from "@/lib/homepage-story"
@@ -55,7 +54,6 @@ export default async function Home() {
       <LandingHeader />
       <LandingHero slides={heroSlides} copy={heroCopy} />
       <div className="landing-texture-wrap">
-        <LandingTextureBg />
         <LandingStory content={homepageStory} />
       </div>
       <LandingCategories

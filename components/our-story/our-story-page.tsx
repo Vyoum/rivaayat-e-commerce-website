@@ -29,16 +29,18 @@ function SessionHeading({
 }: {
   title: string
   align?: "left" | "center"
-  size?: "default" | "large"
+  size?: "default" | "large" | "xlarge"
 }) {
   return (
     <div className={align === "left" ? "text-left" : "text-center"}>
       <h2
         className={cn(
           "font-serif font-normal leading-[1.2] text-[#2D1A12]",
-          size === "large"
-            ? "text-[clamp(1.75rem,3.2vw,2.5rem)] lg:text-[clamp(2rem,2.8vw,2.75rem)]"
-            : "text-[clamp(1.35rem,2.4vw,1.85rem)] lg:text-[clamp(1.5rem,2.2vw,2rem)]",
+          size === "xlarge"
+            ? "text-[clamp(2rem,3.8vw,2.9rem)] lg:text-[clamp(2.35rem,3.4vw,3.35rem)]"
+            : size === "large"
+              ? "text-[clamp(1.75rem,3.2vw,2.5rem)] lg:text-[clamp(2rem,2.8vw,2.75rem)]"
+              : "text-[clamp(1.35rem,2.4vw,1.85rem)] lg:text-[clamp(1.5rem,2.2vw,2rem)]",
         )}
       >
         {title}
@@ -248,14 +250,14 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
       {/* SESSION 4 — craft journey */}
       <section className="story-page-section">
         <div className="story-page-inner">
-          <SessionHeading title={content.journey.title} size="large" />
+          <SessionHeading title={content.journey.title} size="xlarge" />
 
-          <div className="mt-12 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
-            <div className="mx-auto flex min-w-[1080px] max-w-[1180px] items-start justify-between px-2">
+          <div className="mt-14 overflow-x-auto pb-2 [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+            <div className="mx-auto flex min-w-[1240px] max-w-[1320px] items-start justify-between px-2">
               {content.journey.steps.map((step, index) => {
                 const Icon = journeyIcons[index] ?? Sparkles
                 return (
-                  <div key={step.id} className="flex w-[170px] flex-col items-center text-center sm:w-[180px]">
+                  <div key={step.id} className="flex w-[200px] flex-col items-center text-center sm:w-[220px]">
                     <div className="relative flex w-full items-center justify-center">
                       {index > 0 ? (
                         <span className="absolute top-1/2 right-1/2 left-0 h-px -translate-y-1/2 bg-[#C4B5A5]" />
@@ -263,14 +265,14 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
                       {index < content.journey.steps.length - 1 ? (
                         <span className="absolute top-1/2 right-0 left-1/2 h-px -translate-y-1/2 bg-[#C4B5A5]" />
                       ) : null}
-                      <div className="relative z-10 flex size-[60px] items-center justify-center rounded-full border border-[#C4B5A5] bg-[#F0E6DA] sm:size-[64px]">
-                        <Icon className="size-[22px] text-[#6B5344] sm:size-[24px]" strokeWidth={1.25} />
+                      <div className="relative z-10 flex size-[72px] items-center justify-center rounded-full border border-[#C4B5A5] bg-[#F0E6DA] sm:size-[80px]">
+                        <Icon className="size-[28px] text-[#6B5344] sm:size-[32px]" strokeWidth={1.25} />
                       </div>
                     </div>
-                    <h3 className="mt-5 font-serif text-[16px] font-normal text-[#2D1A12] sm:text-[17px] lg:text-[18px]">
+                    <h3 className="mt-6 font-serif text-[20px] font-normal text-[#2D1A12] sm:text-[22px] lg:text-[24px]">
                       {step.title}
                     </h3>
-                    <p className="mt-2.5 font-sans text-[13px] leading-[1.6] text-[#8B7355] sm:text-[14px]">
+                    <p className="mt-3 font-sans text-[15px] leading-[1.65] text-[#8B7355] sm:text-[16px] lg:text-[18px]">
                       {step.description}
                     </p>
                   </div>

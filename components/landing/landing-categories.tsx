@@ -18,39 +18,6 @@ export function LandingCategories({
 }: LandingCategoriesProps) {
   return (
     <section className="landing-categories-section relative z-10 px-5 pb-16 pt-10 lg:px-8 lg:pb-20 lg:pt-12">
-      <div className="landing-categories-hills pointer-events-none absolute inset-0" aria-hidden>
-        <svg
-          viewBox="0 0 1440 600"
-          preserveAspectRatio="none"
-          className="absolute bottom-[18%] h-[42%] w-full"
-        >
-          <path
-            d="M0,280 C320,220 640,340 960,260 C1200,200 1320,280 1440,240 L1440,600 L0,600 Z"
-            fill="#C4A078"
-          />
-        </svg>
-        <svg
-          viewBox="0 0 1440 600"
-          preserveAspectRatio="none"
-          className="absolute bottom-[8%] h-[38%] w-full"
-        >
-          <path
-            d="M0,320 C280,260 560,360 840,300 C1120,240 1280,320 1440,280 L1440,600 L0,600 Z"
-            fill="#B08860"
-          />
-        </svg>
-        <svg
-          viewBox="0 0 1440 600"
-          preserveAspectRatio="none"
-          className="absolute bottom-0 h-[32%] w-full"
-        >
-          <path
-            d="M0,360 C300,300 600,400 900,340 C1200,280 1320,360 1440,320 L1440,600 L0,600 Z"
-            fill="#9E7348"
-          />
-        </svg>
-      </div>
-
       <div className="relative z-10 mx-auto max-w-[820px]">
         <h2 className="landing-display text-center text-[26px] text-[#2D1A12] sm:text-[30px]">
           {sectionHeading}
