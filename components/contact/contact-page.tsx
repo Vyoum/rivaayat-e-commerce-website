@@ -19,7 +19,7 @@ import { cn } from "@/lib/utils"
 
 const CONTACT_EMAIL = "Heritage@houseofindika.com"
 const CONTACT_PHONE = "8130088626"
-const CONTACT_PHONE_DISPLAY = "+91 88266 64130"
+const CONTACT_PHONE_DISPLAY = "+91 81300 88626"
 const WHATSAPP_URL = `https://wa.me/91${CONTACT_PHONE}`
 
 const inquiryTypes = [
