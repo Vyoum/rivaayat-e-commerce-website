@@ -17,8 +17,8 @@ import { SiteHeader } from "@/components/site-header"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { cn } from "@/lib/utils"
 
-const CONTACT_EMAIL = "houseofindia@gmail.com"
-const CONTACT_PHONE = "8826664130"
+const CONTACT_EMAIL = "Heritage@houseofindika.com"
+const CONTACT_PHONE = "8130088626"
 const CONTACT_PHONE_DISPLAY = "+91 88266 64130"
 const WHATSAPP_URL = `https://wa.me/91${CONTACT_PHONE}`
 
