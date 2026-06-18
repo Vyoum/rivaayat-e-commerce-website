@@ -8,6 +8,7 @@ import { CatalogHeader } from "@/components/catalog/catalog-header"
 import { CatalogProductCard } from "@/components/catalog/catalog-product-card"
 import { cn } from "@/lib/utils"
 import { matchesProductSearch } from "@/lib/product-search"
+import { getProductTicketTheme } from "@/lib/product-category-ticket-theme"
 import { categoryCatalog, getCatalogSubcategoryOptions, type CatalogProduct, type CategoryConfig } from "@/lib/category-catalog"
 
 const PAGE_SIZE = 6
@@ -219,26 +220,54 @@ export function CategoryListingPage({
     searchQuery.trim() !== "" ||
     (productFilter === "category-and-subcategory" && (activeCategory !== "" || activeSubcategory !== ""))
 
+  const headerCategoryRoute =
+    productFilter === "category-and-subcategory"
+      ? activeCategory || (category.slug !== "collections" ? category.slug : undefined)
+      : category.slug !== "collections"
+        ? category.slug
+        : undefined
+  const headerTheme = getProductTicketTheme(headerCategoryRoute)
+
   return (
     <main className="min-h-screen bg-[#FCF8F4]">
       <CatalogHeader />
 
-      <section className="border-b border-[#E8E0D4] bg-[#E5D9C5]">
+      <section
+        className="border-b"
+        style={{
+          backgroundColor: headerTheme.background,
+          borderColor: headerTheme.border,
+        }}
+      >
         <div className="mx-auto max-w-[1100px] px-5 py-10 lg:px-8 lg:py-12">
-          <Sparkles className="mb-4 size-4 text-[#9A8070]/70" strokeWidth={1.5} />
+          <Sparkles
+            className="mb-4 size-4"
+            strokeWidth={1.5}
+            style={{ color: headerTheme.mutedForeground }}
+          />
 
-          <nav className="font-sans text-[12px] text-[#6B5344]">
-            <Link href="/" className="hover:text-[#3D2E24]">
+          <nav className="font-sans text-[12px]" style={{ color: headerTheme.mutedForeground }}>
+            <Link
+              href="/"
+              className="transition-opacity hover:opacity-80"
+              style={{ color: headerTheme.foreground }}
+            >
               Home
             </Link>
             <span className="mx-2">&gt;</span>
             <span>{category.breadcrumb}</span>
           </nav>
 
-          <h1 className="mt-4 font-serif text-[34px] font-normal leading-tight text-[#3D2E24] sm:text-[42px]">
+          <h1
+            className="mt-4 font-serif text-[34px] font-normal leading-tight sm:text-[42px]"
+            style={{ color: headerTheme.foreground }}
+          >
             {category.title}
           </h1>
-          <p className="mt-3 max-w-[640px] font-sans text-[14px] leading-relaxed text-[#6B5344]">
+          <p
+            className="mt-3 max-w-[640px] font-sans text-[14px] leading-relaxed"
+            style={{ color: headerTheme.mutedForeground }}
+          >
             {category.subtitle}
           </p>
 

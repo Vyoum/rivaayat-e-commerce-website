@@ -11,6 +11,7 @@ import { useCart } from "@/components/providers/cart-provider"
 import { useWishlist } from "@/components/providers/wishlist-provider"
 import { getArtisanProfileHref } from "@/lib/artisan-routes"
 import type { CatalogProduct } from "@/lib/category-catalog"
+import { getProductTicketTheme } from "@/lib/product-category-ticket-theme"
 import { formatProductPrice } from "@/lib/product-utils"
 import { cn } from "@/lib/utils"
 
@@ -39,6 +40,7 @@ export function CatalogProductCard({ product }: CatalogProductCardProps) {
   const associationLines = getAssociationLines(product)
   const badgeLabel = getProductBadgeLabel(product.badge)
   const wishlisted = isWishlisted(product.id)
+  const ticketTheme = getProductTicketTheme(product.categoryRoute)
 
   function handleAddToCart() {
     addItem(product)
@@ -59,7 +61,10 @@ export function CatalogProductCard({ product }: CatalogProductCardProps) {
   }
 
   return (
-    <article className="relative flex h-full flex-col overflow-hidden rounded-xl border border-[#E8E0D4]/70 bg-[#FDF9F3] shadow-[0_4px_20px_rgba(61,46,36,0.06)] sm:rounded-2xl">
+    <article
+      className="relative flex h-full flex-col overflow-hidden rounded-xl border border-[#E8E0D4]/70 shadow-[0_4px_20px_rgba(61,46,36,0.06)] sm:rounded-2xl"
+      style={{ backgroundColor: ticketTheme.background }}
+    >
       <div className="relative aspect-square overflow-hidden rounded-t-xl bg-[#EDE8DC] sm:rounded-t-2xl">
         <Link href={`/products/${product.slug}`} className="group block h-full w-full">
           <Image
@@ -100,15 +105,22 @@ export function CatalogProductCard({ product }: CatalogProductCardProps) {
         <div className="mb-3 flex w-full items-end sm:mb-6">
           <span
             aria-hidden
-            className="mb-[5px] h-0 min-w-0 flex-1 border-t border-solid border-black"
+            className="mb-[5px] h-0 min-w-0 flex-1 border-t border-solid"
+            style={{ borderColor: ticketTheme.border }}
           />
-          <span className="shrink-0 pl-1.5 font-serif text-[12px] font-light leading-none tracking-[0.03em] text-black sm:pl-2 sm:text-[15px]">
+          <span
+            className="shrink-0 pl-1.5 font-serif text-[12px] font-light leading-none tracking-[0.03em] sm:pl-2 sm:text-[15px]"
+            style={{ color: ticketTheme.foreground }}
+          >
             {formatProductPrice(product.price)}
           </span>
         </div>
 
         <Link href={`/products/${product.slug}`} className="block px-1 text-center sm:px-2">
-          <h3 className="font-serif text-[14px] font-normal uppercase leading-[1.35] tracking-[0.11em] text-black sm:text-[19px] sm:leading-[1.45] sm:tracking-[0.14em]">
+          <h3
+            className="font-serif text-[14px] font-normal uppercase leading-[1.35] tracking-[0.11em] sm:text-[19px] sm:leading-[1.45] sm:tracking-[0.14em]"
+            style={{ color: ticketTheme.foreground }}
+          >
             {product.name}
           </h3>
         </Link>
@@ -116,15 +128,28 @@ export function CatalogProductCard({ product }: CatalogProductCardProps) {
         <button
           type="button"
           onClick={handleAddToCart}
-          className="mt-2.5 w-full text-center font-serif text-[12px] font-bold uppercase leading-none tracking-[0.08em] text-black transition-opacity hover:opacity-70 sm:mt-4 sm:text-[21px] sm:tracking-[0.12em]"
+          className="mt-2.5 w-full text-center font-serif text-[12px] font-bold uppercase leading-none tracking-[0.08em] transition-opacity hover:opacity-70 sm:mt-4 sm:text-[21px] sm:tracking-[0.12em]"
+          style={{ color: ticketTheme.foreground }}
         >
           Add to Cart
         </button>
 
-        <div aria-hidden className="mt-2.5 border-t border-dashed border-black/45 sm:mt-4" />
+        <div
+          aria-hidden
+          className="mt-2.5 border-t border-dashed sm:mt-4"
+          style={{ borderColor: ticketTheme.border }}
+        />
 
-        <div className="mt-2.5 pr-8 font-serif text-black sm:mt-4 sm:pr-12">
-          <p className="text-[9px] font-light leading-none sm:text-[11px]">Artisan</p>
+        <div
+          className="mt-2.5 pr-8 font-serif sm:mt-4 sm:pr-12"
+          style={{ color: ticketTheme.foreground }}
+        >
+          <p
+            className="text-[9px] font-light leading-none sm:text-[11px]"
+            style={{ color: ticketTheme.mutedForeground }}
+          >
+            Artisan
+          </p>
           <p className="mt-1 text-[12px] font-normal leading-none sm:mt-2 sm:text-[16px]">
             {product.artisan}
           </p>
@@ -132,6 +157,7 @@ export function CatalogProductCard({ product }: CatalogProductCardProps) {
             <p
               key={line}
               className="mt-1 hidden text-[12px] font-light leading-[1.35] sm:mt-2 sm:block"
+              style={{ color: ticketTheme.mutedForeground }}
             >
               {line}
             </p>
@@ -148,6 +174,8 @@ export function CatalogProductCard({ product }: CatalogProductCardProps) {
         }
         artisanName={product.artisan}
         className="absolute right-2.5 bottom-2.5 sm:right-5 sm:bottom-4"
+        backgroundColor={ticketTheme.background}
+        foregroundColor={ticketTheme.foreground}
       />
     </article>
   )

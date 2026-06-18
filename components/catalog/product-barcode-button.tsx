@@ -24,6 +24,8 @@ type ProductBarcodeButtonProps = {
   href: string
   artisanName?: string
   className?: string
+  backgroundColor?: string
+  foregroundColor?: string
 }
 
 export function ProductBarcodeButton({
@@ -31,6 +33,8 @@ export function ProductBarcodeButton({
   href,
   artisanName,
   className,
+  backgroundColor = "#FDF9F3",
+  foregroundColor = "#000000",
 }: ProductBarcodeButtonProps) {
   const bars = getBarcodeBars(productId)
 
@@ -42,17 +46,22 @@ export function ProductBarcodeButton({
         artisanName ? `View ${artisanName}'s artisan profile` : "View artisan profile"
       }
       className={cn(
-        "inline-flex items-end gap-[2px] rounded-sm border border-black/15 bg-[#FDF9F3]/95 px-1 py-0.5 opacity-[0.55] shadow-[0_1px_4px_rgba(61,46,36,0.08)] transition-opacity hover:border-[#846246]/40 hover:bg-white hover:opacity-90 focus-visible:opacity-100 focus-visible:outline-none",
+        "inline-flex items-end gap-[2px] rounded-sm border px-1 py-0.5 opacity-[0.55] shadow-[0_1px_4px_rgba(61,46,36,0.08)] transition-opacity hover:border-[#846246]/40 hover:bg-white hover:opacity-90 focus-visible:opacity-100 focus-visible:outline-none",
         className,
       )}
+      style={{
+        backgroundColor: `${backgroundColor}f2`,
+        borderColor: `${foregroundColor}26`,
+      }}
     >
       {bars.map((width, index) => (
         <span
           key={index}
-          className="block rounded-[0.5px] bg-black/70"
+          className="block rounded-[0.5px]"
           style={{
             width: `${width}px`,
             height: "24px",
+            backgroundColor: `${foregroundColor}b3`,
           }}
         />
       ))}
