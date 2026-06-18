@@ -5,8 +5,6 @@ import { createPortal } from "react-dom"
 import { useRouter } from "next/navigation"
 import { Search, X } from "lucide-react"
 
-import { cn } from "@/lib/utils"
-
 export const SITE_HEADER_ID = "site-header"
 
 type SiteSearchPanelProps = {
@@ -69,31 +67,20 @@ export function SiteSearchPanel({ open, onClose }: SiteSearchPanelProps) {
     router.push(`/collections?q=${encodeURIComponent(trimmed)}`)
   }
 
-  if (!mounted) return null
+  if (!mounted || !open) return null
 
   return createPortal(
-    <div
-      className={cn(
-        "fixed inset-0 z-[80]",
-        open ? "pointer-events-auto" : "pointer-events-none",
-      )}
-      aria-hidden={!open}
-    >
+    <>
       <button
         type="button"
         aria-label="Close search"
         onClick={onClose}
-        className={cn(
-          "absolute inset-0 bg-[#2D1A12]/40 transition-opacity duration-300",
-          open ? "opacity-100" : "opacity-0",
-        )}
+        className="fixed right-0 bottom-0 left-0 z-[45] bg-[#2D1A12]/30"
+        style={{ top: headerOffset }}
       />
 
       <div
-        className={cn(
-          "absolute inset-x-0 border-b border-[#E8E0D4] bg-[#FCF8F4] px-5 py-4 shadow-lg transition-transform duration-300 sm:px-8",
-          open ? "translate-y-0" : "-translate-y-full",
-        )}
+        className="fixed right-0 left-0 z-[46] border-b border-[#E8E0D4] bg-[#FCF8F4] px-5 py-4 shadow-lg sm:px-8"
         style={{ top: headerOffset }}
       >
         <form onSubmit={handleSubmit} className="mx-auto flex max-w-[720px] items-center gap-3">
@@ -128,7 +115,7 @@ export function SiteSearchPanel({ open, onClose }: SiteSearchPanelProps) {
           </button>
         </form>
       </div>
-    </div>,
+    </>,
     document.body,
   )
 }

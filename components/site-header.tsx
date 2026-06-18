@@ -96,8 +96,8 @@ export function SiteHeader({ variant = "solid", className }: SiteHeaderProps) {
             ? cn(
                 "fixed top-0",
                 isScrolled
-                  ? "border-b border-[#E8E0D4] bg-[#FCF8F4] py-3 shadow-sm sm:py-4"
-                  : "border-b border-transparent bg-white/10 py-3 backdrop-blur-md sm:py-4",
+                  ? "border-b border-[#3D2E24]/10 bg-[#F5EBE0]/60 py-3 shadow-lg backdrop-blur-xl"
+                  : "bg-white/10 py-3 backdrop-blur-md sm:py-4",
               )
             : "relative border-b border-[#E8E0D4] bg-[#FCF8F4] py-3 sm:py-4",
           className,
@@ -123,15 +123,7 @@ export function SiteHeader({ variant = "solid", className }: SiteHeaderProps) {
               {HOUSE_OF_INDIKA}
             </Link>
 
-            <div className="flex items-center gap-2 sm:gap-3">
-              <button
-                type="button"
-                aria-label="Search"
-                onClick={() => setSearchOpen(true)}
-                className={cn("inline-flex size-10 items-center justify-center", iconClass)}
-              >
-                <Search className="size-[17px] stroke-[1.5]" />
-              </button>
+            <div className="flex items-center gap-3">
               <AccountIconLink className={iconClass} iconClassName="size-[17px] stroke-[1.5]" />
               <CartIconLink
                 className={iconClass}
@@ -257,7 +249,7 @@ export function SiteHeader({ variant = "solid", className }: SiteHeaderProps) {
         </aside>
       </div>
 
-      <SiteSearchPanel open={searchOpen} onClose={() => setSearchOpen(false)} />
+      {searchOpen ? <SiteSearchPanel open={searchOpen} onClose={() => setSearchOpen(false)} /> : null}
     </>
   )
 }

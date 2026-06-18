@@ -46,7 +46,7 @@ export default async function ArtisanProfilePage({ params }: ArtisanProfilePageP
 
   return (
     <main className="relative min-h-screen bg-[#FDF8F4]">
-      <ArtisanProfileHeader />
+      <ArtisanProfileHeader overHero />
       <ArtisanProfileContent content={content} />
 
       {publishedCount > 1 ? (
