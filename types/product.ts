@@ -1,5 +1,7 @@
 import type { Category } from "@prisma/client"
 
+import type { ProductColorImages } from "@/lib/textile-color-images"
+
 export type AdminProduct = {
   id: string
   name: string
@@ -23,6 +25,8 @@ export type AdminProduct = {
   handcrafted: boolean
   availableSizes: string[]
   availableQuantities: string[]
+  availableColors: string[]
+  colorImages: ProductColorImages
   createdAt: string
   updatedAt: string
 }
@@ -50,6 +54,8 @@ export type StoreProductDetail = {
   inStock: boolean
   availableSizes: string[]
   availableQuantities: string[]
+  availableColors: string[]
+  colorImages: ProductColorImages
 }
 
 export type CreateProductInput = {
@@ -72,6 +78,8 @@ export type CreateProductInput = {
   handcrafted?: boolean
   availableSizes?: string[]
   availableQuantities?: string[]
+  availableColors?: string[]
+  colorImages?: ProductColorImages
 }
 
 export type UpdateProductInput = Partial<CreateProductInput>

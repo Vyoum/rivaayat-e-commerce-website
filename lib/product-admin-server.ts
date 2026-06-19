@@ -7,6 +7,12 @@ import {
 } from "@/lib/product-catalog"
 import { normalizeAvailableSizes } from "@/lib/clothing-size-guide"
 import { normalizeAvailableQuantities } from "@/lib/food-quantity-options"
+import { normalizeAvailableColors } from "@/lib/textile-color-options"
+import {
+  normalizeColorImages,
+  parseColorImages,
+  type ProductColorImages,
+} from "@/lib/textile-color-images"
 import { getPrisma } from "@/lib/prisma"
 import { slugify } from "@/lib/product-utils"
 import type {
@@ -37,6 +43,8 @@ const productSelect = {
   handcrafted: true,
   availableSizes: true,
   availableQuantities: true,
+  availableColors: true,
+  colorImages: true,
   createdAt: true,
   updatedAt: true,
 } as const
@@ -62,6 +70,8 @@ function mapDbProductToAdmin(product: {
   handcrafted: boolean
   availableSizes: string[]
   availableQuantities: string[]
+  availableColors: string[]
+  colorImages: unknown
   createdAt: Date
   updatedAt: Date
 }): AdminProduct {
@@ -88,6 +98,8 @@ function mapDbProductToAdmin(product: {
     handcrafted: product.handcrafted,
     availableSizes: product.availableSizes,
     availableQuantities: product.availableQuantities,
+    availableColors: product.availableColors,
+    colorImages: parseColorImages(product.colorImages),
     createdAt: product.createdAt.toISOString(),
     updatedAt: product.updatedAt.toISOString(),
   }
@@ -224,6 +236,17 @@ export async function createAdminProduct(input: CreateProductInput) {
         input.category === "custom_food"
           ? normalizeAvailableQuantities(input.availableQuantities ?? [])
           : [],
+      availableColors:
+        input.category === "clothing"
+          ? normalizeAvailableColors(input.availableColors ?? [])
+          : [],
+      colorImages:
+        input.category === "clothing"
+          ? (normalizeColorImages(
+              input.colorImages ?? {},
+              normalizeAvailableColors(input.availableColors ?? []),
+            ) as ProductColorImages)
+          : {},
     },
     select: productSelect,
   })
@@ -253,6 +276,8 @@ export async function updateAdminProduct(id: string, input: UpdateProductInput) 
 
   let resolvedSizes: string[] | undefined
   let resolvedQuantities: string[] | undefined
+  let resolvedColors: string[] | undefined
+  let resolvedColorImages: ProductColorImages | undefined
 
   if (input.availableSizes !== undefined) {
     resolvedSizes = normalizeAvailableSizes(input.availableSizes)
@@ -264,6 +289,23 @@ export async function updateAdminProduct(id: string, input: UpdateProductInput) 
     resolvedQuantities = normalizeAvailableQuantities(input.availableQuantities)
   } else if (input.category !== undefined && input.category !== "custom_food") {
     resolvedQuantities = []
+  }
+
+  if (input.availableColors !== undefined) {
+    resolvedColors = normalizeAvailableColors(input.availableColors)
+  } else if (input.category !== undefined && input.category !== "clothing") {
+    resolvedColors = []
+  }
+
+  if (input.colorImages !== undefined) {
+    resolvedColorImages = normalizeColorImages(
+      input.colorImages,
+      resolvedColors ?? input.availableColors ?? [],
+    )
+  } else if (input.category !== undefined && input.category !== "clothing") {
+    resolvedColorImages = {}
+  } else if (resolvedColors !== undefined) {
+    resolvedColorImages = normalizeColorImages({}, resolvedColors)
   }
 
   const product = await prisma.product.update({
@@ -292,6 +334,8 @@ export async function updateAdminProduct(id: string, input: UpdateProductInput) 
       ...(input.handcrafted !== undefined ? { handcrafted: input.handcrafted } : {}),
       ...(resolvedSizes !== undefined ? { availableSizes: resolvedSizes } : {}),
       ...(resolvedQuantities !== undefined ? { availableQuantities: resolvedQuantities } : {}),
+      ...(resolvedColors !== undefined ? { availableColors: resolvedColors } : {}),
+      ...(resolvedColorImages !== undefined ? { colorImages: resolvedColorImages } : {}),
     },
     select: productSelect,
   })

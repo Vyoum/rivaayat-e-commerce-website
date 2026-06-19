@@ -100,6 +100,8 @@ model Product {
   handcrafted   Boolean    @default(true)
   availableSizes String[]  @default([]) @map("available_sizes")
   availableQuantities String[] @default([]) @map("available_quantities")
+  availableColors String[] @default([]) @map("available_colors")
+  colorImages   Json       @default("{}") @map("color_images")
   createdAt     DateTime   @default(now()) @map("created_at")
   updatedAt     DateTime   @updatedAt @map("updated_at")
 
@@ -160,6 +162,7 @@ model Wishlist {
   user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
   product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
 
+  @@unique([userId, productId])
   @@map("wishlist")
 }
 

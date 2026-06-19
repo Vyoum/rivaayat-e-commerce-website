@@ -211,6 +211,7 @@ export function CheckoutContent() {
                       </p>
                       <p className="mt-0.5 font-sans text-[11px] text-[#9A8070]">
                         {formatCartQuantitySummary(item.size, item.quantity)}
+                        {item.color ? ` · Colour ${item.color}` : ""}
                         {item.size
                           ? ` · ${getCartOptionLabel(item.size)} ${item.size}`
                           : ""}

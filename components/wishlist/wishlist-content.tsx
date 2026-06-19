@@ -15,9 +15,14 @@ import {
   SlidersHorizontal,
   X,
 } from "lucide-react"
+import { toast } from "sonner"
 import { cn } from "@/lib/utils"
+import { useCart } from "@/components/providers/cart-provider"
 import { useWishlist } from "@/components/providers/wishlist-provider"
 import { useAuth } from "@/hooks/use-auth"
+import { wishlistItemToCatalogProduct } from "@/lib/wishlist"
+import { isTextileProduct } from "@/lib/clothing-size-guide"
+import { isFoodProduct } from "@/lib/food-quantity-options"
 import {
   DEFAULT_WISHLIST_FILTERS,
   WISHLIST_PRICE_FILTER_LABELS,
@@ -75,7 +80,8 @@ export function WishlistContent() {
   const [viewMode, setViewMode] = useState<"grid" | "list">("grid")
   const [filters, setFilters] = useState<WishlistFilters>(DEFAULT_WISHLIST_FILTERS)
   const [filtersOpen, setFiltersOpen] = useState(false)
-  const { items, removeItem } = useWishlist()
+  const { items, removeItem, loading: wishlistLoading } = useWishlist()
+  const { addItem } = useCart()
 
   useEffect(() => {
     if (!authLoading && !isLoggedIn) {
@@ -110,6 +116,36 @@ export function WishlistContent() {
     slug: item.slug,
   }))
 
+  function handleAddToCart(productId: string) {
+    const item = items.find((entry) => entry.id === productId)
+    if (!item) return
+
+    if (!getWishlistInStock(item)) {
+      toast.error("This product is currently out of stock")
+      return
+    }
+
+    const needsOptions =
+      isTextileProduct({
+        categoryRoute: item.categoryRoute,
+        subcategory: item.subcategory,
+        categoryLabel: item.categoryLabel,
+      }) ||
+      isFoodProduct({
+        categoryRoute: item.categoryRoute,
+        subcategory: item.subcategory,
+        categoryLabel: item.categoryLabel,
+      })
+
+    if (needsOptions) {
+      router.push(`/products/${item.slug}`)
+      toast.info("Choose your size, colour, or pack size on the product page")
+      return
+    }
+
+    addItem(wishlistItemToCatalogProduct(item))
+  }
+
   const inStockCount = items.filter((item) => getWishlistInStock(item)).length
 
   function updateFilters(patch: Partial<WishlistFilters>) {
@@ -128,6 +164,14 @@ export function WishlistContent() {
 
   if (authLoading || !isLoggedIn) {
     return null
+  }
+
+  if (wishlistLoading) {
+    return (
+      <div className="mx-auto max-w-6xl px-6 py-16 text-center font-sans text-[14px] text-[#9A8070]">
+        Loading your wishlist…
+      </div>
+    )
   }
 
   return (
@@ -447,7 +491,10 @@ export function WishlistContent() {
                   )}
                 >
                   <button
+                    type="button"
                     disabled={!item.inStock}
+                    onClick={() => handleAddToCart(item.id)}
+                    aria-label={`Add ${item.name} to cart`}
                     className={cn(
                       "flex-1 py-2.5 px-3 rounded font-sans text-[11px] font-semibold uppercase tracking-wider transition-colors flex items-center justify-center gap-2",
                       item.inStock
@@ -456,7 +503,7 @@ export function WishlistContent() {
                     )}
                   >
                     <ShoppingBag className="size-4" />
-                    <span className="hidden sm:inline">Add</span>
+                    <span>Add to Cart</span>
                   </button>
                   <button
                     className="py-2.5 px-3 rounded border border-[#D9CFC0] text-[#846246] font-sans text-[11px] font-semibold uppercase tracking-wider transition-colors hover:bg-[#EDE8DC] flex items-center justify-center gap-2"

@@ -110,6 +110,11 @@ function CartItemCard({
                   {item.size}
                 </p>
               ) : null}
+              {item.color ? (
+                <p className="font-sans text-[12px] text-[#9A8070]">
+                  <span className="text-[#6B5344]">Colour:</span> {item.color}
+                </p>
+              ) : null}
               {isFoodPackOption(item.size) ? (
                 <p className="font-sans text-[12px] text-[#9A8070]">
                   <span className="text-[#6B5344]">Boxes:</span> {item.quantity}{" "}

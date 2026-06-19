@@ -23,6 +23,16 @@ import {
   DEFAULT_FOOD_QUANTITY_OPTIONS,
   normalizeAvailableQuantities,
 } from "@/lib/food-quantity-options"
+import {
+  DEFAULT_TEXTILE_COLOR_OPTIONS,
+  getTextileColorSwatch,
+  normalizeAvailableColors,
+} from "@/lib/textile-color-options"
+import {
+  normalizeColorImages,
+  type ProductColorImages,
+} from "@/lib/textile-color-images"
+import { ProductColorImagesManager } from "@/components/admin/product-color-images-manager"
 import { CATEGORY_ROUTE_TO_ENUM, CATEGORY_ENUM_TO_ROUTE } from "@/lib/product-catalog"
 import { parsePriceInput } from "@/lib/product-utils"
 import { cn } from "@/lib/utils"
@@ -69,7 +79,12 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
   const [availableQuantities, setAvailableQuantities] = useState<string[]>(
     product?.availableQuantities?.length ? product.availableQuantities : [],
   )
+  const [availableColors, setAvailableColors] = useState<string[]>(
+    product?.availableColors?.length ? product.availableColors : [],
+  )
+  const [colorImages, setColorImages] = useState<ProductColorImages>(product?.colorImages ?? {})
   const [customQuantityInput, setCustomQuantityInput] = useState("")
+  const [customColorInput, setCustomColorInput] = useState("")
   const [uploading, setUploading] = useState(false)
   const [uploadingStoryImage, setUploadingStoryImage] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -85,10 +100,20 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
     isFood && availableQuantities.length === 0
       ? [...DEFAULT_FOOD_QUANTITY_OPTIONS]
       : availableQuantities
+  const selectedColors =
+    isClothing && availableColors.length === 0
+      ? [...DEFAULT_TEXTILE_COLOR_OPTIONS]
+      : availableColors
   const customSelectedQuantities = selectedQuantities.filter(
     (quantity) =>
       !DEFAULT_FOOD_QUANTITY_OPTIONS.some(
         (option) => option.toLowerCase() === quantity.toLowerCase(),
+      ),
+  )
+  const customSelectedColors = selectedColors.filter(
+    (color) =>
+      !DEFAULT_TEXTILE_COLOR_OPTIONS.some(
+        (option) => option.toLowerCase() === color.toLowerCase(),
       ),
   )
 
@@ -119,6 +144,50 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
     setAvailableQuantities([...DEFAULT_FOOD_QUANTITY_OPTIONS])
   }
 
+  function toggleAvailableColor(color: string) {
+    setAvailableColors((prev) => {
+      const current =
+        prev.length === 0 && isClothing ? [...DEFAULT_TEXTILE_COLOR_OPTIONS] : [...prev]
+      const normalized = color.toLowerCase()
+      const hasColor = current.some((entry) => entry.toLowerCase() === normalized)
+      return hasColor
+        ? current.filter((entry) => entry.toLowerCase() !== normalized)
+        : [...current, color]
+    })
+  }
+
+  function selectAllColors() {
+    setAvailableColors([...DEFAULT_TEXTILE_COLOR_OPTIONS])
+  }
+
+  function addCustomColor() {
+    const value = customColorInput.trim()
+    if (!value) return
+
+    const isDuplicate = selectedColors.some(
+      (entry) => entry.toLowerCase() === value.toLowerCase(),
+    )
+    if (isDuplicate) {
+      toast.error("That colour is already added")
+      return
+    }
+
+    setAvailableColors((prev) => {
+      const current =
+        prev.length === 0 && isClothing ? [...DEFAULT_TEXTILE_COLOR_OPTIONS] : [...prev]
+      return [...current, value]
+    })
+    setCustomColorInput("")
+  }
+
+  function removeCustomColor(color: string) {
+    setAvailableColors((prev) => {
+      const current =
+        prev.length === 0 && isClothing ? [...DEFAULT_TEXTILE_COLOR_OPTIONS] : [...prev]
+      return current.filter((entry) => entry !== color)
+    })
+  }
+
   function addCustomQuantity() {
     const value = customQuantityInput.trim()
     if (!value) return
@@ -147,6 +216,15 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
     })
   }
 
+  async function uploadProductImage(file: File): Promise<string> {
+    const formData = new FormData()
+    formData.append("file", file)
+    const res = await fetch("/api/admin/products/upload", { method: "POST", body: formData })
+    const data = await res.json()
+    if (!res.ok) throw new Error(data.error || "Upload failed")
+    return data.imageUrl as string
+  }
+
   async function handleUpload(file: File, target: "gallery" | "story" = "gallery") {
     if (target === "gallery" && imageUrls.length >= 5) {
       toast.error("Maximum 5 gallery images allowed")
@@ -158,16 +236,12 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
 
     setError(null)
     try {
-      const formData = new FormData()
-      formData.append("file", file)
-      const res = await fetch("/api/admin/products/upload", { method: "POST", body: formData })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || "Upload failed")
+      const imageUrl = await uploadProductImage(file)
 
       if (target === "gallery") {
-        setImageUrls((prev) => [...prev, data.imageUrl])
+        setImageUrls((prev) => [...prev, imageUrl])
       } else {
-        setStoryImageUrl(data.imageUrl)
+        setStoryImageUrl(imageUrl)
       }
     } catch (err) {
       const message = err instanceof Error ? err.message : "Upload failed"
@@ -227,6 +301,13 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
       return
     }
 
+    const colorsToSave = isClothing ? normalizeAvailableColors(selectedColors) : []
+    if (isClothing && colorsToSave.length === 0) {
+      setError("Select at least one colour option")
+      setSaving(false)
+      return
+    }
+
     const tags = tagsInput
       .split(",")
       .map((tag) => tag.trim())
@@ -251,6 +332,10 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
       handcrafted,
       availableSizes: sizesToSave,
       availableQuantities: quantitiesToSave,
+      availableColors: colorsToSave,
+      colorImages: isClothing
+        ? normalizeColorImages(colorImages, colorsToSave)
+        : {},
     }
 
     try {
@@ -427,6 +512,9 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
                             if (nextRoute !== "custom-laddoos") {
                               setAvailableQuantities([])
                             }
+                            if (nextRoute !== "clothing") {
+                              setAvailableColors([])
+                            }
                           }}
                           className="h-10 w-full appearance-none rounded-lg border border-[#EDE5D8] px-3 text-[13px] outline-none"
                         >
@@ -528,6 +616,115 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
                   </div>
                 </section>
               )}
+
+              {isClothing && (
+                <section className="rounded-xl border border-[#EDE5D8] bg-white p-5">
+                  <div className="mb-4 flex items-start justify-between gap-3">
+                    <div>
+                      <h2 className="text-[14px] font-semibold text-[#2B1B12]">
+                        Available Colours
+                      </h2>
+                      <p className="mt-1 text-[11px] leading-relaxed text-[#9A8070]">
+                        Colourways shoppers can choose on the product page. At least one option is
+                        required.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={selectAllColors}
+                      className="shrink-0 text-[11px] font-medium tracking-wide text-[#6B5344] uppercase hover:text-[#2B1B12]"
+                    >
+                      Select all
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-3">
+                    {DEFAULT_TEXTILE_COLOR_OPTIONS.map((color) => {
+                      const isSelected = selectedColors.some(
+                        (entry) => entry.toLowerCase() === color.toLowerCase(),
+                      )
+                      const swatch = getTextileColorSwatch(color)
+                      return (
+                        <button
+                          key={color}
+                          type="button"
+                          onClick={() => toggleAvailableColor(color)}
+                          aria-pressed={isSelected}
+                          className={cn(
+                            "flex items-center gap-2 rounded-lg border px-3 py-2 text-[13px] font-medium transition-colors",
+                            isSelected
+                              ? "border-[#846246] bg-[#846246] text-white"
+                              : "border-[#EDE5D8] bg-[#FAF7F2] text-[#6B5344] hover:border-[#C4A882]",
+                          )}
+                        >
+                          <span
+                            className="size-4 rounded-full border border-black/10"
+                            style={{ backgroundColor: swatch }}
+                          />
+                          {color}
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {customSelectedColors.length > 0 ? (
+                    <div className="mt-4">
+                      <p className="mb-2 text-[11px] font-medium text-[#6B5344]">Custom colours</p>
+                      <div className="flex flex-wrap gap-2">
+                        {customSelectedColors.map((color) => (
+                          <button
+                            key={color}
+                            type="button"
+                            onClick={() => removeCustomColor(color)}
+                            className="flex items-center gap-1.5 rounded-lg border border-[#846246] bg-[#846246] px-4 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-[#6B5344]"
+                            title="Remove custom colour"
+                          >
+                            {color}
+                            <Trash2 className="size-3.5 opacity-80" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="mt-4">
+                    <label className="mb-1.5 block text-[11px] font-medium text-[#6B5344]">
+                      Add custom colour
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={customColorInput}
+                        onChange={(e) => setCustomColorInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault()
+                            addCustomColor()
+                          }
+                        }}
+                        placeholder="e.g. Mustard, Olive, Blush"
+                        className="h-10 min-w-0 flex-1 rounded-lg border border-[#EDE5D8] px-3 text-[13px] outline-none focus:border-[#C4A882]"
+                      />
+                      <button
+                        type="button"
+                        onClick={addCustomColor}
+                        className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#2B1B12] px-4 py-2 text-[12px] font-medium text-[#2B1B12] uppercase transition-colors hover:bg-[#2B1B12] hover:text-white"
+                      >
+                        <Plus className="size-3.5" />
+                        Add
+                      </button>
+                    </div>
+                  </div>
+                </section>
+              )}
+
+              {isClothing && selectedColors.length > 0 ? (
+                <ProductColorImagesManager
+                  colors={selectedColors}
+                  colorImages={colorImages}
+                  onChange={setColorImages}
+                  onUpload={uploadProductImage}
+                />
+              ) : null}
 
               {isFood && (
                 <section className="rounded-xl border border-[#EDE5D8] bg-white p-5">

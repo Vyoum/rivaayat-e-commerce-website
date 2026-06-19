@@ -43,5 +43,10 @@ export function wishlistItemToCatalogProduct(item: WishlistItem): CatalogProduct
     artisan: item.artisan,
     location: item.location,
     image: item.image,
+    categoryRoute: item.categoryRoute,
+    categoryLabel: item.categoryLabel,
+    subcategory: item.subcategory,
+    subcategoryLabel: item.subcategoryLabel,
+    inStock: item.inStock,
   }
 }

@@ -13,6 +13,7 @@ import { useWishlist } from "@/components/providers/wishlist-provider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { ProductReviewsSection } from "@/components/product/product-reviews-section"
+import { ProductColorSelector } from "@/components/product/product-color-selector"
 import { ProductQuantitySelector } from "@/components/product/product-quantity-selector"
 import { ProductUnitsStepper } from "@/components/product/product-units-stepper"
 import { ProductSizeGuide } from "@/components/product/product-size-guide"
@@ -20,6 +21,8 @@ import { ProductSizeSelector } from "@/components/product/product-size-selector"
 import { StarRating } from "@/components/product/star-rating"
 import { isTextileProduct, resolveProductSizes } from "@/lib/clothing-size-guide"
 import { isFoodProduct, resolveProductQuantities } from "@/lib/food-quantity-options"
+import { resolveProductColors } from "@/lib/textile-color-options"
+import { resolveImagesForColor } from "@/lib/textile-color-images"
 import { storeProductDetailToCatalog } from "@/lib/product-catalog"
 import { MOCK_REVIEW_SUMMARY } from "@/lib/product-testimonials"
 import { cn } from "@/lib/utils"
@@ -48,17 +51,29 @@ export function ProductDetailContent({
   const [activeImage, setActiveImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [selectedSize, setSelectedSize] = useState<string | null>(null)
+  const [selectedColor, setSelectedColor] = useState<string | null>(null)
   const [selectedPack, setSelectedPack] = useState<string | null>(null)
   const [isGift, setIsGift] = useState(false)
   const [openAccordion, setOpenAccordion] = useState<string | null>(null)
 
-  const productImages =
-    product.imageUrls.length > 0
-      ? product.imageUrls.map((src, index) => ({
-          src,
-          alt: `${product.name} image ${index + 1}`,
-        }))
-      : [{ src: "/placeholder.svg", alt: product.name }]
+  const gallerySources = useMemo(
+    () =>
+      resolveImagesForColor(
+        product.imageUrls.length > 0 ? product.imageUrls : ["/placeholder.svg"],
+        product.colorImages ?? {},
+        selectedColor,
+      ),
+    [product.imageUrls, product.colorImages, selectedColor],
+  )
+
+  const productImages = useMemo(
+    () =>
+      gallerySources.map((src, index) => ({
+        src,
+        alt: `${product.name}${selectedColor ? ` in ${selectedColor}` : ""} image ${index + 1}`,
+      })),
+    [gallerySources, product.name, selectedColor],
+  )
 
   const breadcrumbs = [
     { label: "Home", href: "/" },
@@ -95,17 +110,22 @@ export function ProductDetailContent({
     storyParagraphs.length > 0 || Boolean(product.storyImageUrl)
 
   const wishlisted = isWishlisted(product.id)
+  const isTextile = isTextileProduct({
+    categoryRoute: product.categoryRoute,
+    category: product.category,
+    subcategory: product.subcategory,
+    categoryLabel: product.categoryLabel,
+  })
   const productSizes = useMemo(
     () => resolveProductSizes(product.availableSizes ?? []),
     [product.availableSizes],
   )
-  const showSizeGuide =
-    isTextileProduct({
-      categoryRoute: product.categoryRoute,
-      category: product.category,
-      subcategory: product.subcategory,
-      categoryLabel: product.categoryLabel,
-    }) && productSizes.length > 0
+  const productColors = useMemo(
+    () => resolveProductColors(product.availableColors ?? []),
+    [product.availableColors],
+  )
+  const showSizeGuide = isTextile && productSizes.length > 0
+  const showColorOptions = isTextile && productColors.length > 0
 
   const productQuantities = useMemo(
     () => resolveProductQuantities(product.availableQuantities ?? []),
@@ -120,10 +140,20 @@ export function ProductDetailContent({
     }) && productQuantities.length > 0
 
   useEffect(() => {
+    setActiveImage(0)
+  }, [selectedColor, gallerySources])
+
+  useEffect(() => {
     if (selectedSize && !productSizes.includes(selectedSize)) {
       setSelectedSize(null)
     }
   }, [product.availableSizes, selectedSize, productSizes])
+
+  useEffect(() => {
+    if (selectedColor && !productColors.some((c) => c.toLowerCase() === selectedColor.toLowerCase())) {
+      setSelectedColor(null)
+    }
+  }, [product.availableColors, selectedColor, productColors])
 
   useEffect(() => {
     if (selectedPack && !productQuantities.includes(selectedPack)) {
@@ -152,6 +182,11 @@ export function ProductDetailContent({
       return
     }
 
+    if (showColorOptions && !selectedColor) {
+      toast.error("Please select a colour")
+      return
+    }
+
     if (showQuantityOptions && !selectedPack) {
       toast.error("Please select a pack size")
       return
@@ -160,6 +195,8 @@ export function ProductDetailContent({
     addItem(catalogProduct, {
       quantity,
       size: selectedSize ?? selectedPack ?? undefined,
+      color: selectedColor ?? undefined,
+      image: productImages[0]?.src,
     })
   }
 
@@ -368,6 +405,13 @@ export function ProductDetailContent({
                   value={selectedSize}
                   onChange={setSelectedSize}
                 />
+                {showColorOptions ? (
+                  <ProductColorSelector
+                    colors={productColors}
+                    value={selectedColor}
+                    onChange={setSelectedColor}
+                  />
+                ) : null}
                 <div className="mt-4">
                   <ProductSizeGuide variant="detail" />
                 </div>

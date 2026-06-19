@@ -1,5 +1,5 @@
 import type { ProfileOrder, ProfileOrderItem } from "@/types/profile"
-import { getCartOptionLabel } from "@/lib/cart"
+import { formatCartItemVariantDetails } from "@/lib/cart"
 
 export type StoredCheckoutItem = {
   id: string
@@ -11,6 +11,7 @@ export type StoredCheckoutItem = {
   quantity: number
   image: string
   size?: string
+  color?: string
 }
 
 function getStorageKey(userId: string) {
@@ -18,11 +19,7 @@ function getStorageKey(userId: string) {
 }
 
 function formatOrderVariant(item: StoredCheckoutItem) {
-  if (item.size) {
-    const label = getCartOptionLabel(item.size) ?? "Option"
-    return item.variant ? `${item.variant} · ${label} ${item.size}` : `${label} ${item.size}`
-  }
-  return item.variant
+  return formatCartItemVariantDetails(item)
 }
 
 export function checkoutItemsToOrderItems(items: StoredCheckoutItem[]): ProfileOrderItem[] {

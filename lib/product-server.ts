@@ -12,6 +12,7 @@ import {
   CATEGORY_ROUTE_TO_ENUM,
 } from "@/lib/product-catalog"
 import { categoryCatalog, getProductBySlug, type CatalogProduct } from "@/lib/category-catalog"
+import { parseColorImages } from "@/lib/textile-color-images"
 
 const productSelect = {
   id: true,
@@ -32,6 +33,8 @@ const productSelect = {
   inStock: true,
   availableSizes: true,
   availableQuantities: true,
+  availableColors: true,
+  colorImages: true,
   tags: true,
   artisan: { select: { name: true } },
 } as const
@@ -69,6 +72,8 @@ function mapCatalogProductToDetail(
     inStock: true,
     availableSizes: [],
     availableQuantities: [],
+    availableColors: [],
+    colorImages: {},
   }
 }
 
@@ -95,6 +100,8 @@ function mapDbProductToDetail(product: {
   inStock: boolean
   availableSizes: string[]
   availableQuantities: string[]
+  availableColors: string[]
+  colorImages: unknown
   artisan?: { name: string } | null
 }, artisanSlug?: string | null): StoreProductDetail {
   const categoryRoute = CATEGORY_ENUM_TO_ROUTE[product.category]
@@ -123,6 +130,8 @@ function mapDbProductToDetail(product: {
     inStock: product.inStock,
     availableSizes: product.availableSizes ?? [],
     availableQuantities: product.availableQuantities ?? [],
+    availableColors: product.availableColors ?? [],
+    colorImages: parseColorImages(product.colorImages),
   }
 }
 

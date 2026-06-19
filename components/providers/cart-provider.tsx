@@ -24,6 +24,8 @@ type AddItemOptions = {
   quantity?: number
   silent?: boolean
   size?: string
+  color?: string
+  image?: string
 }
 
 const STORAGE_KEY = "house-of-indika-cart"
@@ -64,19 +66,21 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const addItem = useCallback((product: CatalogProduct, options?: AddItemOptions) => {
     const quantity = Math.max(1, options?.quantity ?? 1)
     const size = options?.size?.trim() || undefined
-    const lineKey = getCartLineKey(product.id, size)
+    const color = options?.color?.trim() || undefined
+    const image = options?.image?.trim() || undefined
+    const lineKey = getCartLineKey(product.id, { size, color })
 
     setItems((prev) => {
       const existing = prev.find((item) => item.lineKey === lineKey)
       if (existing) {
         return prev.map((item) =>
           item.lineKey === lineKey
-            ? { ...item, quantity: item.quantity + quantity }
+            ? { ...item, quantity: item.quantity + quantity, ...(image ? { image } : {}) }
             : item,
         )
       }
       return [
-        normalizeCartItem({ ...catalogProductToCartItem(product, { size }), quantity }),
+        normalizeCartItem({ ...catalogProductToCartItem(product, { size, color, image }), quantity }),
         ...prev,
       ]
     })
