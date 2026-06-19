@@ -6,6 +6,7 @@ import type { ProfileOrder } from "@/types/profile"
 import type { DeliveryAddress } from "@/lib/delivery-address"
 import { serializeDeliveryAddress } from "@/lib/delivery-address"
 import { checkoutItemsToOrderItems, type StoredCheckoutItem } from "@/lib/orders-storage"
+import { getCartOptionLabel } from "@/lib/cart"
 
 type CreateOrderInput = {
   razorpayOrderId: string
@@ -169,8 +170,8 @@ async function createOrderRecord(
           productName: item.name,
           variant: item.size
             ? item.variant
-              ? `${item.variant} · Size ${item.size}`
-              : `Size ${item.size}`
+              ? `${item.variant} · ${getCartOptionLabel(item.size)} ${item.size}`
+              : `${getCartOptionLabel(item.size)} ${item.size}`
             : item.variant,
           quantity: item.quantity,
           unitPrice: item.price,

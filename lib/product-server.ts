@@ -31,6 +31,7 @@ const productSelect = {
   handcrafted: true,
   inStock: true,
   availableSizes: true,
+  availableQuantities: true,
   tags: true,
   artisan: { select: { name: true } },
 } as const
@@ -67,6 +68,7 @@ function mapCatalogProductToDetail(
     handcrafted: product.badge === "HANDCRAFTED",
     inStock: true,
     availableSizes: [],
+    availableQuantities: [],
   }
 }
 
@@ -92,6 +94,7 @@ function mapDbProductToDetail(product: {
   handcrafted: boolean
   inStock: boolean
   availableSizes: string[]
+  availableQuantities: string[]
   artisan?: { name: string } | null
 }, artisanSlug?: string | null): StoreProductDetail {
   const categoryRoute = CATEGORY_ENUM_TO_ROUTE[product.category]
@@ -118,7 +121,8 @@ function mapDbProductToDetail(product: {
     badge: product.badge,
     handcrafted: product.handcrafted,
     inStock: product.inStock,
-    availableSizes: product.availableSizes,
+    availableSizes: product.availableSizes ?? [],
+    availableQuantities: product.availableQuantities ?? [],
   }
 }
 
@@ -223,8 +227,6 @@ export async function getPublishedProductBySlug(slug: string) {
     } catch (error) {
       console.error("[product-server] failed to load product by slug:", error)
     }
-
-    return null
   }
 
   const catalogHit = getProductBySlug(slug)

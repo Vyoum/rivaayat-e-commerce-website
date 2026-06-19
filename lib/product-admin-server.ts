@@ -6,6 +6,7 @@ import {
   CATEGORY_LABELS,
 } from "@/lib/product-catalog"
 import { normalizeAvailableSizes } from "@/lib/clothing-size-guide"
+import { normalizeAvailableQuantities } from "@/lib/food-quantity-options"
 import { getPrisma } from "@/lib/prisma"
 import { slugify } from "@/lib/product-utils"
 import type {
@@ -35,6 +36,7 @@ const productSelect = {
   isPublished: true,
   handcrafted: true,
   availableSizes: true,
+  availableQuantities: true,
   createdAt: true,
   updatedAt: true,
 } as const
@@ -59,6 +61,7 @@ function mapDbProductToAdmin(product: {
   isPublished: boolean
   handcrafted: boolean
   availableSizes: string[]
+  availableQuantities: string[]
   createdAt: Date
   updatedAt: Date
 }): AdminProduct {
@@ -84,6 +87,7 @@ function mapDbProductToAdmin(product: {
     isPublished: product.isPublished,
     handcrafted: product.handcrafted,
     availableSizes: product.availableSizes,
+    availableQuantities: product.availableQuantities,
     createdAt: product.createdAt.toISOString(),
     updatedAt: product.updatedAt.toISOString(),
   }
@@ -216,6 +220,10 @@ export async function createAdminProduct(input: CreateProductInput) {
         input.category === "clothing"
           ? normalizeAvailableSizes(input.availableSizes ?? [])
           : [],
+      availableQuantities:
+        input.category === "custom_food"
+          ? normalizeAvailableQuantities(input.availableQuantities ?? [])
+          : [],
     },
     select: productSelect,
   })
@@ -244,11 +252,18 @@ export async function updateAdminProduct(id: string, input: UpdateProductInput) 
   }
 
   let resolvedSizes: string[] | undefined
+  let resolvedQuantities: string[] | undefined
 
   if (input.availableSizes !== undefined) {
     resolvedSizes = normalizeAvailableSizes(input.availableSizes)
   } else if (input.category !== undefined && input.category !== "clothing") {
     resolvedSizes = []
+  }
+
+  if (input.availableQuantities !== undefined) {
+    resolvedQuantities = normalizeAvailableQuantities(input.availableQuantities)
+  } else if (input.category !== undefined && input.category !== "custom_food") {
+    resolvedQuantities = []
   }
 
   const product = await prisma.product.update({
@@ -276,6 +291,7 @@ export async function updateAdminProduct(id: string, input: UpdateProductInput) 
       ...(input.isPublished !== undefined ? { isPublished: input.isPublished } : {}),
       ...(input.handcrafted !== undefined ? { handcrafted: input.handcrafted } : {}),
       ...(resolvedSizes !== undefined ? { availableSizes: resolvedSizes } : {}),
+      ...(resolvedQuantities !== undefined ? { availableQuantities: resolvedQuantities } : {}),
     },
     select: productSelect,
   })

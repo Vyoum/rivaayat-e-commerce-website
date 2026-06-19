@@ -11,6 +11,7 @@ import {
   Trash2,
   ChevronDown,
   Loader2,
+  Plus,
 } from "lucide-react"
 import { toast } from "sonner"
 
@@ -18,6 +19,10 @@ import { AdminSidebar } from "./admin-sidebar"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { categoryCatalog } from "@/lib/category-catalog"
 import { normalizeAvailableSizes, TEXTILE_SIZE_OPTIONS } from "@/lib/clothing-size-guide"
+import {
+  DEFAULT_FOOD_QUANTITY_OPTIONS,
+  normalizeAvailableQuantities,
+} from "@/lib/food-quantity-options"
 import { CATEGORY_ROUTE_TO_ENUM, CATEGORY_ENUM_TO_ROUTE } from "@/lib/product-catalog"
 import { parsePriceInput } from "@/lib/product-utils"
 import { cn } from "@/lib/utils"
@@ -61,6 +66,10 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
   const [availableSizes, setAvailableSizes] = useState<string[]>(
     product?.availableSizes?.length ? product.availableSizes : [],
   )
+  const [availableQuantities, setAvailableQuantities] = useState<string[]>(
+    product?.availableQuantities?.length ? product.availableQuantities : [],
+  )
+  const [customQuantityInput, setCustomQuantityInput] = useState("")
   const [uploading, setUploading] = useState(false)
   const [uploadingStoryImage, setUploadingStoryImage] = useState(false)
   const [saving, setSaving] = useState(false)
@@ -69,8 +78,19 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
 
   const subcategories = categoryCatalog[categoryRoute]?.subcategories ?? []
   const isClothing = categoryRoute === "clothing"
+  const isFood = categoryRoute === "custom-laddoos"
   const selectedSizes =
     isClothing && availableSizes.length === 0 ? TEXTILE_SIZE_OPTIONS : availableSizes
+  const selectedQuantities =
+    isFood && availableQuantities.length === 0
+      ? [...DEFAULT_FOOD_QUANTITY_OPTIONS]
+      : availableQuantities
+  const customSelectedQuantities = selectedQuantities.filter(
+    (quantity) =>
+      !DEFAULT_FOOD_QUANTITY_OPTIONS.some(
+        (option) => option.toLowerCase() === quantity.toLowerCase(),
+      ),
+  )
 
   function toggleAvailableSize(size: string) {
     setAvailableSizes((prev) => {
@@ -81,6 +101,50 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
 
   function selectAllSizes() {
     setAvailableSizes([...TEXTILE_SIZE_OPTIONS])
+  }
+
+  function toggleAvailableQuantity(quantity: string) {
+    setAvailableQuantities((prev) => {
+      const current =
+        prev.length === 0 && isFood ? [...DEFAULT_FOOD_QUANTITY_OPTIONS] : [...prev]
+      const normalized = quantity.toLowerCase()
+      const hasQuantity = current.some((entry) => entry.toLowerCase() === normalized)
+      return hasQuantity
+        ? current.filter((entry) => entry.toLowerCase() !== normalized)
+        : [...current, quantity]
+    })
+  }
+
+  function selectAllQuantities() {
+    setAvailableQuantities([...DEFAULT_FOOD_QUANTITY_OPTIONS])
+  }
+
+  function addCustomQuantity() {
+    const value = customQuantityInput.trim()
+    if (!value) return
+
+    const isDuplicate = selectedQuantities.some(
+      (entry) => entry.toLowerCase() === value.toLowerCase(),
+    )
+    if (isDuplicate) {
+      toast.error("That quantity option is already added")
+      return
+    }
+
+    setAvailableQuantities((prev) => {
+      const current =
+        prev.length === 0 && isFood ? [...DEFAULT_FOOD_QUANTITY_OPTIONS] : [...prev]
+      return [...current, value]
+    })
+    setCustomQuantityInput("")
+  }
+
+  function removeCustomQuantity(quantity: string) {
+    setAvailableQuantities((prev) => {
+      const current =
+        prev.length === 0 && isFood ? [...DEFAULT_FOOD_QUANTITY_OPTIONS] : [...prev]
+      return current.filter((entry) => entry !== quantity)
+    })
   }
 
   async function handleUpload(file: File, target: "gallery" | "story" = "gallery") {
@@ -156,6 +220,13 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
       return
     }
 
+    const quantitiesToSave = isFood ? normalizeAvailableQuantities(selectedQuantities) : []
+    if (isFood && quantitiesToSave.length === 0) {
+      setError("Select at least one quantity option")
+      setSaving(false)
+      return
+    }
+
     const tags = tagsInput
       .split(",")
       .map((tag) => tag.trim())
@@ -179,6 +250,7 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
       inStock,
       handcrafted,
       availableSizes: sizesToSave,
+      availableQuantities: quantitiesToSave,
     }
 
     try {
@@ -352,6 +424,9 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
                             if (nextRoute !== "clothing") {
                               setAvailableSizes([])
                             }
+                            if (nextRoute !== "custom-laddoos") {
+                              setAvailableQuantities([])
+                            }
                           }}
                           className="h-10 w-full appearance-none rounded-lg border border-[#EDE5D8] px-3 text-[13px] outline-none"
                         >
@@ -450,6 +525,106 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
                         </button>
                       )
                     })}
+                  </div>
+                </section>
+              )}
+
+              {isFood && (
+                <section className="rounded-xl border border-[#EDE5D8] bg-white p-5">
+                  <div className="mb-4 flex items-start justify-between gap-3">
+                    <div>
+                      <h2 className="text-[14px] font-semibold text-[#2B1B12]">
+                        Available Quantities
+                      </h2>
+                      <p className="mt-1 text-[11px] leading-relaxed text-[#9A8070]">
+                        Pack sizes or weights shoppers can choose on the product page. At least one
+                        option is required.
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={selectAllQuantities}
+                      className="shrink-0 text-[11px] font-medium tracking-wide text-[#6B5344] uppercase hover:text-[#2B1B12]"
+                    >
+                      Select all
+                    </button>
+                  </div>
+                  <div className="flex flex-wrap gap-2">
+                    {DEFAULT_FOOD_QUANTITY_OPTIONS.map((quantity) => {
+                      const isSelected = selectedQuantities.some(
+                        (entry) => entry.toLowerCase() === quantity.toLowerCase(),
+                      )
+                      return (
+                        <button
+                          key={quantity}
+                          type="button"
+                          onClick={() => toggleAvailableQuantity(quantity)}
+                          aria-pressed={isSelected}
+                          className={cn(
+                            "min-w-[52px] rounded-lg border px-4 py-2.5 text-[13px] font-medium transition-colors",
+                            isSelected
+                              ? "border-[#846246] bg-[#846246] text-white"
+                              : "border-[#EDE5D8] bg-[#FAF7F2] text-[#6B5344] hover:border-[#C4A882]",
+                          )}
+                        >
+                          {quantity}
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {customSelectedQuantities.length > 0 ? (
+                    <div className="mt-4">
+                      <p className="mb-2 text-[11px] font-medium text-[#6B5344]">
+                        Custom options
+                      </p>
+                      <div className="flex flex-wrap gap-2">
+                        {customSelectedQuantities.map((quantity) => (
+                          <button
+                            key={quantity}
+                            type="button"
+                            onClick={() => removeCustomQuantity(quantity)}
+                            className="flex items-center gap-1.5 rounded-lg border border-[#846246] bg-[#846246] px-4 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-[#6B5344]"
+                            title="Remove custom quantity"
+                          >
+                            {quantity}
+                            <Trash2 className="size-3.5 opacity-80" />
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  ) : null}
+
+                  <div className="mt-4">
+                    <label className="mb-1.5 block text-[11px] font-medium text-[#6B5344]">
+                      Add custom quantity
+                    </label>
+                    <div className="flex gap-2">
+                      <input
+                        type="text"
+                        value={customQuantityInput}
+                        onChange={(e) => setCustomQuantityInput(e.target.value)}
+                        onKeyDown={(e) => {
+                          if (e.key === "Enter") {
+                            e.preventDefault()
+                            addCustomQuantity()
+                          }
+                        }}
+                        placeholder="e.g. 750gm, 12 pcs, 1 box, 500ml"
+                        className="h-10 min-w-0 flex-1 rounded-lg border border-[#EDE5D8] px-3 text-[13px] outline-none focus:border-[#C4A882]"
+                      />
+                      <button
+                        type="button"
+                        onClick={addCustomQuantity}
+                        className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#2B1B12] px-4 py-2 text-[12px] font-medium text-[#2B1B12] uppercase transition-colors hover:bg-[#2B1B12] hover:text-white"
+                      >
+                        <Plus className="size-3.5" />
+                        Add
+                      </button>
+                    </div>
+                    <p className="mt-1.5 text-[11px] text-[#9A8070]">
+                      Use weights (250gm, 1kg), counts (6 pcs), boxes (1 box), or volumes (500ml).
+                    </p>
                   </div>
                 </section>
               )}

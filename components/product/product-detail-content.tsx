@@ -13,10 +13,13 @@ import { useWishlist } from "@/components/providers/wishlist-provider"
 import { Checkbox } from "@/components/ui/checkbox"
 import { Label } from "@/components/ui/label"
 import { ProductReviewsSection } from "@/components/product/product-reviews-section"
+import { ProductQuantitySelector } from "@/components/product/product-quantity-selector"
+import { ProductUnitsStepper } from "@/components/product/product-units-stepper"
 import { ProductSizeGuide } from "@/components/product/product-size-guide"
 import { ProductSizeSelector } from "@/components/product/product-size-selector"
 import { StarRating } from "@/components/product/star-rating"
 import { isTextileProduct, resolveProductSizes } from "@/lib/clothing-size-guide"
+import { isFoodProduct, resolveProductQuantities } from "@/lib/food-quantity-options"
 import { storeProductDetailToCatalog } from "@/lib/product-catalog"
 import { MOCK_REVIEW_SUMMARY } from "@/lib/product-testimonials"
 import { cn } from "@/lib/utils"
@@ -45,6 +48,7 @@ export function ProductDetailContent({
   const [activeImage, setActiveImage] = useState(0)
   const [quantity, setQuantity] = useState(1)
   const [selectedSize, setSelectedSize] = useState<string | null>(null)
+  const [selectedPack, setSelectedPack] = useState<string | null>(null)
   const [isGift, setIsGift] = useState(false)
   const [openAccordion, setOpenAccordion] = useState<string | null>(null)
 
@@ -92,7 +96,7 @@ export function ProductDetailContent({
 
   const wishlisted = isWishlisted(product.id)
   const productSizes = useMemo(
-    () => resolveProductSizes(product.availableSizes),
+    () => resolveProductSizes(product.availableSizes ?? []),
     [product.availableSizes],
   )
   const showSizeGuide =
@@ -103,11 +107,29 @@ export function ProductDetailContent({
       categoryLabel: product.categoryLabel,
     }) && productSizes.length > 0
 
+  const productQuantities = useMemo(
+    () => resolveProductQuantities(product.availableQuantities ?? []),
+    [product.availableQuantities],
+  )
+  const showQuantityOptions =
+    isFoodProduct({
+      categoryRoute: product.categoryRoute,
+      category: product.category,
+      subcategory: product.subcategory,
+      categoryLabel: product.categoryLabel,
+    }) && productQuantities.length > 0
+
   useEffect(() => {
     if (selectedSize && !productSizes.includes(selectedSize)) {
       setSelectedSize(null)
     }
   }, [product.availableSizes, selectedSize, productSizes])
+
+  useEffect(() => {
+    if (selectedPack && !productQuantities.includes(selectedPack)) {
+      setSelectedPack(null)
+    }
+  }, [product.availableQuantities, selectedPack, productQuantities])
 
   const hasRealReviews = (reviewsData?.summary.totalCount ?? 0) > 0
   const headerRating = hasRealReviews
@@ -130,9 +152,14 @@ export function ProductDetailContent({
       return
     }
 
+    if (showQuantityOptions && !selectedPack) {
+      toast.error("Please select a pack size")
+      return
+    }
+
     addItem(catalogProduct, {
       quantity,
-      size: selectedSize ?? undefined,
+      size: selectedSize ?? selectedPack ?? undefined,
     })
   }
 
@@ -265,30 +292,63 @@ export function ProductDetailContent({
               </div>
             )}
 
-            <div className="mt-8 flex flex-wrap items-center gap-6">
-              <div className="flex items-center rounded-sm border border-[#D9CFC0] bg-white">
-                <button
-                  type="button"
-                  onClick={() => setQuantity((q) => Math.max(1, q - 1))}
-                  className="flex size-10 items-center justify-center text-[#6B5344] transition-colors hover:bg-[#EDE8DC]"
-                  aria-label="Decrease quantity"
-                >
-                  <Minus className="size-4" />
-                </button>
-                <span className="flex w-10 items-center justify-center font-sans text-[14px] text-[#3D2E24]">
-                  {quantity}
-                </span>
-                <button
-                  type="button"
-                  onClick={() => setQuantity((q) => q + 1)}
-                  className="flex size-10 items-center justify-center text-[#6B5344] transition-colors hover:bg-[#EDE8DC]"
-                  aria-label="Increase quantity"
-                >
-                  <Plus className="size-4" />
-                </button>
+            {showQuantityOptions ? (
+              <div className="mt-8">
+                <ProductQuantitySelector
+                  quantities={productQuantities}
+                  value={selectedPack}
+                  onChange={setSelectedPack}
+                />
+                <ProductUnitsStepper
+                  className="mt-4"
+                  label="Number of Boxes"
+                  helperText="How many boxes or packs of this size would you like?"
+                  quantity={quantity}
+                  onChange={setQuantity}
+                  unitSingular="box"
+                  unitPlural="boxes"
+                />
               </div>
+            ) : (
+              <div className="mt-8 flex flex-wrap items-center gap-6">
+                <div className="flex items-center rounded-sm border border-[#D9CFC0] bg-white">
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((q) => Math.max(1, q - 1))}
+                    className="flex size-10 items-center justify-center text-[#6B5344] transition-colors hover:bg-[#EDE8DC]"
+                    aria-label="Decrease quantity"
+                  >
+                    <Minus className="size-4" />
+                  </button>
+                  <span className="flex w-10 items-center justify-center font-sans text-[14px] text-[#3D2E24]">
+                    {quantity}
+                  </span>
+                  <button
+                    type="button"
+                    onClick={() => setQuantity((q) => q + 1)}
+                    className="flex size-10 items-center justify-center text-[#6B5344] transition-colors hover:bg-[#EDE8DC]"
+                    aria-label="Increase quantity"
+                  >
+                    <Plus className="size-4" />
+                  </button>
+                </div>
 
-              <div className="flex items-center gap-2.5">
+                <div className="flex items-center gap-2.5">
+                  <Checkbox
+                    id="gift"
+                    checked={isGift}
+                    onCheckedChange={(checked) => setIsGift(checked === true)}
+                    className="border-[#D9CFC0] data-[state=checked]:border-[#846246] data-[state=checked]:bg-[#846246]"
+                  />
+                  <Label htmlFor="gift" className="cursor-pointer font-sans text-[13px] text-[#6B5344]">
+                    Gift this piece?
+                  </Label>
+                </div>
+              </div>
+            )}
+
+            {showQuantityOptions ? (
+              <div className="mt-6 flex items-center gap-2.5">
                 <Checkbox
                   id="gift"
                   checked={isGift}
@@ -299,7 +359,7 @@ export function ProductDetailContent({
                   Gift this piece?
                 </Label>
               </div>
-            </div>
+            ) : null}
 
             {showSizeGuide ? (
               <>

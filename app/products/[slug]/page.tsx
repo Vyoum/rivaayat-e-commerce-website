@@ -60,15 +60,34 @@ export default async function ProductPage({ params }: ProductPageProps) {
     notFound()
   }
 
-  const userId = await resolveDbUserId()
-  const reviewsData = await getProductReviewsBySlug(slug, userId)
+  let userId: string | null = null
+  let reviewsData = null
+  let bestSellingProducts: Awaited<ReturnType<typeof getBestSellingProducts>> = []
+
+  try {
+    userId = await resolveDbUserId()
+  } catch (error) {
+    console.error("[product-page] failed to resolve user:", error)
+  }
+
+  try {
+    reviewsData = await getProductReviewsBySlug(slug, userId)
+  } catch (error) {
+    console.error("[product-page] failed to load reviews:", error)
+  }
+
+  try {
+    bestSellingProducts = await getBestSellingProducts({
+      limit: 12,
+      excludeIds: [product.id],
+      excludeSlugs: [product.slug],
+      categoryRoute: product.categoryRoute,
+    })
+  } catch (error) {
+    console.error("[product-page] failed to load best sellers:", error)
+  }
+
   const reviewsEnabled = reviewsData !== null
-  const bestSellingProducts = await getBestSellingProducts({
-    limit: 12,
-    excludeIds: [product.id],
-    excludeSlugs: [product.slug],
-    categoryRoute: product.categoryRoute,
-  })
 
   return (
     <main className="min-h-screen bg-[#F5F3E9]">

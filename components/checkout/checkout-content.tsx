@@ -30,6 +30,7 @@ import {
   isDeliveryAddressComplete,
   type DeliveryAddress,
 } from "@/lib/delivery-address"
+import { getCartOptionLabel, formatCartQuantitySummary } from "@/lib/cart"
 import { openRazorpayCheckout } from "@/lib/razorpay-client"
 import type { PaymentConfirmationDetails } from "@/lib/payment-confirmation"
 
@@ -209,8 +210,10 @@ export function CheckoutContent() {
                         {item.name}
                       </p>
                       <p className="mt-0.5 font-sans text-[11px] text-[#9A8070]">
-                        Qty: {item.quantity}
-                        {item.size ? ` · Size ${item.size}` : ""}
+                        {formatCartQuantitySummary(item.size, item.quantity)}
+                        {item.size
+                          ? ` · ${getCartOptionLabel(item.size)} ${item.size}`
+                          : ""}
                       </p>
                     </div>
                     <p className="shrink-0 font-serif text-[14px] text-[#2B1B12]">

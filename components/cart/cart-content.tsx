@@ -6,6 +6,7 @@ import { Lock, Minus, Plus, Trash2, ArrowRight } from "lucide-react"
 import { Checkbox } from "@/components/ui/checkbox"
 import { CartWishlistTab } from "@/components/cart/cart-wishlist-tab"
 import { useCart } from "@/components/providers/cart-provider"
+import { getCartOptionLabel, getCartProductHref, isFoodPackOption } from "@/lib/cart"
 import type { CartItem } from "@/lib/cart"
 import { saveCheckoutSession } from "@/lib/checkout-session"
 import { cn } from "@/lib/utils"
@@ -52,7 +53,7 @@ function CartItemCard({
   onUpdateQuantity: (lineKey: string, quantity: number) => void
   onRemove: (lineKey: string) => void
 }) {
-  const productHref = item.slug ? `/products/${item.slug}` : null
+  const productHref = getCartProductHref(item)
 
   return (
     <article className="rounded-xl border border-[#EDE5D8] bg-[#F5F2EB] p-5 sm:p-6">
@@ -105,7 +106,14 @@ function CartItemCard({
               </p>
               {item.size ? (
                 <p className="font-sans text-[12px] text-[#9A8070]">
-                  <span className="text-[#6B5344]">Size:</span> {item.size}
+                  <span className="text-[#6B5344]">{getCartOptionLabel(item.size)}:</span>{" "}
+                  {item.size}
+                </p>
+              ) : null}
+              {isFoodPackOption(item.size) ? (
+                <p className="font-sans text-[12px] text-[#9A8070]">
+                  <span className="text-[#6B5344]">Boxes:</span> {item.quantity}{" "}
+                  {item.quantity === 1 ? "box" : "boxes"}
                 </p>
               ) : null}
               <p className="font-sans text-[12px] text-[#9A8070]">
@@ -124,7 +132,7 @@ function CartItemCard({
                   onClick={() => onUpdateQuantity(item.lineKey, item.quantity - 1)}
                   disabled={item.quantity <= 1}
                   className="flex h-8 w-8 items-center justify-center text-[#6B5344] transition-colors hover:text-[#2B1B12] disabled:opacity-40"
-                  aria-label="Decrease quantity"
+                  aria-label={isFoodPackOption(item.size) ? "Decrease boxes" : "Decrease quantity"}
                 >
                   <Minus className="h-3 w-3" strokeWidth={1.5} />
                 </button>
@@ -135,7 +143,7 @@ function CartItemCard({
                   type="button"
                   onClick={() => onUpdateQuantity(item.lineKey, item.quantity + 1)}
                   className="flex h-8 w-8 items-center justify-center text-[#6B5344] transition-colors hover:text-[#2B1B12]"
-                  aria-label="Increase quantity"
+                  aria-label={isFoodPackOption(item.size) ? "Increase boxes" : "Increase quantity"}
                 >
                   <Plus className="h-3 w-3" strokeWidth={1.5} />
                 </button>
