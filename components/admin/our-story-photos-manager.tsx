@@ -1,75 +1,16 @@
 "use client"
 
-import { useCallback, useEffect, useRef, useState } from "react"
-import Image from "next/image"
+import { useCallback, useEffect, useState } from "react"
 import Link from "next/link"
-import { ExternalLink, Loader2, Upload } from "lucide-react"
+import { ExternalLink, Loader2 } from "lucide-react"
 
 import type { OurStoryContent } from "@/lib/our-story-content-shared"
-
-function PhotoUploadCard({
-  title,
-  description,
-  imageUrl,
-  uploading,
-  onUpload,
-}: {
-  title: string
-  description: string
-  imageUrl: string
-  uploading: boolean
-  onUpload: (file: File) => void
-}) {
-  const fileRef = useRef<HTMLInputElement>(null)
-
-  return (
-    <div className="rounded-xl border border-[#EDE5D8] bg-white p-5 shadow-sm">
-      <h3 className="font-serif text-[16px] font-semibold text-[#2D1E17]">{title}</h3>
-      <p className="mt-1 text-[12px] leading-relaxed text-[#9A8070]">{description}</p>
-
-      <div className="mt-4">
-        <input
-          ref={fileRef}
-          type="file"
-          accept="image/jpeg,image/png,image/webp,image/gif"
-          className="hidden"
-          onChange={(e) => {
-            const file = e.target.files?.[0]
-            if (file) onUpload(file)
-            e.target.value = ""
-          }}
-        />
-        <button
-          type="button"
-          disabled={uploading}
-          onClick={() => fileRef.current?.click()}
-          className="inline-flex items-center gap-2 rounded-lg border border-[#EDE5D8] bg-[#FAF7F2] px-4 py-2.5 text-[12px] font-medium text-[#6B5344] transition-colors hover:border-[#C4A882] hover:bg-white disabled:opacity-50"
-        >
-          {uploading ? <Loader2 className="size-4 animate-spin" /> : <Upload className="size-4" />}
-          {uploading ? "Uploading…" : "Upload photo"}
-        </button>
-      </div>
-
-      {imageUrl ? (
-        <div className="relative mt-4 aspect-[16/9] max-w-md overflow-hidden rounded-lg bg-[#FAF7F2]">
-          <Image src={imageUrl} alt="" fill className="object-cover" />
-        </div>
-      ) : (
-        <div className="mt-4 flex aspect-[16/9] max-w-md items-center justify-center rounded-lg border border-dashed border-[#D9CFC0] bg-[#FAF7F2] text-[12px] text-[#9A8070]">
-          No photo uploaded yet
-        </div>
-      )}
-    </div>
-  )
-}
+import { OurStoryFrameCarouselManager } from "@/components/admin/our-story-frame-carousel-manager"
 
 export function OurStoryPhotosManager() {
   const [content, setContent] = useState<OurStoryContent | null>(null)
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
-  const [uploadingHero, setUploadingHero] = useState(false)
-  const [uploadingWhyExists, setUploadingWhyExists] = useState(false)
-  const [uploadingFounders, setUploadingFounders] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [saved, setSaved] = useState(false)
 
@@ -110,36 +51,6 @@ export function OurStoryPhotosManager() {
       setError(err instanceof Error ? err.message : "Save failed")
     } finally {
       setSaving(false)
-    }
-  }
-
-  async function handleImageUpload(
-    file: File,
-    field: "heroImageUrl" | "whyExistsImageUrl" | "foundersImageUrl",
-    setUploading: (value: boolean) => void,
-  ) {
-    if (!content) return
-
-    setUploading(true)
-    setError(null)
-    setSaved(false)
-    try {
-      const formData = new FormData()
-      formData.append("file", file)
-      const res = await fetch("/api/admin/our-story-content/upload", {
-        method: "POST",
-        body: formData,
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || "Upload failed")
-
-      const nextContent = { ...content, [field]: data.imageUrl }
-      setContent(nextContent)
-      await persistContent(nextContent)
-    } catch (err) {
-      setError(err instanceof Error ? err.message : "Upload failed")
-    } finally {
-      setUploading(false)
     }
   }
 
@@ -187,7 +98,7 @@ export function OurStoryPhotosManager() {
         </div>
       )}
 
-      {saving && !uploadingHero && !uploadingWhyExists && !uploadingFounders ? (
+      {saving ? (
         <div className="flex items-center gap-2 text-[12px] text-[#9A8070]">
           <Loader2 className="size-3.5 animate-spin" />
           Saving…
@@ -195,26 +106,53 @@ export function OurStoryPhotosManager() {
       ) : null}
 
       <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
-        <PhotoUploadCard
-          title="Frame 1 — Hero"
-          description="Full-width photo at the top of Our Story."
-          imageUrl={content.heroImageUrl}
-          uploading={uploadingHero}
-          onUpload={(file) => void handleImageUpload(file, "heroImageUrl", setUploadingHero)}
+        <OurStoryFrameCarouselManager
+          title="Frame 1 — Hero Carousel"
+          description="Upload multiple photos for the top of Our Story. They rotate automatically on the page"
+          slides={content.heroCarouselSlides}
+          fallbackImageUrl={content.heroImageUrl}
+          fallbackAlt="Our Story hero"
+          slideIdPrefix="story-hero"
+          saving={saving}
+          onPersist={async (slides) => {
+            await persistContent({
+              ...content,
+              heroCarouselSlides: slides,
+              heroImageUrl: slides[0]?.imageUrl ?? content.heroImageUrl,
+            })
+          }}
         />
-        <PhotoUploadCard
-          title='Frame 2 — Why House of Indika Exists'
-          description="Photo fills the full framed box with the heading and copy overlaid on top."
-          imageUrl={content.whyExistsImageUrl}
-          uploading={uploadingWhyExists}
-          onUpload={(file) => void handleImageUpload(file, "whyExistsImageUrl", setUploadingWhyExists)}
+        <OurStoryFrameCarouselManager
+          title="Frame 2 — Why House of Indika Exists"
+          description="Upload multiple photos for the Why We Exist section. They rotate automatically on the page"
+          slides={content.whyExistsCarouselSlides}
+          fallbackImageUrl={content.whyExistsImageUrl}
+          fallbackAlt="Why House of Indika Exists"
+          slideIdPrefix="story-why"
+          saving={saving}
+          onPersist={async (slides) => {
+            await persistContent({
+              ...content,
+              whyExistsCarouselSlides: slides,
+              whyExistsImageUrl: slides[0]?.imageUrl ?? content.whyExistsImageUrl,
+            })
+          }}
         />
-        <PhotoUploadCard
+        <OurStoryFrameCarouselManager
           title="Frame 3 — Meet Our Founders"
-          description="Landscape photo with the heading overlaid, shown below Why House of Indika Exists."
-          imageUrl={content.foundersImageUrl}
-          uploading={uploadingFounders}
-          onUpload={(file) => void handleImageUpload(file, "foundersImageUrl", setUploadingFounders)}
+          description="Upload multiple photos for the Meet Our Founders section. They rotate automatically on the page"
+          slides={content.foundersCarouselSlides}
+          fallbackImageUrl={content.foundersImageUrl}
+          fallbackAlt="Meet Our Founders"
+          slideIdPrefix="story-founders"
+          saving={saving}
+          onPersist={async (slides) => {
+            await persistContent({
+              ...content,
+              foundersCarouselSlides: slides,
+              foundersImageUrl: slides[0]?.imageUrl ?? content.foundersImageUrl,
+            })
+          }}
         />
       </div>
     </div>

@@ -15,6 +15,7 @@ import {
   Users,
 } from "lucide-react"
 
+import { StoryHeroCarousel } from "@/components/our-story/story-hero-carousel"
 import { SiteHeader } from "@/components/site-header"
 import {
   DEFAULT_OUR_STORY_PAGE_CONTENT,
@@ -132,16 +133,10 @@ function StoryHeroImageSection({
   priority?: boolean
 }) {
   return (
-    <section className="relative min-h-[360px] overflow-hidden sm:min-h-[420px] lg:min-h-[480px]">
-      <Image
-        src={content.imageUrl}
-        alt=""
-        fill
-        className="object-cover"
-        sizes="100vw"
-        priority={priority}
-      />
-    </section>
+    <StoryHeroCarousel
+      slides={content.carouselSlides}
+      priority={priority}
+    />
   )
 }
 
@@ -184,30 +179,21 @@ function StoryFooterCtaSection({
 function StoryWhyExistsSection({ content }: { content: OurStoryPageContent["whyExists"] }) {
   return (
     <div className="story-panel story-panel--why overflow-hidden !p-0">
-      <div className="relative min-h-[360px] sm:min-h-[420px] lg:min-h-[480px]">
-        <Image
-          src={content.imageUrl}
-          alt=""
-          fill
-          className="object-cover"
-          sizes="(max-width: 1280px) 100vw, 1240px"
-        />
-      </div>
+      <StoryHeroCarousel
+        slides={content.carouselSlides}
+        imageAlt="Why House of Indika Exists"
+        imageSizes="(max-width: 1280px) 100vw, 1240px"
+      />
     </div>
   )
 }
 
 function StoryFoundersSection({ content }: { content: OurStoryPageContent["founders"] }) {
   return (
-    <section className="relative min-h-[360px] overflow-hidden sm:min-h-[420px] lg:min-h-[480px]">
-      <Image
-        src={content.imageUrl}
-        alt=""
-        fill
-        className="object-cover"
-        sizes="100vw"
-      />
-    </section>
+    <StoryHeroCarousel
+      slides={content.carouselSlides}
+      imageAlt="Meet Our Founders"
+    />
   )
 }
 
@@ -238,7 +224,7 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
         <div className="story-page-inner">
           <div className="story-panel story-panel--makers">
             <SessionHeading title={content.makers.title} />
-            <div className="mt-6 grid grid-cols-1 gap-4 min-[480px]:grid-cols-3 min-[480px]:gap-4 lg:mt-8 lg:gap-5">
+            <div className="story-makers-grid mt-4 lg:mt-5">
               {content.makers.items.map((maker) => (
                 <MakerCard key={maker.id} maker={maker} />
               ))}
@@ -286,7 +272,7 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
       {/* SESSION 5 — Impact */}
       <section className="story-page-section">
         <div className="story-page-inner">
-          <div className="story-panel">
+          <div className="story-panel story-panel--impact">
             <SessionHeading title={content.impact.title} size="large" />
             <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4">
               {content.impact.stats.map((stat, index) => {
@@ -314,7 +300,7 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
       {/* SESSION 6 — Heritage */}
       <section className="story-page-section">
         <div className="story-page-inner">
-          <div className="story-panel min-w-0">
+          <div className="story-panel story-panel--heritage min-w-0">
             <SessionHeading title={content.heritage.title} />
             <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 md:gap-4">
               {content.heritage.regions.map((region) => (
@@ -342,7 +328,7 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
       {/* SESSION 7 — Collections */}
       <section className="story-page-section">
         <div className="story-page-inner">
-          <div className="story-panel min-w-0">
+          <div className="story-panel story-panel--collections min-w-0">
             <SessionHeading title={content.collections.title} />
             <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 md:gap-4">
               {content.collections.items.map((item) => (
@@ -380,7 +366,7 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
       {/* SESSION 8 — Promise */}
       <section className="story-page-section">
         <div className="story-page-inner">
-          <div className="story-panel min-w-0">
+          <div className="story-panel story-panel--promise min-w-0">
             <SessionHeading title={content.promise.title} />
             <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4">
               {content.promise.items.map((item, index) => {

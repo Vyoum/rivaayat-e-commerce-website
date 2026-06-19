@@ -361,10 +361,75 @@
 
 .story-panel--why,
 .story-panel--makers,
+.story-panel--impact,
+.story-panel--heritage,
+.story-panel--collections,
+.story-panel--promise,
 .story-panel--founders {
   min-height: auto;
 }
 
 .story-panel--why {
   background: transparent;
+}
+
+.story-panel--makers {
+  width: 100%;
+  max-width: 100%;
+  margin-inline: auto;
+  padding: 0.875rem 0.625rem 1rem;
+  background: #e6ab6b;
+}
+
+.story-panel--impact {
+  background: #efe3d2;
+}
+
+.story-panel--heritage {
+  background: #d88a39;
+}
+
+.story-panel--collections {
+  background: #b44f2f;
+}
+
+.story-panel--promise {
+  background: #e6ab6b;
+}
+
+@media (min-width: 640px) {
+  .story-panel--makers {
+    padding: 1rem 0.75rem 1.125rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .story-panel--makers {
+    padding: 1.125rem 0.875rem 1.25rem;
+  }
+}
+
+.story-makers-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.625rem;
+}
+
+@media (min-width: 480px) {
+  .story-makers-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.625rem;
+  }
+}
+
+@media (min-width: 768px) {
+  .story-makers-grid {
+    gap: 0.75rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .story-makers-grid {
+    gap: 0.875rem;
+  }
 }

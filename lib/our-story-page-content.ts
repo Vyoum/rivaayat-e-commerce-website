@@ -1,4 +1,5 @@
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
+import type { StoryHeroSlide } from "@/lib/our-story-content-shared"
 
 export type StoryMaker = {
   id: string
@@ -48,11 +49,13 @@ export type OurStoryPageContent = {
     title: string
     paragraphs: string[]
     imageUrl: string
+    carouselSlides: StoryHeroSlide[]
   }
   founders: {
     session: string
     title: string
     imageUrl: string
+    carouselSlides: StoryHeroSlide[]
   }
   makers: {
     session: string
@@ -89,6 +92,7 @@ export type OurStoryPageContent = {
   cta: {
     session: string
     imageUrl: string
+    carouselSlides: StoryHeroSlide[]
     footerImageUrl: string
     headline: string
     subheadline: string
@@ -106,11 +110,31 @@ export const DEFAULT_OUR_STORY_PAGE_CONTENT: OurStoryPageContent = {
       "We believe that every handmade piece carries a story — of skill passed down through generations, of communities sustained by fair work, and of beauty that cannot be replicated by machines.",
     ],
     imageUrl: "/landing/categories-section-ref.jpg",
+    carouselSlides: [
+      {
+        id: "story-why-default",
+        imageUrl: "/landing/categories-section-ref.jpg",
+        alt: "Why House of Indika Exists",
+        sortOrder: 0,
+        isActive: true,
+        mediaType: "image",
+      },
+    ],
   },
   founders: {
     session: "SESSION 2B",
     title: "Meet Our Founders",
     imageUrl: "/group-of-smiling-indian-women-artisans-in-colorful.jpg",
+    carouselSlides: [
+      {
+        id: "story-founders-default",
+        imageUrl: "/group-of-smiling-indian-women-artisans-in-colorful.jpg",
+        alt: "Meet Our Founders",
+        sortOrder: 0,
+        isActive: true,
+        mediaType: "image",
+      },
+    ],
   },
   makers: {
     session: "SESSION 3",
@@ -294,6 +318,16 @@ export const DEFAULT_OUR_STORY_PAGE_CONTENT: OurStoryPageContent = {
   cta: {
     session: "SESSION 9",
     imageUrl: "/indian-artisan-hands-creating-traditional-craft-wi.jpg",
+    carouselSlides: [
+      {
+        id: "story-hero-default",
+        imageUrl: "/indian-artisan-hands-creating-traditional-craft-wi.jpg",
+        alt: "Our Story hero",
+        sortOrder: 0,
+        isActive: true,
+        mediaType: "image",
+      },
+    ],
     footerImageUrl: "/landing/categories-bg-full.jpg",
     headline: "From Craft to Collection",
     subheadline: "Become part of the story.",

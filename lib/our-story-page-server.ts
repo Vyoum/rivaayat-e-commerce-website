@@ -4,6 +4,7 @@ import { getPublishedArtisanProfiles } from "@/lib/artisan-page-content"
 import type { ArtisanPageContent } from "@/lib/artisan-page-content-shared"
 import { resolveArtisanSlugForName } from "@/lib/artisan-routes"
 import { getOurStoryContent } from "@/lib/our-story-content"
+import { resolveFoundersSlides, resolveStoryHeroSlides, resolveWhyExistsSlides } from "@/lib/our-story-content-shared"
 import {
   DEFAULT_OUR_STORY_PAGE_CONTENT,
   type OurStoryPageContent,
@@ -67,22 +68,29 @@ function mapAdminContentToPage(
 ): OurStoryPageContent {
   const base = DEFAULT_OUR_STORY_PAGE_CONTENT
 
+  const heroSlides = resolveStoryHeroSlides(admin)
+  const whyExistsSlides = resolveWhyExistsSlides(admin)
+  const foundersSlides = resolveFoundersSlides(admin)
+
   return {
     ...base,
     whyExists: {
       ...base.whyExists,
       title: admin.whyExistsTitle || base.whyExists.title,
       paragraphs: [admin.whyExistsParagraph1, admin.whyExistsParagraph2].filter(Boolean),
-      imageUrl: admin.whyExistsImageUrl || base.whyExists.imageUrl,
+      carouselSlides: whyExistsSlides,
+      imageUrl: whyExistsSlides[0]?.imageUrl || admin.whyExistsImageUrl || base.whyExists.imageUrl,
     },
     founders: {
       ...base.founders,
       title: admin.foundersTitle || base.founders.title,
-      imageUrl: admin.foundersImageUrl || base.founders.imageUrl,
+      carouselSlides: foundersSlides,
+      imageUrl: foundersSlides[0]?.imageUrl || admin.foundersImageUrl || base.founders.imageUrl,
     },
     cta: {
       ...base.cta,
-      imageUrl: admin.heroImageUrl || base.cta.imageUrl,
+      carouselSlides: heroSlides,
+      imageUrl: heroSlides[0]?.imageUrl || admin.heroImageUrl || base.cta.imageUrl,
       footerImageUrl: admin.footerBackgroundUrl || base.cta.footerImageUrl,
       headline: buildHeroHeadline(admin.heroTitleLine1, admin.heroTitleLine2),
     },
