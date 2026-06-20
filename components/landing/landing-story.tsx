@@ -1,6 +1,6 @@
 import Image from "next/image"
 import Link from "next/link"
-import { HOUSE_OF_INDIKA } from "@/lib/brand"
+import { HOUSE_OF_INDIKA_ENGLISH } from "@/lib/brand"
 import type { HomepageStoryContent } from "@/lib/homepage-story-shared"
 import { DEFAULT_HOMEPAGE_STORY } from "@/lib/homepage-story-shared"
 
@@ -33,7 +33,7 @@ export function LandingStory({ content = DEFAULT_HOMEPAGE_STORY }: LandingStoryP
           <p className="landing-label text-[10px] text-[#B85A32]">{content.eyebrow}</p>
 
           <h2 className="mt-3 text-[28px] leading-[1.22] sm:text-[32px]">
-            <span className="landing-brand block text-[#8A9DAA]">{HOUSE_OF_INDIKA} —</span>
+            <span className="landing-brand block text-[#8A9DAA]">{HOUSE_OF_INDIKA_ENGLISH} —</span>
             <span className="landing-display-italic block text-[#7D5A44]">{content.headline}</span>
           </h2>
 

@@ -1,4 +1,4 @@
-import { HOUSE_OF_INDIKA } from "@/lib/brand"
+import { HOUSE_OF_INDIKA_ENGLISH } from "@/lib/brand"
 
 export type HomepageStoryImageKey = "1" | "2" | "3" | "4"
 
@@ -24,7 +24,7 @@ export const DEFAULT_HOMEPAGE_STORY: HomepageStoryContent = {
   eyebrow: "Our Story",
   headline: "A Heritage of Hope",
   bodyParagraphs: [
-    `${HOUSE_OF_INDIKA} was born from a simple belief — that the beauty of handmade Indian craft deserves to live in contemporary homes, and that the artisans who create it deserve dignity, fair wages, and a platform to share their stories with the world.`,
+    `${HOUSE_OF_INDIKA_ENGLISH} was born from a simple belief — that the beauty of handmade Indian craft deserves to live in contemporary homes, and that the artisans who create it deserve dignity, fair wages, and a platform to share their stories with the world.`,
     "We partner directly with rural makers across India — weavers, potters, jewellers, and food artisans — curating each piece with the same care they put into making it.",
   ],
   quote:

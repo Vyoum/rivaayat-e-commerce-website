@@ -19,9 +19,10 @@ export type { SiteNavItem } from "@/lib/site-nav"
 type SiteHeaderProps = {
   variant?: "solid" | "hero"
   className?: string
+  brandLabel?: string
 }
 
-export function SiteHeader({ variant = "solid", className }: SiteHeaderProps) {
+export function SiteHeader({ variant = "solid", className, brandLabel = HOUSE_OF_INDIKA }: SiteHeaderProps) {
   const pathname = usePathname()
   const { isLoggedIn } = useWishlist()
   const [isScrolled, setIsScrolled] = useState(false)
@@ -120,7 +121,7 @@ export function SiteHeader({ variant = "solid", className }: SiteHeaderProps) {
               href="/"
               className={cn(brandClass, "absolute left-1/2 -translate-x-1/2 text-center")}
             >
-              {HOUSE_OF_INDIKA}
+              {brandLabel}
             </Link>
 
             <div className="flex items-center gap-3">
@@ -136,7 +137,7 @@ export function SiteHeader({ variant = "solid", className }: SiteHeaderProps) {
           {/* Desktop bar */}
           <div className="hidden grid-cols-[1fr_auto_1fr] items-center lg:grid">
             <Link href="/" className={cn(brandClass, "justify-self-start")}>
-              {HOUSE_OF_INDIKA}
+              {brandLabel}
             </Link>
 
             <nav className="flex items-center justify-center gap-6">
