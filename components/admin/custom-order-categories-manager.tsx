@@ -39,6 +39,11 @@ function toOptionDrafts(
 }
 
 function buildDraft(category: CustomOrderCategorySetting): CategoryDraft {
+  const weightOptions = CUSTOM_ORDER_BOX_SIZES.map((label) => {
+    const existing = category.weightOptions.find((option) => option.label === label)
+    return existing ?? { label, price: null }
+  })
+
   return {
     label: category.label,
     startingPrice: category.startingPrice === null ? "" : String(category.startingPrice),
@@ -52,7 +57,7 @@ function buildDraft(category: CustomOrderCategorySetting): CategoryDraft {
         },
       ]),
     ),
-    weightOptions: toOptionDrafts(category.weightOptions),
+    weightOptions: toOptionDrafts(weightOptions),
   }
 }
 
@@ -251,7 +256,11 @@ function OptionRowsEditor({
   )
 }
 
-export function CustomOrderCategoriesManager() {
+export function CustomOrderCategoriesManager({
+  variant = "full",
+}: {
+  variant?: "full" | "box-sizes"
+}) {
   const [categories, setCategories] = useState<CustomOrderCategorySetting[]>([])
   const [drafts, setDrafts] = useState<Partial<Record<CustomOrderCategoryId, CategoryDraft>>>({})
   const [loading, setLoading] = useState(true)
@@ -347,12 +356,15 @@ export function CustomOrderCategoriesManager() {
   }
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-4" id="custom-order-box-sizes">
       <div>
-        <h2 className="font-serif text-[18px] font-semibold text-[#2B1B12]">Categories</h2>
+        <h2 className="font-serif text-[18px] font-semibold text-[#2B1B12]">
+          {variant === "box-sizes" ? "Box Size Pricing" : "Categories"}
+        </h2>
         <p className="mt-1 text-[12px] text-[#9A8070]">
-          Set the category starting price, box sizes (250g, 500g, 1kg), and extra prices for each
-          form choice. Prices appear on the public custom orders page.
+          {variant === "box-sizes"
+            ? "Set prices for 250g, 500g, and 1kg boxes. These appear on the public custom orders page."
+            : "Set the category starting price, box sizes (250g, 500g, 1kg), and extra prices for each form choice. Prices appear on the public custom orders page."}
         </p>
       </div>
 
@@ -368,7 +380,13 @@ export function CustomOrderCategoriesManager() {
         </div>
       ) : (
         <div className="space-y-4">
-          {categories.map((category) => {
+          {categories
+            .filter((category) => {
+              if (variant !== "box-sizes") return true
+              const base = CUSTOM_ORDER_CATEGORIES.find((entry) => entry.id === category.id)
+              return !base?.comingSoon
+            })
+            .map((category) => {
             const base = CUSTOM_ORDER_CATEGORIES.find((entry) => entry.id === category.id)
             const draft = drafts[category.id] ?? buildDraft(category)
             const parsedPrice =
@@ -380,6 +398,7 @@ export function CustomOrderCategoriesManager() {
             const formFields =
               category.fields.length > 0 ? category.fields : (base?.fields ?? [])
             const hasForm = formFields.length > 0
+            const supportsBoxSizes = !base?.comingSoon
 
             return (
               <article
@@ -442,7 +461,26 @@ export function CustomOrderCategoriesManager() {
                   </label>
                 </div>
 
-                {hasForm ? (
+                {supportsBoxSizes ? (
+                  <div className="mt-5 rounded-lg border border-[#E8DFD2] bg-[#FFF9F2] p-4">
+                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#846246]">
+                      Box Sizes (250g · 500g · 1kg)
+                    </p>
+                    <div className="mt-3">
+                      <BoxSizePricingEditor
+                        options={draft.weightOptions}
+                        onChange={(next) =>
+                          setDrafts((prev) => ({
+                            ...prev,
+                            [category.id]: { ...draft, weightOptions: next },
+                          }))
+                        }
+                      />
+                    </div>
+                  </div>
+                ) : null}
+
+                {variant === "full" && hasForm ? (
                   <div className="mt-5 space-y-4 border-t border-[#F0EAE2] pt-5">
                     <div className="rounded-lg border border-[#E8DFD2] bg-[#FFF9F2] px-3 py-2.5">
                       <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#846246]">
@@ -541,28 +579,12 @@ export function CustomOrderCategoriesManager() {
                       })}
                     </div>
 
-                    <div className="rounded-lg border border-[#F0EAE2] bg-[#FAF7F2] p-3">
-                      <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#846246]">
-                        Box Sizes
-                      </p>
-                      <div className="mt-3">
-                        <BoxSizePricingEditor
-                          options={draft.weightOptions}
-                          onChange={(next) =>
-                            setDrafts((prev) => ({
-                              ...prev,
-                              [category.id]: { ...draft, weightOptions: next },
-                            }))
-                          }
-                        />
-                      </div>
-                    </div>
                   </div>
-                ) : (
+                ) : variant === "full" && !supportsBoxSizes ? (
                   <p className="mt-4 text-[12px] text-[#9A8070]">
                     Form options will be available once this category is live.
                   </p>
-                )}
+                ) : null}
 
                 <button
                   type="button"
