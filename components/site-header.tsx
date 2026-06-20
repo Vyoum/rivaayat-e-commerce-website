@@ -10,6 +10,11 @@ import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { isNavItemActive, SITE_NAV_ITEMS } from "@/lib/site-nav"
 import { AccountIconLink } from "@/components/account/account-icon-link"
 import { CartIconLink } from "@/components/cart/cart-icon-link"
+import {
+  CollectionsMegaMenuDropdown,
+  CollectionsMegaMenuMobileSection,
+  CollectionsNavTrigger,
+} from "@/components/collections-mega-menu"
 import { SiteSearchPanel, SITE_HEADER_ID } from "@/components/site-search-panel"
 import { useWishlist } from "@/components/providers/wishlist-provider"
 import { WishlistIconLink } from "@/components/wishlist/wishlist-icon-link"
@@ -28,6 +33,7 @@ export function SiteHeader({ variant = "solid", className, brandLabel = HOUSE_OF
   const [isScrolled, setIsScrolled] = useState(false)
   const [mobileOpen, setMobileOpen] = useState(false)
   const [searchOpen, setSearchOpen] = useState(false)
+  const [collectionsOpen, setCollectionsOpen] = useState(false)
   const isHero = variant === "hero"
   const wishlistHref = isLoggedIn ? "/wishlist" : "/login?next=/wishlist"
 
@@ -43,6 +49,7 @@ export function SiteHeader({ variant = "solid", className, brandLabel = HOUSE_OF
   useEffect(() => {
     setMobileOpen(false)
     setSearchOpen(false)
+    setCollectionsOpen(false)
   }, [pathname])
 
   useEffect(() => {
@@ -96,13 +103,14 @@ export function SiteHeader({ variant = "solid", className, brandLabel = HOUSE_OF
           isHero
             ? cn(
                 "fixed top-0",
-                isScrolled
+                isScrolled || collectionsOpen
                   ? "border-b border-[#3D2E24]/10 bg-[#F5EBE0]/60 py-3 shadow-lg backdrop-blur-xl"
                   : "bg-white/10 py-3 backdrop-blur-md sm:py-4",
               )
             : "relative border-b border-[#E8E0D4] bg-[#FCF8F4] py-3 sm:py-4",
           className,
         )}
+        onMouseLeave={() => setCollectionsOpen(false)}
       >
         <div className="relative mx-auto max-w-[960px] px-5 lg:px-8">
           {/* Mobile bar */}
@@ -141,15 +149,26 @@ export function SiteHeader({ variant = "solid", className, brandLabel = HOUSE_OF
             </Link>
 
             <nav className="flex items-center justify-center gap-6">
-              {SITE_NAV_ITEMS.map((item) => (
-                <Link
-                  key={item.label}
-                  href={item.href}
-                  className={navLinkClass(isNavItemActive(pathname, item.href))}
-                >
-                  {item.label}
-                </Link>
-              ))}
+              {SITE_NAV_ITEMS.map((item) =>
+                item.label === "Collections" ? (
+                  <CollectionsNavTrigger
+                    key={item.label}
+                    active={isNavItemActive(pathname, item.href)}
+                    open={collectionsOpen}
+                    onHero={onHero}
+                    navLinkClass={(active) => navLinkClass(active)}
+                    onOpen={() => setCollectionsOpen(true)}
+                  />
+                ) : (
+                  <Link
+                    key={item.label}
+                    href={item.href}
+                    className={navLinkClass(isNavItemActive(pathname, item.href))}
+                  >
+                    {item.label}
+                  </Link>
+                ),
+              )}
             </nav>
 
             <div className="flex items-center justify-end gap-4">
@@ -175,6 +194,13 @@ export function SiteHeader({ variant = "solid", className, brandLabel = HOUSE_OF
             </div>
           </div>
         </div>
+
+        <CollectionsMegaMenuDropdown
+          open={collectionsOpen}
+          onOpen={() => setCollectionsOpen(true)}
+          onClose={() => setCollectionsOpen(false)}
+          onNavigate={() => setCollectionsOpen(false)}
+        />
       </header>
 
       {/* Mobile menu */}
@@ -214,16 +240,25 @@ export function SiteHeader({ variant = "solid", className, brandLabel = HOUSE_OF
           </div>
 
           <nav className="flex-1 overflow-y-auto px-5 py-2">
-            {SITE_NAV_ITEMS.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className={navLinkClass(isNavItemActive(pathname, item.href), true)}
-              >
-                {item.label}
-              </Link>
-            ))}
+            {SITE_NAV_ITEMS.map((item) =>
+              item.label === "Collections" ? (
+                <CollectionsMegaMenuMobileSection
+                  key={item.label}
+                  active={isNavItemActive(pathname, item.href)}
+                  navLinkClass={navLinkClass}
+                  onNavigate={() => setMobileOpen(false)}
+                />
+              ) : (
+                <Link
+                  key={item.label}
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className={navLinkClass(isNavItemActive(pathname, item.href), true)}
+                >
+                  {item.label}
+                </Link>
+              ),
+            )}
           </nav>
 
           <div className="space-y-1 border-t border-[#E8E0D4] px-5 py-4">

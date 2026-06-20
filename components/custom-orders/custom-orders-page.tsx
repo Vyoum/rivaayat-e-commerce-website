@@ -26,6 +26,7 @@ import {
   type CustomOrderCategory,
   type CustomOrderCategoryId,
   type CustomOrderTotalBreakdown,
+  type PricedOption,
   type PublicCustomOrderCategory,
 } from "@/lib/custom-orders-config"
 
@@ -56,6 +57,60 @@ function BotanicalIcon() {
       <circle cx="24" cy="24" r="22" strokeOpacity="0.45" />
       <path d="M24 34V18M24 18C24 18 16 16 14 10C18 12 24 18 24 18ZM24 18C24 18 32 16 34 10C30 12 24 18 24 18Z" />
     </svg>
+  )
+}
+
+function PricedOptionPills({
+  options,
+  value,
+  onChange,
+  columns = 3,
+}: {
+  options: PricedOption[]
+  value: string
+  onChange: (value: string) => void
+  columns?: 2 | 3 | 4
+}) {
+  const gridClass =
+    columns === 2
+      ? "grid-cols-2"
+      : columns === 3
+        ? "grid-cols-2 sm:grid-cols-3"
+        : "grid-cols-2 sm:grid-cols-4"
+
+  return (
+    <div className={cn("grid gap-2.5", gridClass)}>
+      {options.map((option) => {
+        const selected = value === option.label
+        const priceLabel = formatPricedOptionPrice(option.price)
+
+        return (
+          <button
+            key={option.label}
+            type="button"
+            onClick={() => onChange(option.label)}
+            className={cn(
+              "rounded-md border px-3 py-2.5 text-center font-sans transition-colors",
+              selected
+                ? "border-[#3D2E24] bg-[#3D2E24] text-white"
+                : "border-[#D8CFC4] bg-white text-[#3D2E24] hover:border-[#B8A898]",
+            )}
+          >
+            <span className="block text-[12px] tracking-wide">{option.label}</span>
+            {priceLabel ? (
+              <span
+                className={cn(
+                  "mt-1 block text-[10px]",
+                  selected ? "text-white/80" : "text-[#8B7355]",
+                )}
+              >
+                {priceLabel}
+              </span>
+            ) : null}
+          </button>
+        )
+      })}
+    </div>
   )
 }
 
@@ -467,21 +522,14 @@ export function CustomOrdersPage({ categories: categoriesProp }: CustomOrdersPag
                 <div className="grid gap-6 sm:grid-cols-[1fr_auto] sm:items-end">
                   <div>
                     <p className="mb-2.5 font-sans text-[11px] uppercase tracking-[0.14em] text-[#8B7355]">
-                      Order by Weight
+                      Box Size
                     </p>
-                    <OptionPills
-                      options={getPricedOptionLabels(category.weightOptions)}
+                    <PricedOptionPills
+                      options={category.weightOptions}
                       value={form.weight}
                       onChange={(weight) => updateForm({ weight })}
                       columns={3}
                     />
-                    {formatPricedOptionPrice(getPricedOptionPrice(category.weightOptions, form.weight)) ? (
-                      <p className="mt-2.5 font-sans text-[12px] text-[#8B7355]">
-                        {formatPricedOptionPrice(
-                          getPricedOptionPrice(category.weightOptions, form.weight),
-                        )}
-                      </p>
-                    ) : null}
                   </div>
                   <div className="sm:w-[120px]">
                     <label

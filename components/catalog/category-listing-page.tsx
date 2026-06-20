@@ -27,7 +27,7 @@ const CATEGORY_FILTER_OPTIONS = [
   { id: "jewellery", label: "Jewellery" },
   { id: "clothing", label: "Clothing" },
   { id: "decor", label: "Décor" },
-  { id: "custom-laddoos", label: "Custom Food" },
+  { id: "custom-laddoos", label: "Crafted Flavour" },
 ] as const
 
 type CategoryListingPageProps = {

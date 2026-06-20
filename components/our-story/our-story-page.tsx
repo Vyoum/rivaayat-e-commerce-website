@@ -81,9 +81,19 @@ const journeyIcons = [PenLine, Leaf, Hand, Search, Package, Truck]
 const impactIcons = [Users, Sparkles, ShieldCheck, Leaf]
 const promiseIcons = [Sparkles, Leaf, Users, ShieldCheck]
 
-function MakerCard({ maker }: { maker: OurStoryPageContent["makers"]["items"][number] }) {
-  const cardClassName =
-    "overflow-hidden border border-[#D4C4A8] bg-[#FAF7F2]/90 transition-colors hover:border-[#9A8070]"
+function MakerCard({
+  maker,
+  flush = false,
+}: {
+  maker: OurStoryPageContent["makers"]["items"][number]
+  flush?: boolean
+}) {
+  const cardClassName = cn(
+    "overflow-hidden bg-[#FAF7F2]/90 transition-colors",
+    flush
+      ? "story-maker-card border-0"
+      : "border border-[#D4C4A8] hover:border-[#9A8070]",
+  )
 
   const inner = (
     <>
@@ -220,15 +230,15 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
       <StoryFoundersSection content={content.founders} />
 
       {/* SESSION 3 — Meet The Makers */}
-      <section className="story-page-section">
-        <div className="story-page-inner">
-          <div className="story-panel story-panel--makers">
+      <section className="story-page-section story-page-section--makers">
+        <div className="story-panel story-panel--makers">
+          <div className="story-makers-heading">
             <SessionHeading title={content.makers.title} />
-            <div className="story-makers-grid mt-4 lg:mt-5">
-              {content.makers.items.map((maker) => (
-                <MakerCard key={maker.id} maker={maker} />
-              ))}
-            </div>
+          </div>
+          <div className="story-makers-grid">
+            {content.makers.items.map((maker) => (
+              <MakerCard key={maker.id} maker={maker} flush />
+            ))}
           </div>
         </div>
       </section>
@@ -270,54 +280,58 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
       </section>
 
       {/* SESSION 5 — Impact */}
-      <section className="story-page-section">
-        <div className="story-page-inner">
-          <div className="story-panel story-panel--impact">
+      <section className="story-page-section story-page-section--impact">
+        <div className="story-panel story-panel--impact">
+          <div className="story-impact-heading">
             <SessionHeading title={content.impact.title} size="large" />
-            <div className="mt-8 grid grid-cols-2 gap-3 sm:gap-4">
-              {content.impact.stats.map((stat, index) => {
-                const Icon = impactIcons[index] ?? Sparkles
-                return (
-                  <div
-                    key={stat.id}
-                    className="flex min-h-[160px] flex-col items-center justify-center border border-[#D4C4A8] bg-[#F5EDE3]/95 px-3 py-8 text-center shadow-sm sm:min-h-[185px] sm:px-4"
-                  >
-                    <Icon className="mb-4 size-[22px] text-[#8B7355] sm:size-[24px]" strokeWidth={1.25} />
-                    <p className="font-serif text-[clamp(1.75rem,3.2vw,2.35rem)] leading-none text-[#2D1A12]">
-                      {stat.value}
-                    </p>
-                    <p className="mt-3 font-sans text-[11px] leading-snug tracking-[0.08em] text-[#6B5344] uppercase sm:text-[12px] lg:text-[13px]">
-                      {stat.label}
-                    </p>
-                  </div>
-                )
-              })}
-            </div>
+          </div>
+          <div className="story-impact-grid">
+            {content.impact.stats.map((stat, index) => {
+              const Icon = impactIcons[index] ?? Sparkles
+              return (
+                <div
+                  key={stat.id}
+                  className="story-impact-stat flex min-h-[160px] flex-col items-center justify-center bg-[#F5EDE3]/95 px-3 py-8 text-center sm:min-h-[185px] sm:px-4"
+                >
+                  <Icon className="mb-4 size-[22px] text-[#8B7355] sm:size-[24px]" strokeWidth={1.25} />
+                  <p className="font-serif text-[clamp(1.75rem,3.2vw,2.35rem)] leading-none text-[#2D1A12]">
+                    {stat.value}
+                  </p>
+                  <p className="mt-3 font-sans text-[11px] leading-snug tracking-[0.08em] text-[#6B5344] uppercase sm:text-[12px] lg:text-[13px]">
+                    {stat.label}
+                  </p>
+                </div>
+              )
+            })}
           </div>
         </div>
       </section>
 
       {/* SESSION 6 — Heritage */}
-      <section className="story-page-section">
+      <section className="story-page-section story-page-section--heritage">
         <div className="story-page-inner">
-          <div className="story-panel story-panel--heritage min-w-0">
-            <SessionHeading title={content.heritage.title} />
-            <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 md:gap-4">
+          <div className="story-panel story-panel--heritage">
+            <div className="story-heritage-heading">
+              <SessionHeading title={content.heritage.title} />
+            </div>
+            <div className="story-heritage-grid">
               {content.heritage.regions.map((region) => (
-                <article key={region.id} className="min-w-0">
-                  <div className="relative aspect-[4/3] overflow-hidden bg-[#EDE8DC]">
+                <article key={region.id} className="story-heritage-item min-w-0">
+                  <div className="story-heritage-media relative overflow-hidden bg-[#EDE8DC]">
                     <Image
                       src={region.imageUrl}
                       alt={region.name}
                       fill
                       className="object-cover"
-                      sizes="(max-width: 1024px) 45vw, 140px"
+                      sizes="(max-width: 640px) 45vw, (max-width: 768px) 30vw, 18vw"
                     />
                   </div>
-                  <h3 className="mt-2.5 font-serif text-[13px] text-[#2D1A12]">{region.name}</h3>
-                  <p className="mt-0.5 font-sans text-[10px] leading-snug text-[#8B7355]">
-                    {region.craft}
-                  </p>
+                  <div className="story-heritage-copy">
+                    <h3 className="font-serif text-[13px] text-[#2D1A12]">{region.name}</h3>
+                    <p className="mt-0.5 font-sans text-[10px] leading-snug text-[#3D2E24]/85">
+                      {region.craft}
+                    </p>
+                  </div>
                 </article>
               ))}
             </div>

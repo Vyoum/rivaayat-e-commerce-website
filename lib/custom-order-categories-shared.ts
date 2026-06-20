@@ -1,5 +1,6 @@
 import {
   CUSTOM_ORDER_CATEGORIES,
+  mergeBoxSizeOptions,
   type CustomOrderCategoryId,
   type FormFieldGroup,
   type PricedOption,
@@ -77,7 +78,7 @@ export function mergeCategoryWeightOptions(
   saved?: Array<string | PricedOption>,
 ): PricedOption[] {
   const base = getBaseCategory(id)
-  return normalizePricedOptions(saved, base?.weightOptions ?? [])
+  return mergeBoxSizeOptions(saved ?? base?.weightOptions ?? [])
 }
 
 export function buildDefaultCategorySetting(id: CustomOrderCategoryId): CustomOrderCategorySetting {

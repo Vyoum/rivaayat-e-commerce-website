@@ -9,7 +9,7 @@ import {
   pricedOptionsEqual,
 } from "@/lib/custom-order-categories-shared"
 import type { CustomOrderCategoryId } from "@/lib/custom-orders-config"
-import { CUSTOM_ORDER_CATEGORIES } from "@/lib/custom-orders-config"
+import { CUSTOM_ORDER_BOX_SIZES, CUSTOM_ORDER_CATEGORIES } from "@/lib/custom-orders-config"
 
 type OptionDraft = {
   label: string
@@ -103,6 +103,66 @@ const FIELD_ADMIN_LABELS: Record<string, string> = {
 
 function ensureOptionDrafts(options: OptionDraft[]) {
   return options.length > 0 ? options : [{ label: "", price: "" }]
+}
+
+function BoxSizePricingEditor({
+  options,
+  onChange,
+}: {
+  options: OptionDraft[]
+  onChange: (next: OptionDraft[]) => void
+}) {
+  const rows = CUSTOM_ORDER_BOX_SIZES.map((label) => {
+    const existing = options.find((option) => option.label === label)
+    return existing ?? { label, price: "" }
+  })
+
+  return (
+    <div className="space-y-2">
+      <div className="grid grid-cols-[120px_1fr] gap-2 px-0.5">
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-[#9A8070]">
+          Box size
+        </span>
+        <span className="text-[10px] font-semibold uppercase tracking-wide text-[#9A8070]">
+          Price (₹)
+        </span>
+      </div>
+
+      {rows.map((option) => (
+        <div key={option.label} className="grid grid-cols-[120px_1fr] gap-2">
+          <div className="flex h-9 items-center rounded-lg border border-[#EDE5D8] bg-[#FAF7F2] px-3 font-sans text-[12px] font-medium text-[#2D1E17]">
+            {option.label}
+          </div>
+          <div className="relative">
+            <span className="pointer-events-none absolute top-1/2 left-3 -translate-y-1/2 font-sans text-[12px] text-[#9A8070]">
+              ₹
+            </span>
+            <input
+              value={option.price}
+              onChange={(event) =>
+                onChange(
+                  rows.map((entry) =>
+                    entry.label === option.label
+                      ? { ...entry, price: event.target.value.replace(/[^\d]/g, "") }
+                      : entry,
+                  ),
+                )
+              }
+              inputMode="numeric"
+              placeholder="0"
+              aria-label={`Price for ${option.label} box`}
+              className="h-9 w-full rounded-lg border border-[#EDE5D8] bg-white pr-3 pl-7 font-sans text-[12px] text-[#2D1E17] outline-none focus:border-[#C4A882]"
+            />
+          </div>
+        </div>
+      ))}
+
+      <p className="text-[10px] leading-relaxed text-[#B5A090]">
+        Set the price for each box size. Leave blank if there is no extra charge beyond the starting
+        price. Customers see these prices on the custom orders page.
+      </p>
+    </div>
+  )
 }
 
 function OptionRowsEditor({
@@ -291,8 +351,8 @@ export function CustomOrderCategoriesManager() {
       <div>
         <h2 className="font-serif text-[18px] font-semibold text-[#2B1B12]">Categories</h2>
         <p className="mt-1 text-[12px] text-[#9A8070]">
-          Set the category starting price, then add extra prices for each form choice (Millets,
-          Honey, weight, and so on). Those appear below the option on the public custom orders page.
+          Set the category starting price, box sizes (250g, 500g, 1kg), and extra prices for each
+          form choice. Prices appear on the public custom orders page.
         </p>
       </div>
 
@@ -483,24 +543,18 @@ export function CustomOrderCategoriesManager() {
 
                     <div className="rounded-lg border border-[#F0EAE2] bg-[#FAF7F2] p-3">
                       <p className="text-[10px] font-semibold uppercase tracking-[0.14em] text-[#846246]">
-                        Order Details
+                        Box Sizes
                       </p>
                       <div className="mt-3">
-                        <span className="text-[10px] font-medium uppercase tracking-wide text-[#9A8070]">
-                          Weight options & prices
-                        </span>
-                        <div className="mt-1.5">
-                          <OptionRowsEditor
-                            options={ensureOptionDrafts(draft.weightOptions)}
-                            addLabel="Add weight option"
-                            onChange={(next) =>
-                              setDrafts((prev) => ({
-                                ...prev,
-                                [category.id]: { ...draft, weightOptions: next },
-                              }))
-                            }
-                          />
-                        </div>
+                        <BoxSizePricingEditor
+                          options={draft.weightOptions}
+                          onChange={(next) =>
+                            setDrafts((prev) => ({
+                              ...prev,
+                              [category.id]: { ...draft, weightOptions: next },
+                            }))
+                          }
+                        />
                       </div>
                     </div>
                   </div>

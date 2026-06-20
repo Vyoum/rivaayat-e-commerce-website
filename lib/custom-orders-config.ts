@@ -12,6 +12,59 @@ export type PricedOption = {
   price: number | null
 }
 
+export const CUSTOM_ORDER_BOX_SIZES = ["250g", "500g", "1kg"] as const
+
+export type CustomOrderBoxSize = (typeof CUSTOM_ORDER_BOX_SIZES)[number]
+
+const BOX_SIZE_LABEL_ALIASES: Record<string, CustomOrderBoxSize> = {
+  "250g": "250g",
+  "250gm": "250g",
+  "250 g": "250g",
+  "500g": "500g",
+  "500gm": "500g",
+  "500 g": "500g",
+  "1kg": "1kg",
+  "1 kg": "1kg",
+}
+
+export function normalizeBoxSizeLabel(label: string): CustomOrderBoxSize | null {
+  const normalized = label.trim().toLowerCase().replace(/\s+/g, " ")
+  return BOX_SIZE_LABEL_ALIASES[normalized] ?? null
+}
+
+export function resolveBoxSizeSelection(weight: string, options: PricedOption[]): string {
+  if (options.some((option) => option.label === weight)) return weight
+
+  const normalized = normalizeBoxSizeLabel(weight)
+  if (normalized && options.some((option) => option.label === normalized)) {
+    return normalized
+  }
+
+  return options[0]?.label ?? CUSTOM_ORDER_BOX_SIZES[0]
+}
+
+export function mergeBoxSizeOptions(saved?: Array<string | PricedOption>): PricedOption[] {
+  const priceBySize = new Map<CustomOrderBoxSize, number | null>()
+
+  for (const entry of saved ?? []) {
+    const option = typeof entry === "string" ? { label: entry, price: null } : entry
+    const size = normalizeBoxSizeLabel(option.label)
+    if (!size) continue
+
+    const price =
+      option.price === null || option.price === undefined ? null : Number(option.price)
+    priceBySize.set(
+      size,
+      Number.isFinite(price) && price >= 0 ? price : null,
+    )
+  }
+
+  return CUSTOM_ORDER_BOX_SIZES.map((label) => ({
+    label,
+    price: priceBySize.get(label) ?? null,
+  }))
+}
+
 export type FormFieldGroup = {
   id: string
   label: string
@@ -78,6 +131,7 @@ export function calculateCustomOrderTotal(
 ): CustomOrderTotalBreakdown {
   const startingPrice = pricedAmount(category.startingPrice)
   const optionLines: CustomOrderTotalLine[] = []
+  const resolvedWeight = resolveBoxSizeSelection(weight, category.weightOptions)
 
   for (const field of category.fields) {
     const selected = selections[field.id] ?? field.options[0]?.label ?? ""
@@ -87,9 +141,9 @@ export function calculateCustomOrderTotal(
     }
   }
 
-  const weightAmount = pricedAmount(getPricedOptionPrice(category.weightOptions, weight))
+  const weightAmount = pricedAmount(getPricedOptionPrice(category.weightOptions, resolvedWeight))
   const weightLine =
-    weightAmount > 0 ? { label: `Weight: ${weight}`, amount: weightAmount } : null
+    weightAmount > 0 ? { label: `Box size (${resolvedWeight})`, amount: weightAmount } : null
 
   const perUnit =
     startingPrice +
@@ -146,7 +200,7 @@ export const CUSTOM_ORDER_CATEGORIES: CustomOrderCategory[] = [
         options: pricedOptions(["Coconut", "Sesame", "Pistachios", "None"]),
       },
     ],
-    weightOptions: pricedOptions(["250gm", "500gm", "1kg"]),
+    weightOptions: mergeBoxSizeOptions(["250g", "500g", "1kg"]),
   },
   {
     id: "protein-bars",
@@ -177,7 +231,7 @@ export const CUSTOM_ORDER_CATEGORIES: CustomOrderCategory[] = [
         options: pricedOptions(["Dark Chocolate", "Coconut", "Almonds", "None"]),
       },
     ],
-    weightOptions: pricedOptions(["250gm", "500gm", "1kg"]),
+    weightOptions: mergeBoxSizeOptions(["250g", "500g", "1kg"]),
   },
   {
     id: "artisan-achaar",
@@ -237,8 +291,8 @@ export function buildCustomOrderCategories(
         setting?.fields && setting.fields.length > 0 ? setting.fields : category.fields,
       weightOptions:
         setting?.weightOptions && setting.weightOptions.length > 0
-          ? setting.weightOptions
-          : category.weightOptions,
+          ? mergeBoxSizeOptions(setting.weightOptions)
+          : mergeBoxSizeOptions(category.weightOptions),
     }
   })
 }
@@ -265,7 +319,7 @@ export function getCategoryDefaults(
   }
   return {
     selections,
-    weight: category.weightOptions[0]?.label ?? "250gm",
+    weight: category.weightOptions[0]?.label ?? CUSTOM_ORDER_BOX_SIZES[0],
     quantity: "1",
     notes: "",
   }

@@ -117,23 +117,15 @@ function validateFields(fields: FormFieldGroup[]) {
 }
 
 function validateWeightOptions(weightOptions: FormFieldGroup["options"]) {
-  const cleaned = weightOptions.map((option) => ({
-    label: option.label.trim(),
-    price: option.price,
-  }))
-
-  if (cleaned.length === 0) {
-    throw new Error("Add at least one weight option")
-  }
+  const cleaned = mergeBoxSizeOptions(weightOptions)
 
   for (const option of cleaned) {
-    if (!option.label) {
-      throw new Error("Each weight option needs a label")
-    }
     if (option.price !== null && (!Number.isFinite(option.price) || option.price < 0)) {
       throw new Error(`Invalid price for ${option.label}`)
     }
   }
+
+  return cleaned
 }
 
 export async function updateCustomOrderCategorySetting(
@@ -170,7 +162,7 @@ export async function updateCustomOrderCategorySetting(
   }
 
   if (patch.weightOptions !== undefined) {
-    validateWeightOptions(patch.weightOptions)
+    patch.weightOptions = validateWeightOptions(patch.weightOptions)
   }
 
   const next = mergeCategorySetting({
