@@ -1039,7 +1039,7 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
                     type="text"
                     value={tagsInput}
                     onChange={(e) => setTagsInput(e.target.value)}
-                    placeholder="under-5000, gold-plated"
+                    placeholder="earrings, mens-shirts, laddoo, wall-decor"
                     className="h-10 w-full rounded-lg border border-[#EDE5D8] px-3 text-[13px] outline-none"
                   />
                 </div>

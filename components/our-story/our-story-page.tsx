@@ -44,7 +44,7 @@ function SessionHeading({
             ? "text-[clamp(2.5rem,5.5vw,3.5rem)] sm:text-[clamp(2.85rem,5vw,4rem)] lg:text-[clamp(3.25rem,4.5vw,4.75rem)]"
             : size === "large"
               ? "text-[clamp(1.75rem,3.2vw,2.5rem)] lg:text-[clamp(2rem,2.8vw,2.75rem)]"
-              : "text-[clamp(1.35rem,2.4vw,1.85rem)] lg:text-[clamp(1.5rem,2.2vw,2rem)]",
+              : "text-[clamp(1.45rem,2.55vw,1.95rem)] lg:text-[clamp(1.6rem,2.3vw,2.1rem)]",
         )}
       >
         {title}
@@ -330,7 +330,9 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
                     />
                   </div>
                   <div className="story-heritage-copy">
-                    <h3 className="font-serif text-[13px] text-[#2D1A12]">{region.name}</h3>
+                    <h3 className="font-serif text-[17px] text-[#2D1A12] sm:text-[18px]">
+                      {region.name}
+                    </h3>
                     <p className="mt-0.5 font-sans text-[10px] leading-snug text-[#3D2E24]/85">
                       {region.craft}
                     </p>
@@ -363,7 +365,14 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
                       sizes="(max-width: 1024px) 45vw, 120px"
                     />
                   </div>
-                  <p className={cn("mt-2 font-serif text-[15px] transition-colors sm:text-[17px] md:text-[18px]", item.textColor === "white" ? "text-white group-hover:text-white/80" : "text-[#2D1A12] group-hover:text-[#6B5344]")}>
+                  <p
+                    className={cn(
+                      "mt-2 font-serif text-[17px] transition-colors sm:text-[18px] md:text-[20px]",
+                      item.textColor === "white"
+                        ? "text-white group-hover:text-white/80"
+                        : "text-[#2D1A12] group-hover:text-[#6B5344]",
+                    )}
+                  >
                     {item.name}
                   </p>
                 </Link>

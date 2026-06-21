@@ -9,18 +9,18 @@ import { CatalogProductCard } from "@/components/catalog/catalog-product-card"
 import { cn } from "@/lib/utils"
 import { matchesProductSearch } from "@/lib/product-search"
 import { getProductTicketTheme } from "@/lib/product-category-ticket-theme"
+import {
+  getQuickFiltersForPage,
+  groupQuickFilters,
+  matchesCategoryQuickFilter,
+  matchesCategorySubcategory,
+  resolveQuickFilterCategorySlug,
+} from "@/lib/category-quick-filters"
 import { categoryCatalog, getCatalogSubcategoryOptions, type CatalogProduct, type CategoryConfig } from "@/lib/category-catalog"
 
 const PAGE_SIZE = 6
 
-type ActiveFilter = "under-5000" | "gold-plated"
-
 type ProductFilterMode = "subcategory" | "category" | "category-and-subcategory"
-
-const filterLabels: Record<ActiveFilter, string> = {
-  "under-5000": "Under ₹5,000",
-  "gold-plated": "Gold Plated",
-}
 
 const CATEGORY_FILTER_OPTIONS = [
   { id: "", label: "All Products" },
@@ -95,9 +95,23 @@ export function CategoryListingPage({
   const [sortBy, setSortBy] = useState("best-selling")
   const [page, setPage] = useState(1)
   const [visibleCount, setVisibleCount] = useState(PAGE_SIZE)
-  const [activeFilters, setActiveFilters] = useState<ActiveFilter[]>([])
+  const [activeFilters, setActiveFilters] = useState<string[]>([])
   const [showQuickFilters, setShowQuickFilters] = useState(true)
   const [searchQuery, setSearchQuery] = useState(initialQuery.trim())
+
+  const quickFilterCategory = resolveQuickFilterCategorySlug(
+    category.slug,
+    productFilter === "category-and-subcategory" ? activeCategory : "",
+  )
+  const quickFilters = useMemo(
+    () => getQuickFiltersForPage(category.slug, productFilter === "category-and-subcategory" ? activeCategory : ""),
+    [category.slug, activeCategory, productFilter],
+  )
+  const quickFilterGroups = useMemo(() => groupQuickFilters(quickFilters), [quickFilters])
+
+  useEffect(() => {
+    setActiveFilters((current) => current.filter((id) => quickFilters.some((filter) => filter.id === id)))
+  }, [quickFilterCategory, quickFilters])
 
   const syncsUrlParams =
     productFilter === "category-and-subcategory" || productFilter === "subcategory"
@@ -198,22 +212,21 @@ export function CategoryListingPage({
       if (!matchesProductSearch(product, searchQuery)) return false
       if (productFilter === "category-and-subcategory") {
         if (activeCategory && product.categoryRoute !== activeCategory) return false
-        if (activeSubcategory && product.subcategory !== activeSubcategory) return false
+        if (
+          activeSubcategory &&
+          !matchesCategorySubcategory(product, activeCategory || category.slug, activeSubcategory)
+        ) {
+          return false
+        }
       } else if (productFilter === "category") {
         if (activeSubcategory && product.categoryRoute !== activeSubcategory) return false
-      } else if (activeSubcategory && product.subcategory !== activeSubcategory) {
+      } else if (activeSubcategory && !matchesCategorySubcategory(product, category.slug, activeSubcategory)) {
         return false
       }
-      if (activeFilters.length > 0) {
-        const matchesQuickFilter = activeFilters.some((filter) => {
-          if (filter === "under-5000") {
-            return product.price <= 5000 || product.tags?.includes("under-5000")
-          }
-          if (filter === "gold-plated") {
-            return product.tags?.includes("gold-plated")
-          }
-          return false
-        })
+      if (activeFilters.length > 0 && quickFilterCategory) {
+        const matchesQuickFilter = activeFilters.some((filter) =>
+          matchesCategoryQuickFilter(product, quickFilterCategory, filter),
+        )
         if (!matchesQuickFilter) return false
       }
       return true
@@ -234,6 +247,8 @@ export function CategoryListingPage({
     sortBy,
     productFilter,
     searchQuery,
+    category.slug,
+    quickFilterCategory,
   ])
 
   const totalPages = Math.max(1, Math.ceil(filteredProducts.length / PAGE_SIZE))
@@ -243,7 +258,7 @@ export function CategoryListingPage({
     (currentPage - 1) * PAGE_SIZE + visibleCount,
   )
 
-  function toggleFilter(filter: ActiveFilter) {
+  function toggleFilter(filter: string) {
     setActiveFilters((prev) =>
       prev.includes(filter) ? prev.filter((item) => item !== filter) : [...prev, filter],
     )
@@ -433,45 +448,56 @@ export function CategoryListingPage({
               <option value="price-high">Price: High to Low</option>
             </select>
 
-            <button
-              type="button"
-              onClick={() => setShowQuickFilters((open) => !open)}
-              aria-expanded={showQuickFilters}
-              className={cn(
-                "inline-flex h-10 items-center gap-2 border px-4 font-sans text-[12px] font-medium",
-                showQuickFilters
-                  ? "border-[#785D44] bg-[#785D44] text-white"
-                  : "border-[#D9CFC0] bg-white text-[#3D2E24]",
-              )}
-            >
-              <Settings2 className="size-3.5" />
-              Filter
-            </button>
+            {quickFilters.length > 0 ? (
+              <button
+                type="button"
+                onClick={() => setShowQuickFilters((open) => !open)}
+                aria-expanded={showQuickFilters}
+                className={cn(
+                  "inline-flex h-10 items-center gap-2 border px-4 font-sans text-[12px] font-medium",
+                  showQuickFilters
+                    ? "border-[#785D44] bg-[#785D44] text-white"
+                    : "border-[#D9CFC0] bg-white text-[#3D2E24]",
+                )}
+              >
+                <Settings2 className="size-3.5" />
+                Filter
+              </button>
+            ) : null}
           </div>
         </div>
 
-        {showQuickFilters ? (
-          <div className="mt-4 flex flex-wrap items-center gap-2">
-            {(Object.keys(filterLabels) as ActiveFilter[]).map((filter) => {
-              const isActive = activeFilters.includes(filter)
-              return (
-                <button
-                  key={filter}
-                  type="button"
-                  onClick={() => toggleFilter(filter)}
-                  className={cn(
-                    "inline-flex items-center gap-1 rounded-full border px-3 py-1 font-sans text-[11px] transition-colors",
-                    isActive
-                      ? "border-[#785D44] bg-[#785D44] text-white"
-                      : "border-[#D9CFC0] bg-white text-[#6B5344] hover:border-[#785D44]",
-                  )}
-                >
-                  {filterLabels[filter]}
-                  {isActive ? <span aria-hidden>×</span> : null}
-                </button>
-              )
-            })}
-            {hasActiveFilters && (
+        {showQuickFilters && quickFilters.length > 0 ? (
+          <div className="mt-4 space-y-4">
+            {quickFilterGroups.map(({ group, filters }) => (
+              <div key={group || "filters"} className="flex flex-wrap items-center gap-2">
+                {group ? (
+                  <p className="w-full font-sans text-[11px] font-semibold uppercase tracking-[0.14em] text-[#846246]">
+                    {group}
+                  </p>
+                ) : null}
+                {filters.map((filter) => {
+                  const isActive = activeFilters.includes(filter.id)
+                  return (
+                    <button
+                      key={filter.id}
+                      type="button"
+                      onClick={() => toggleFilter(filter.id)}
+                      className={cn(
+                        "inline-flex items-center gap-1 rounded-full border px-3 py-1 font-sans text-[11px] transition-colors",
+                        isActive
+                          ? "border-[#785D44] bg-[#785D44] text-white"
+                          : "border-[#D9CFC0] bg-white text-[#6B5344] hover:border-[#785D44]",
+                      )}
+                    >
+                      {filter.label}
+                      {isActive ? <span aria-hidden>×</span> : null}
+                    </button>
+                  )
+                })}
+              </div>
+            ))}
+            {hasActiveFilters ? (
               <button
                 type="button"
                 onClick={clearFilters}
@@ -479,7 +505,7 @@ export function CategoryListingPage({
               >
                 Clear All
               </button>
-            )}
+            ) : null}
           </div>
         ) : null}
 

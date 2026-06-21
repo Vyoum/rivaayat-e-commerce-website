@@ -39,14 +39,37 @@ function MegaMenuColumn({
 
       <ul className="mt-3 space-y-2.5">
         {column.links.map((link) => (
-          <li key={`${column.title}-${link.href}-${link.label}`}>
+          <li key={`${column.title}-${link.href}-${link.label}`} className="group/link relative">
             <Link
               href={link.href}
               onClick={onNavigate}
-              className="font-sans text-[13px] leading-snug text-[#2D1A12]/88 transition-colors hover:text-[#B85A32]"
+              className="inline-flex items-center gap-1.5 font-sans text-[13px] leading-snug text-[#2D1A12]/88 transition-colors hover:text-[#B85A32]"
             >
               {link.label}
+              {link.children?.length ? (
+                <span aria-hidden className="text-[11px] text-[#9A8070] transition-colors group-hover/link:text-[#B85A32]">
+                  ›
+                </span>
+              ) : null}
             </Link>
+
+            {link.children?.length ? (
+              <div className="pointer-events-none absolute top-0 left-full z-10 ml-3 min-w-[140px] rounded-lg border border-[#E8E0D4] bg-[#FCF8F4] p-2 opacity-0 shadow-[0_10px_24px_rgba(45,26,18,0.12)] transition-all duration-150 group-hover/link:pointer-events-auto group-hover/link:opacity-100">
+                <ul className="space-y-1">
+                  {link.children.map((child) => (
+                    <li key={`${column.title}-${link.label}-${child.href}-${child.label}`}>
+                      <Link
+                        href={child.href}
+                        onClick={onNavigate}
+                        className="block rounded-md px-2 py-1.5 font-sans text-[12px] text-[#2D1A12]/88 transition-colors hover:bg-[#F4E7D6] hover:text-[#B85A32]"
+                      >
+                        {child.label}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ) : null}
           </li>
         ))}
       </ul>
@@ -174,6 +197,21 @@ export function CollectionsMegaMenuMobileSection({
                   >
                     {link.label}
                   </Link>
+                  {link.children?.length ? (
+                    <ul className="mt-1 space-y-1 pl-4">
+                      {link.children.map((child) => (
+                        <li key={`${column.title}-${link.label}-${child.href}-${child.label}`}>
+                          <Link
+                            href={child.href}
+                            onClick={onNavigate}
+                            className="font-sans text-[13px] text-[#6B5344] transition-colors hover:text-[#2D1A12]"
+                          >
+                            {child.label}
+                          </Link>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : null}
                 </li>
               ))}
             </ul>
