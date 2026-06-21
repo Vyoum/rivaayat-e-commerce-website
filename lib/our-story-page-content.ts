@@ -261,6 +261,7 @@ export const DEFAULT_OUR_STORY_PAGE_CONTENT: OurStoryPageContent = {
         name: "Jewellery",
         imageUrl: "/landing/cat-jewellery.jpg",
         href: "/jewellery",
+        textColor: "white",
       },
       {
         id: "c2",
