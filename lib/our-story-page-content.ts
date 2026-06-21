@@ -35,6 +35,7 @@ export type StoryCollection = {
   name: string
   imageUrl: string
   href: string
+  textColor?: 'white' | 'dark'
 }
 
 export type StoryPromise = {
@@ -260,30 +261,35 @@ export const DEFAULT_OUR_STORY_PAGE_CONTENT: OurStoryPageContent = {
         name: "Jewellery",
         imageUrl: "/landing/cat-jewellery.jpg",
         href: "/jewellery",
+        textColor: "white",
       },
       {
         id: "c2",
         name: "Custom Food",
         imageUrl: "/landing/cat-kitchen.jpg",
         href: "/custom-laddoos",
+        textColor: "white",
       },
       {
         id: "c3",
         name: "The Loom Series",
         imageUrl: "/landing/cat-textiles.jpg",
         href: "/clothing",
+        textColor: "white",
       },
       {
         id: "c4",
         name: "Home & Living",
         imageUrl: "/landing/cat-decor.jpg",
         href: "/decor",
+        textColor: "white",
       },
       {
         id: "c5",
         name: "New Arrivals",
         imageUrl: "/landing/categories-bg-full.jpg",
         href: "/collections",
+        textColor: "white",
       },
     ],
     ctaLabel: "View All Collections",

@@ -27,16 +27,19 @@ function SessionHeading({
   title,
   align = "center",
   size = "default",
+  tone = "dark",
 }: {
   title: string
   align?: "left" | "center"
   size?: "default" | "large" | "xlarge"
+  tone?: "dark" | "white"
 }) {
   return (
     <div className={align === "left" ? "text-left" : "text-center"}>
       <h2
         className={cn(
-          "font-serif font-normal leading-[1.2] text-[#2D1A12]",
+          "font-serif font-normal leading-[1.2]",
+          tone === "white" ? "text-white" : "text-[#2D1A12]",
           size === "xlarge"
             ? "text-[clamp(2.5rem,5.5vw,3.5rem)] sm:text-[clamp(2.85rem,5vw,4rem)] lg:text-[clamp(3.25rem,4.5vw,4.75rem)]"
             : size === "large"
@@ -343,7 +346,7 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
       <section className="story-page-section">
         <div className="story-page-inner">
           <div className="story-panel story-panel--collections min-w-0">
-            <SessionHeading title={content.collections.title} />
+              <SessionHeading title={content.collections.title} tone="white" />
             <div className="mt-8 grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5 md:gap-4">
               {content.collections.items.map((item) => (
                 <Link
@@ -360,7 +363,7 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
                       sizes="(max-width: 1024px) 45vw, 120px"
                     />
                   </div>
-                  <p className="mt-2 font-serif text-[12px] text-[#2D1A12] transition-colors group-hover:text-[#6B5344] sm:text-[13px]">
+                  <p className={cn("mt-2 font-serif text-[15px] transition-colors sm:text-[17px] md:text-[18px]", item.textColor === "white" ? "text-white group-hover:text-white/80" : "text-[#2D1A12] group-hover:text-[#6B5344]")}>
                     {item.name}
                   </p>
                 </Link>
