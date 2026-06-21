@@ -360,7 +360,7 @@ export function OurStoryPage({ content = DEFAULT_OUR_STORY_PAGE_CONTENT }: OurSt
                       sizes="(max-width: 1024px) 45vw, 120px"
                     />
                   </div>
-                  <p className="mt-2 font-serif text-[12px] text-[#2D1A12] transition-colors group-hover:text-[#6B5344] sm:text-[13px]">
+                  <p className={cn("mt-2 font-serif text-[12px] transition-colors sm:text-[13px]", item.textColor === "white" ? "text-white group-hover:text-white/80" : "text-[#2D1A12] group-hover:text-[#6B5344]")}>
                     {item.name}
                   </p>
                 </Link>

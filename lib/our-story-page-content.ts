@@ -35,6 +35,7 @@ export type StoryCollection = {
   name: string
   imageUrl: string
   href: string
+  textColor?: 'white' | 'dark'
 }
 
 export type StoryPromise = {
@@ -266,12 +267,14 @@ export const DEFAULT_OUR_STORY_PAGE_CONTENT: OurStoryPageContent = {
         name: "Custom Food",
         imageUrl: "/landing/cat-kitchen.jpg",
         href: "/custom-laddoos",
+        textColor: "white",
       },
       {
         id: "c3",
         name: "The Loom Series",
         imageUrl: "/landing/cat-textiles.jpg",
         href: "/clothing",
+        textColor: "white",
       },
       {
         id: "c4",
