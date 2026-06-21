@@ -100,6 +100,7 @@ model Product {
   handcrafted   Boolean    @default(true)
   availableSizes String[]  @default([]) @map("available_sizes")
   availableQuantities String[] @default([]) @map("available_quantities")
+  quantityPrices    Json     @default("{}") @map("quantity_prices")
   availableColors String[] @default([]) @map("available_colors")
   colorImages   Json       @default("{}") @map("color_images")
   createdAt     DateTime   @default(now()) @map("created_at")

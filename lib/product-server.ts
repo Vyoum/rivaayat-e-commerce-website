@@ -13,6 +13,7 @@ import {
 } from "@/lib/product-catalog"
 import { categoryCatalog, getProductBySlug, type CatalogProduct } from "@/lib/category-catalog"
 import { parseColorImages } from "@/lib/textile-color-images"
+import { parseQuantityPrices } from "@/lib/food-quantity-prices"
 
 const productSelect = {
   id: true,
@@ -33,6 +34,7 @@ const productSelect = {
   inStock: true,
   availableSizes: true,
   availableQuantities: true,
+  quantityPrices: true,
   availableColors: true,
   colorImages: true,
   tags: true,
@@ -72,6 +74,7 @@ function mapCatalogProductToDetail(
     inStock: true,
     availableSizes: [],
     availableQuantities: [],
+    quantityPrices: {},
     availableColors: [],
     colorImages: {},
   }
@@ -100,6 +103,7 @@ function mapDbProductToDetail(product: {
   inStock: boolean
   availableSizes: string[]
   availableQuantities: string[]
+  quantityPrices: unknown
   availableColors: string[]
   colorImages: unknown
   artisan?: { name: string } | null
@@ -130,6 +134,7 @@ function mapDbProductToDetail(product: {
     inStock: product.inStock,
     availableSizes: product.availableSizes ?? [],
     availableQuantities: product.availableQuantities ?? [],
+    quantityPrices: parseQuantityPrices(product.quantityPrices),
     availableColors: product.availableColors ?? [],
     colorImages: parseColorImages(product.colorImages),
   }

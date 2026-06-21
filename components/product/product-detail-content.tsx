@@ -21,6 +21,10 @@ import { ProductSizeSelector } from "@/components/product/product-size-selector"
 import { StarRating } from "@/components/product/star-rating"
 import { isTextileProduct, resolveProductSizes } from "@/lib/clothing-size-guide"
 import { isFoodProduct, resolveProductQuantities } from "@/lib/food-quantity-options"
+import {
+  getFoodBoxPrice,
+  getLowestFoodBoxPrice,
+} from "@/lib/food-quantity-prices"
 import { resolveProductColors } from "@/lib/textile-color-options"
 import { resolveImagesForColor } from "@/lib/textile-color-images"
 import { storeProductDetailToCatalog } from "@/lib/product-catalog"
@@ -128,8 +132,8 @@ export function ProductDetailContent({
   const showColorOptions = isTextile && productColors.length > 0
 
   const productQuantities = useMemo(
-    () => resolveProductQuantities(product.availableQuantities ?? []),
-    [product.availableQuantities],
+    () => resolveProductQuantities(product.availableQuantities ?? [], product.quantityPrices),
+    [product.availableQuantities, product.quantityPrices],
   )
   const showQuantityOptions =
     isFoodProduct({
@@ -160,6 +164,21 @@ export function ProductDetailContent({
       setSelectedPack(null)
     }
   }, [product.availableQuantities, selectedPack, productQuantities])
+
+  const displayPrice = useMemo(() => {
+    if (showQuantityOptions && product.quantityPrices) {
+      if (selectedPack) {
+        return getFoodBoxPrice(product.quantityPrices, selectedPack) ?? product.price
+      }
+      return getLowestFoodBoxPrice(product.quantityPrices) ?? product.price
+    }
+    return product.price
+  }, [product.price, product.quantityPrices, selectedPack, showQuantityOptions])
+
+  const priceLabel =
+    showQuantityOptions && !selectedPack && getLowestFoodBoxPrice(product.quantityPrices ?? {})
+      ? "From "
+      : ""
 
   const hasRealReviews = (reviewsData?.summary.totalCount ?? 0) > 0
   const headerRating = hasRealReviews
@@ -197,6 +216,7 @@ export function ProductDetailContent({
       size: selectedSize ?? selectedPack ?? undefined,
       color: selectedColor ?? undefined,
       image: productImages[0]?.src,
+      unitPrice: showQuantityOptions ? displayPrice : undefined,
     })
   }
 
@@ -297,7 +317,7 @@ export function ProductDetailContent({
             </div>
 
             <p className="mt-5 font-serif text-[30px] font-normal text-[#3D2E24]">
-              ₹{product.price.toLocaleString("en-IN")}
+              {priceLabel}₹{displayPrice.toLocaleString("en-IN")}
             </p>
 
             {(product.artisanName || product.location) && (
@@ -333,6 +353,7 @@ export function ProductDetailContent({
               <div className="mt-8">
                 <ProductQuantitySelector
                   quantities={productQuantities}
+                  quantityPrices={product.quantityPrices}
                   value={selectedPack}
                   onChange={setSelectedPack}
                 />

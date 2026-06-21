@@ -4,6 +4,7 @@ export type CartVariantOptions = {
   size?: string
   color?: string
   image?: string
+  unitPrice?: number
 }
 
 export type CartItem = {
@@ -135,6 +136,10 @@ export function catalogProductToCartItem(
   const size = options?.size?.trim() || undefined
   const color = options?.color?.trim() || undefined
   const image = options?.image?.trim() || product.image
+  const price =
+    typeof options?.unitPrice === "number" && options.unitPrice > 0
+      ? options.unitPrice
+      : product.price
 
   return {
     id: product.id,
@@ -143,7 +148,7 @@ export function catalogProductToCartItem(
     slug: product.slug,
     variant: product.location,
     artisan: product.artisan,
-    price: product.price,
+    price,
     quantity: 1,
     image,
     tag: product.badge,

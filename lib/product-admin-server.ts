@@ -7,6 +7,11 @@ import {
 } from "@/lib/product-catalog"
 import { normalizeAvailableSizes } from "@/lib/clothing-size-guide"
 import { normalizeAvailableQuantities } from "@/lib/food-quantity-options"
+import {
+  getAvailableFoodBoxSizes,
+  getLowestFoodBoxPrice,
+  parseQuantityPrices,
+} from "@/lib/food-quantity-prices"
 import { normalizeAvailableColors } from "@/lib/textile-color-options"
 import {
   normalizeColorImages,
@@ -43,6 +48,7 @@ const productSelect = {
   handcrafted: true,
   availableSizes: true,
   availableQuantities: true,
+  quantityPrices: true,
   availableColors: true,
   colorImages: true,
   createdAt: true,
@@ -70,6 +76,7 @@ function mapDbProductToAdmin(product: {
   handcrafted: boolean
   availableSizes: string[]
   availableQuantities: string[]
+  quantityPrices: unknown
   availableColors: string[]
   colorImages: unknown
   createdAt: Date
@@ -98,6 +105,7 @@ function mapDbProductToAdmin(product: {
     handcrafted: product.handcrafted,
     availableSizes: product.availableSizes,
     availableQuantities: product.availableQuantities,
+    quantityPrices: parseQuantityPrices(product.quantityPrices),
     availableColors: product.availableColors,
     colorImages: parseColorImages(product.colorImages),
     createdAt: product.createdAt.toISOString(),
@@ -209,6 +217,24 @@ export async function createAdminProduct(input: CreateProductInput) {
     throw new Error("At least one product image is required")
   }
 
+  const foodQuantityPrices =
+    input.category === "custom_food" ? parseQuantityPrices(input.quantityPrices ?? {}) : {}
+  const foodAvailableQuantities =
+    input.category === "custom_food"
+      ? getAvailableFoodBoxSizes(foodQuantityPrices)
+      : []
+  const resolvedFoodPrice =
+    input.category === "custom_food" ? getLowestFoodBoxPrice(foodQuantityPrices) : null
+
+  if (input.category === "custom_food") {
+    if (foodAvailableQuantities.length === 0) {
+      throw new Error("Add a price for at least one box size (250g, 500g, 1kg, or 2kg).")
+    }
+    if (resolvedFoodPrice === null) {
+      throw new Error("Enter valid prices for the selected box sizes.")
+    }
+  }
+
   const product = await prisma.product.create({
     data: {
       name: input.name.trim(),
@@ -219,7 +245,7 @@ export async function createAdminProduct(input: CreateProductInput) {
       materialsCare: input.materialsCare?.trim() || null,
       category: input.category,
       subcategory: input.subcategory?.trim() || null,
-      price: input.price,
+      price: input.category === "custom_food" ? resolvedFoodPrice! : input.price,
       artisanName: input.artisanName?.trim() || null,
       location: input.location?.trim() || null,
       imageUrls: input.imageUrls,
@@ -234,8 +260,9 @@ export async function createAdminProduct(input: CreateProductInput) {
           : [],
       availableQuantities:
         input.category === "custom_food"
-          ? normalizeAvailableQuantities(input.availableQuantities ?? [])
+          ? foodAvailableQuantities
           : [],
+      quantityPrices: input.category === "custom_food" ? foodQuantityPrices : {},
       availableColors:
         input.category === "clothing"
           ? normalizeAvailableColors(input.availableColors ?? [])
@@ -276,8 +303,12 @@ export async function updateAdminProduct(id: string, input: UpdateProductInput) 
 
   let resolvedSizes: string[] | undefined
   let resolvedQuantities: string[] | undefined
+  let resolvedQuantityPrices: Record<string, number> | undefined
   let resolvedColors: string[] | undefined
   let resolvedColorImages: ProductColorImages | undefined
+  let resolvedPrice: number | undefined
+
+  const nextCategory = input.category ?? existing.category
 
   if (input.availableSizes !== undefined) {
     resolvedSizes = normalizeAvailableSizes(input.availableSizes)
@@ -285,10 +316,27 @@ export async function updateAdminProduct(id: string, input: UpdateProductInput) 
     resolvedSizes = []
   }
 
-  if (input.availableQuantities !== undefined) {
-    resolvedQuantities = normalizeAvailableQuantities(input.availableQuantities)
+  if (input.quantityPrices !== undefined) {
+    if (nextCategory === "custom_food") {
+      const foodQuantityPrices = parseQuantityPrices(input.quantityPrices)
+      const available = getAvailableFoodBoxSizes(foodQuantityPrices)
+      if (available.length === 0) {
+        throw new Error("Add a price for at least one box size (250g, 500g, 1kg, or 2kg).")
+      }
+      const lowest = getLowestFoodBoxPrice(foodQuantityPrices)
+      if (lowest === null) {
+        throw new Error("Enter valid prices for the selected box sizes.")
+      }
+      resolvedQuantities = available
+      resolvedQuantityPrices = foodQuantityPrices
+      resolvedPrice = lowest
+    } else {
+      resolvedQuantityPrices = {}
+      resolvedQuantities = []
+    }
   } else if (input.category !== undefined && input.category !== "custom_food") {
     resolvedQuantities = []
+    resolvedQuantityPrices = {}
   }
 
   if (input.availableColors !== undefined) {
@@ -323,7 +371,11 @@ export async function updateAdminProduct(id: string, input: UpdateProductInput) 
         : {}),
       ...(input.category !== undefined ? { category: input.category } : {}),
       ...(input.subcategory !== undefined ? { subcategory: input.subcategory.trim() || null } : {}),
-      ...(input.price !== undefined ? { price: input.price } : {}),
+      ...(resolvedPrice !== undefined
+        ? { price: resolvedPrice }
+        : input.price !== undefined
+          ? { price: input.price }
+          : {}),
       ...(input.artisanName !== undefined ? { artisanName: input.artisanName.trim() || null } : {}),
       ...(input.location !== undefined ? { location: input.location.trim() || null } : {}),
       ...(input.imageUrls !== undefined ? { imageUrls: input.imageUrls } : {}),
@@ -334,6 +386,7 @@ export async function updateAdminProduct(id: string, input: UpdateProductInput) 
       ...(input.handcrafted !== undefined ? { handcrafted: input.handcrafted } : {}),
       ...(resolvedSizes !== undefined ? { availableSizes: resolvedSizes } : {}),
       ...(resolvedQuantities !== undefined ? { availableQuantities: resolvedQuantities } : {}),
+      ...(resolvedQuantityPrices !== undefined ? { quantityPrices: resolvedQuantityPrices } : {}),
       ...(resolvedColors !== undefined ? { availableColors: resolvedColors } : {}),
       ...(resolvedColorImages !== undefined ? { colorImages: resolvedColorImages } : {}),
     },

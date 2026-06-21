@@ -1,6 +1,7 @@
 import type { Category } from "@prisma/client"
 
 import type { ProductColorImages } from "@/lib/textile-color-images"
+import type { FoodQuantityPrices } from "@/lib/food-quantity-prices"
 
 export type AdminProduct = {
   id: string
@@ -25,6 +26,7 @@ export type AdminProduct = {
   handcrafted: boolean
   availableSizes: string[]
   availableQuantities: string[]
+  quantityPrices: FoodQuantityPrices
   availableColors: string[]
   colorImages: ProductColorImages
   createdAt: string
@@ -54,6 +56,7 @@ export type StoreProductDetail = {
   inStock: boolean
   availableSizes: string[]
   availableQuantities: string[]
+  quantityPrices: FoodQuantityPrices
   availableColors: string[]
   colorImages: ProductColorImages
 }
@@ -78,6 +81,7 @@ export type CreateProductInput = {
   handcrafted?: boolean
   availableSizes?: string[]
   availableQuantities?: string[]
+  quantityPrices?: FoodQuantityPrices
   availableColors?: string[]
   colorImages?: ProductColorImages
 }

@@ -26,6 +26,7 @@ type AddItemOptions = {
   size?: string
   color?: string
   image?: string
+  unitPrice?: number
 }
 
 const STORAGE_KEY = "house-of-indika-cart"
@@ -68,6 +69,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     const size = options?.size?.trim() || undefined
     const color = options?.color?.trim() || undefined
     const image = options?.image?.trim() || undefined
+    const unitPrice = options?.unitPrice
     const lineKey = getCartLineKey(product.id, { size, color })
 
     setItems((prev) => {
@@ -80,7 +82,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
         )
       }
       return [
-        normalizeCartItem({ ...catalogProductToCartItem(product, { size, color, image }), quantity }),
+        normalizeCartItem({
+          ...catalogProductToCartItem(product, { size, color, image, unitPrice }),
+          quantity,
+        }),
         ...prev,
       ]
     })

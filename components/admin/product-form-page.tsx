@@ -24,6 +24,15 @@ import {
   normalizeAvailableQuantities,
 } from "@/lib/food-quantity-options"
 import {
+  getLowestFoodBoxPrice,
+  quantityPriceDraftsToRecord,
+} from "@/lib/food-quantity-prices"
+import {
+  createFoodBoxSizePriceDrafts,
+  FoodBoxSizePricingEditor,
+  type FoodBoxSizePriceDraft,
+} from "@/components/admin/food-box-size-pricing-editor"
+import {
   DEFAULT_TEXTILE_COLOR_OPTIONS,
   getTextileColorSwatch,
   normalizeAvailableColors,
@@ -79,6 +88,9 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
   const [availableQuantities, setAvailableQuantities] = useState<string[]>(
     product?.availableQuantities?.length ? product.availableQuantities : [],
   )
+  const [quantityPriceDrafts, setQuantityPriceDrafts] = useState<FoodBoxSizePriceDraft[]>(
+    createFoodBoxSizePriceDrafts(product?.quantityPrices),
+  )
   const [availableColors, setAvailableColors] = useState<string[]>(
     product?.availableColors?.length ? product.availableColors : [],
   )
@@ -116,6 +128,9 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
         (option) => option.toLowerCase() === color.toLowerCase(),
       ),
   )
+  const lowestFoodPriceDraft = isFood
+    ? getLowestFoodBoxPrice(quantityPriceDraftsToRecord(quantityPriceDrafts))
+    : null
 
   function toggleAvailableSize(size: string) {
     setAvailableSizes((prev) => {
@@ -276,7 +291,16 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
       setSaving(false)
       return
     }
-    if (!parsedPrice || parsedPrice <= 0) {
+    const quantityPrices = isFood ? quantityPriceDraftsToRecord(quantityPriceDrafts) : undefined
+    const lowestFoodPrice = isFood ? getLowestFoodBoxPrice(quantityPrices ?? {}) : null
+
+    if (isFood) {
+      if (!lowestFoodPrice) {
+        setError("Add a price for at least one box size (250g, 500g, 1kg, or 2kg)")
+        setSaving(false)
+        return
+      }
+    } else if (!parsedPrice || parsedPrice <= 0) {
       setError("Enter a valid price")
       setSaving(false)
       return
@@ -290,13 +314,6 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
     const sizesToSave = isClothing ? normalizeAvailableSizes(selectedSizes) : []
     if (isClothing && sizesToSave.length === 0) {
       setError("Select at least one available size")
-      setSaving(false)
-      return
-    }
-
-    const quantitiesToSave = isFood ? normalizeAvailableQuantities(selectedQuantities) : []
-    if (isFood && quantitiesToSave.length === 0) {
-      setError("Select at least one quantity option")
       setSaving(false)
       return
     }
@@ -323,7 +340,7 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
       story: story.trim() || undefined,
       storyImageUrl: storyImageUrl.trim() || null,
       materialsCare: materialsCare.trim() || undefined,
-      price: parsedPrice,
+      price: isFood ? lowestFoodPrice! : parsedPrice!,
       badge: badge || undefined,
       tags,
       imageUrls,
@@ -331,7 +348,8 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
       inStock,
       handcrafted,
       availableSizes: sizesToSave,
-      availableQuantities: quantitiesToSave,
+      availableQuantities: [],
+      quantityPrices: isFood ? quantityPrices : {},
       availableColors: colorsToSave,
       colorImages: isClothing
         ? normalizeColorImages(colorImages, colorsToSave)
@@ -728,101 +746,17 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
 
               {isFood && (
                 <section className="rounded-xl border border-[#EDE5D8] bg-white p-5">
-                  <div className="mb-4 flex items-start justify-between gap-3">
-                    <div>
-                      <h2 className="text-[14px] font-semibold text-[#2B1B12]">
-                        Available Quantities
-                      </h2>
-                      <p className="mt-1 text-[11px] leading-relaxed text-[#9A8070]">
-                        Pack sizes or weights shoppers can choose on the product page. At least one
-                        option is required.
-                      </p>
-                    </div>
-                    <button
-                      type="button"
-                      onClick={selectAllQuantities}
-                      className="shrink-0 text-[11px] font-medium tracking-wide text-[#6B5344] uppercase hover:text-[#2B1B12]"
-                    >
-                      Select all
-                    </button>
-                  </div>
-                  <div className="flex flex-wrap gap-2">
-                    {DEFAULT_FOOD_QUANTITY_OPTIONS.map((quantity) => {
-                      const isSelected = selectedQuantities.some(
-                        (entry) => entry.toLowerCase() === quantity.toLowerCase(),
-                      )
-                      return (
-                        <button
-                          key={quantity}
-                          type="button"
-                          onClick={() => toggleAvailableQuantity(quantity)}
-                          aria-pressed={isSelected}
-                          className={cn(
-                            "min-w-[52px] rounded-lg border px-4 py-2.5 text-[13px] font-medium transition-colors",
-                            isSelected
-                              ? "border-[#846246] bg-[#846246] text-white"
-                              : "border-[#EDE5D8] bg-[#FAF7F2] text-[#6B5344] hover:border-[#C4A882]",
-                          )}
-                        >
-                          {quantity}
-                        </button>
-                      )
-                    })}
-                  </div>
-
-                  {customSelectedQuantities.length > 0 ? (
-                    <div className="mt-4">
-                      <p className="mb-2 text-[11px] font-medium text-[#6B5344]">
-                        Custom options
-                      </p>
-                      <div className="flex flex-wrap gap-2">
-                        {customSelectedQuantities.map((quantity) => (
-                          <button
-                            key={quantity}
-                            type="button"
-                            onClick={() => removeCustomQuantity(quantity)}
-                            className="flex items-center gap-1.5 rounded-lg border border-[#846246] bg-[#846246] px-4 py-2.5 text-[13px] font-medium text-white transition-colors hover:bg-[#6B5344]"
-                            title="Remove custom quantity"
-                          >
-                            {quantity}
-                            <Trash2 className="size-3.5 opacity-80" />
-                          </button>
-                        ))}
-                      </div>
-                    </div>
-                  ) : null}
-
-                  <div className="mt-4">
-                    <label className="mb-1.5 block text-[11px] font-medium text-[#6B5344]">
-                      Add custom quantity
-                    </label>
-                    <div className="flex gap-2">
-                      <input
-                        type="text"
-                        value={customQuantityInput}
-                        onChange={(e) => setCustomQuantityInput(e.target.value)}
-                        onKeyDown={(e) => {
-                          if (e.key === "Enter") {
-                            e.preventDefault()
-                            addCustomQuantity()
-                          }
-                        }}
-                        placeholder="e.g. 750gm, 12 pcs, 1 box, 500ml"
-                        className="h-10 min-w-0 flex-1 rounded-lg border border-[#EDE5D8] px-3 text-[13px] outline-none focus:border-[#C4A882]"
-                      />
-                      <button
-                        type="button"
-                        onClick={addCustomQuantity}
-                        className="flex shrink-0 items-center gap-1.5 rounded-lg border border-[#2B1B12] px-4 py-2 text-[12px] font-medium text-[#2B1B12] uppercase transition-colors hover:bg-[#2B1B12] hover:text-white"
-                      >
-                        <Plus className="size-3.5" />
-                        Add
-                      </button>
-                    </div>
-                    <p className="mt-1.5 text-[11px] text-[#9A8070]">
-                      Use weights (250gm, 1kg), counts (6 pcs), boxes (1 box), or volumes (500ml).
+                  <div className="mb-4">
+                    <h2 className="text-[14px] font-semibold text-[#2B1B12]">Box Size Pricing</h2>
+                    <p className="mt-1 text-[11px] leading-relaxed text-[#9A8070]">
+                      Set prices for 250g, 500g, 1kg, and 2kg boxes. These appear on the product
+                      page when shoppers choose a pack size.
                     </p>
                   </div>
+                  <FoodBoxSizePricingEditor
+                    options={quantityPriceDrafts}
+                    onChange={setQuantityPriceDrafts}
+                  />
                 </section>
               )}
 
@@ -923,23 +857,33 @@ export function ProductFormPage({ product }: ProductFormPageProps) {
 
               <section className="rounded-xl border border-[#EDE5D8] bg-white p-5">
                 <h2 className="mb-4 text-[14px] font-semibold text-[#2B1B12]">Pricing</h2>
-                <div>
-                  <label className="mb-1.5 block text-[12px] font-medium text-[#6B5344]">
-                    Base Price (₹)
-                  </label>
-                  <div className="relative max-w-xs">
-                    <span className="absolute top-1/2 left-3 -translate-y-1/2 text-[13px] text-[#9A8070]">
-                      ₹
-                    </span>
-                    <input
-                      type="text"
-                      value={price}
-                      onChange={(e) => setPrice(e.target.value)}
-                      placeholder="2400"
-                      className="h-10 w-full rounded-lg border border-[#EDE5D8] pl-7 pr-3 text-[13px] outline-none"
-                    />
+                {isFood ? (
+                  <p className="max-w-md text-[12px] leading-relaxed text-[#9A8070]">
+                    Listing price is set automatically from the lowest box size price you enter
+                    above.
+                    {lowestFoodPriceDraft
+                      ? ` Currently from ₹${lowestFoodPriceDraft.toLocaleString("en-IN")}.`
+                      : null}
+                  </p>
+                ) : (
+                  <div>
+                    <label className="mb-1.5 block text-[12px] font-medium text-[#6B5344]">
+                      Base Price (₹)
+                    </label>
+                    <div className="relative max-w-xs">
+                      <span className="absolute top-1/2 left-3 -translate-y-1/2 text-[13px] text-[#9A8070]">
+                        ₹
+                      </span>
+                      <input
+                        type="text"
+                        value={price}
+                        onChange={(e) => setPrice(e.target.value)}
+                        placeholder="2400"
+                        className="h-10 w-full rounded-lg border border-[#EDE5D8] pl-7 pr-3 text-[13px] outline-none"
+                      />
+                    </div>
                   </div>
-                </div>
+                )}
               </section>
             </div>
 

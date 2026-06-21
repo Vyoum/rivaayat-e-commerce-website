@@ -27,8 +27,9 @@ export function CustomOrderContentPage() {
           <div>
             <h1 className="font-serif text-[26px] font-semibold text-[#2D1E17]">Custom Order</h1>
             <p className="mt-1 text-[13px] text-[#9A8070]">
-              Edit category names, starting prices, box sizes (250g, 500g, 1kg), form options, and
-              per-option pricing shown on the public custom orders page.
+              Edit category names, starting prices, form options, and per-option pricing shown on
+              the public custom orders page. Food box prices (250g, 500g, 1kg, 2kg) are set per
+              product under Admin → Products.
             </p>
           </div>
 

@@ -363,8 +363,8 @@ export function CustomOrderCategoriesManager({
         </h2>
         <p className="mt-1 text-[12px] text-[#9A8070]">
           {variant === "box-sizes"
-            ? "Set prices for 250g, 500g, and 1kg boxes. These appear on the public custom orders page."
-            : "Set the category starting price, box sizes (250g, 500g, 1kg), and extra prices for each form choice. Prices appear on the public custom orders page."}
+            ? "Set the category starting price and extra prices for each form choice. Box size prices for food products are managed on each product in Admin → Products."
+            : "Set the category starting price and extra prices for each form choice. Prices appear on the public custom orders page."}
         </p>
       </div>
 
@@ -460,25 +460,6 @@ export function CustomOrderCategoriesManager({
                     />
                   </label>
                 </div>
-
-                {supportsBoxSizes ? (
-                  <div className="mt-5 rounded-lg border border-[#E8DFD2] bg-[#FFF9F2] p-4">
-                    <p className="text-[11px] font-semibold uppercase tracking-[0.12em] text-[#846246]">
-                      Box Sizes (250g · 500g · 1kg)
-                    </p>
-                    <div className="mt-3">
-                      <BoxSizePricingEditor
-                        options={draft.weightOptions}
-                        onChange={(next) =>
-                          setDrafts((prev) => ({
-                            ...prev,
-                            [category.id]: { ...draft, weightOptions: next },
-                          }))
-                        }
-                      />
-                    </div>
-                  </div>
-                ) : null}
 
                 {variant === "full" && hasForm ? (
                   <div className="mt-5 space-y-4 border-t border-[#F0EAE2] pt-5">

@@ -6,7 +6,6 @@ import { Loader2, Search, Sparkles, X } from "lucide-react"
 
 import { AdminSidebar } from "./admin-sidebar"
 import { CommerceSubnav } from "./commerce-subnav"
-import { CustomOrderCategoriesManager } from "./custom-order-categories-manager"
 import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import type {
   CustomOrderKanbanBoard,
@@ -176,27 +175,15 @@ export function CustomOrdersKanban({ initialBoard }: CustomOrdersKanbanProps) {
                   </p>
                 </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Link
-                  href="/admin/content/custom-orders#custom-order-box-sizes"
-                  className="rounded-lg border border-[#EDE5D8] bg-white px-3 py-2 text-[12px] font-medium text-[#6B5344] hover:bg-[#FAF7F2]"
-                >
-                  Full pricing settings
-                </Link>
-                <button
-                  type="button"
-                  onClick={() => void refreshBoard()}
+              <button
+                type="button"
+                onClick={() => void refreshBoard()}
                 disabled={loading}
                 className="rounded-lg border border-[#EDE5D8] bg-white px-3 py-1.5 text-[12px] font-medium text-[#6B5344] hover:bg-[#FAF7F2] disabled:opacity-60"
               >
                 {loading ? "Refreshing…" : "Refresh"}
               </button>
-              </div>
             </div>
-
-            <section className="mb-6 rounded-xl border border-[#EDE5D8] bg-white p-5 shadow-sm">
-              <CustomOrderCategoriesManager variant="box-sizes" />
-            </section>
 
             {error ? (
               <p className="mb-4 rounded-lg border border-[#F5C6C2] bg-[#FCE8E6] px-4 py-3 text-[12px] text-[#C5221F]">
