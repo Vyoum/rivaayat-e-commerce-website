@@ -9,7 +9,7 @@ import { useRouter } from "next/navigation"
 import { ArrowRight, Eye, EyeOff } from "lucide-react"
 
 import { AuthHeader } from "@/components/auth/auth-header"
-import { HOUSE_OF_INDIKA, INDIKA_HINDI } from "@/lib/brand"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { getSafeRedirectPath } from "@/lib/auth-redirect"
 import { getSupabaseBrowser } from "@/lib/supabase/browser"
 import { signInWithOAuth } from "@/lib/supabase/oauth"
@@ -136,7 +136,7 @@ export default function LoginPage() {
                 <span className="text-[#846246]">{HOUSE_OF_INDIKA}</span>
               </h1>
               <p className="font-serif text-[20px] italic text-[#9A8070]">
-                {INDIKA_HINDI} में वापसी पर स्वागत है
+                Your wishlist, orders, and artisan favourites await.
               </p>
               <p className="max-w-md font-sans text-[15px] leading-relaxed text-[#6B5344]">
                 Sign in to view your wishlist, track orders, and continue exploring handcrafted

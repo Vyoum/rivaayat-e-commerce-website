@@ -9,7 +9,7 @@ import {
   Twitter,
   Youtube,
 } from "lucide-react"
-import { HOUSE_OF_INDIKA, INDIKA_HINDI } from "@/lib/brand"
+import { HOUSE_OF_INDIKA, INDIKA_ENGLISH } from "@/lib/brand"
 
 const onlineShoppingLinks = [
   { label: "Jewellery", href: "/jewellery" },
@@ -101,9 +101,8 @@ export function SiteFooter() {
       <div className="mx-auto max-w-[1100px] px-5 py-14 lg:px-8 lg:py-16">
         <div className="mb-12 max-w-[280px]">
           <Link href="/" className="inline-block">
-            <span className="font-serif text-[36px] leading-none text-[#F5F0E8]">{INDIKA_HINDI}</span>
-            <span className="mt-1 block font-sans text-[10px] tracking-[0.28em] text-[#F5F0E8]/50">
-              House of
+            <span className="font-serif text-[28px] leading-none text-[#F5F0E8] sm:text-[32px]">
+              {HOUSE_OF_INDIKA}
             </span>
           </Link>
           <p className="mt-5 font-sans text-[12px] leading-[1.7] text-[#F5F0E8]/65">
@@ -199,7 +198,7 @@ export function SiteFooter() {
 
         <div className="mt-8 flex flex-col items-center justify-between gap-4 border-t border-[#F5F0E8]/10 pt-8 sm:flex-row">
           <p className="font-sans text-[11px] text-[#F5F0E8]/45">
-            © 2026 {INDIKA_HINDI}. Crafted with love in India.
+            © 2026 {INDIKA_ENGLISH}. Crafted with love in India.
           </p>
           <div className="flex items-center gap-5 font-sans text-[11px] text-[#F5F0E8]/45">
             <Link href="#" className="transition-colors hover:text-[#F5F0E8]/75">

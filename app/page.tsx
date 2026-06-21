@@ -8,7 +8,7 @@ import { LandingFooter } from "@/components/landing/landing-footer"
 import { getCategoryCardsContent } from "@/lib/category-cards"
 import { getActiveHeroSlides, getHeroCopy } from "@/lib/hero-slides"
 import { getHomepageStory } from "@/lib/homepage-story"
-import { HOUSE_OF_INDIKA_ENGLISH } from "@/lib/brand"
+import { HOUSE_OF_INDIKA } from "@/lib/brand"
 import { SITE_DESCRIPTION, SITE_TITLE, absoluteUrl } from "@/lib/site-metadata"
 
 export const metadata: Metadata = {
@@ -27,7 +27,7 @@ export const metadata: Metadata = {
 const homepageJsonLd = {
   "@context": "https://schema.org",
   "@type": "WebSite",
-  name: HOUSE_OF_INDIKA_ENGLISH,
+  name: HOUSE_OF_INDIKA,
   url: absoluteUrl("/"),
   description: SITE_DESCRIPTION,
   potentialAction: {
